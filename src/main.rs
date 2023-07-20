@@ -11,9 +11,11 @@ extern crate rocket_contrib;
 
 use crate::database::TimesheetsDatabaseInitialized;
 
-mod config;
+mod routes;
+pub mod handlers;
 pub mod database;
-pub mod routes;
+mod config;
+mod schema;
 
 fn main() {
     rocket::custom(config::from_env())

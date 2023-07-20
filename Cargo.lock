@@ -103,16 +103,16 @@ dependencies = [
 
 [[package]]
 name = "diesel"
-version = "1.4.8"
+version = "1.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b28135ecf6b7d446b43e27e225622a038cc4e2930a1022f51cdb97ada19b8e4d"
+checksum = "33d7ca63eb2efea87a7f56a283acc49e2ce4b2bd54adf7465dc1d81fef13d8fc"
 dependencies = [
  "bitflags",
  "byteorder",
  "diesel_derives",
  "pq-sys",
  "r2d2",
- "uuid 0.8.2",
+ "uuid",
 ]
 
 [[package]]
@@ -552,20 +552,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pro_selection"
-version = "0.1.0"
-dependencies = [
- "diesel",
- "diesel_migrations",
- "dotenv",
- "rocket",
- "rocket_contrib",
- "serde",
- "serde_json",
- "uuid 1.4.0",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "0.4.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,6 +830,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "timesheets_api"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "rocket",
+ "rocket_contrib",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "tinyvec"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -931,12 +931,6 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-
-[[package]]
-name = "uuid"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d023da39d1fde5a8a3fe1f3e01ca9632ada0a63e9797de55a879d6e2236277be"
 dependencies = [
  "getrandom",
  "serde",
