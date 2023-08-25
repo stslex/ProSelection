@@ -10,6 +10,7 @@ extern crate rocket;
 extern crate rocket_contrib;
 
 use crate::database::TimesheetsDatabaseInitialized;
+use crate::routes::TimesheetsRoutesInitialized;
 
 mod config;
 pub mod database;
@@ -17,6 +18,7 @@ pub mod routes;
 
 fn main() {
     rocket::custom(config::from_env())
+        .mount_timesheet_routes()
         .manage_database()
         .launch();
 }

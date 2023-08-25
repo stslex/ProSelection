@@ -7,7 +7,10 @@ impl TimesheetsRoutesInitialized for Rocket {
     fn mount_timesheet_routes(self) -> Self {
         self.mount("/api-v1", routes![
             routes::login,
-            routes::registration
+            routes::registration,
+            routes::hello,
+            routes::helloUsername,
+            routes::error
         ])
     }
 }

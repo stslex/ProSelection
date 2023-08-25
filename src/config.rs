@@ -10,7 +10,7 @@ pub fn from_env() -> Config {
     let environment = Environment::active().expect("Environment Not Found");
 
     let port = env::var("PORT")
-        .unwrap_or_else(|_| "8000".to_string())
+        .unwrap_or_else(|_| "8080".to_string())
         .parse::<u16>()
         .expect("PORT environment variable should parse to an integer");
 
