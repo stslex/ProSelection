@@ -2,7 +2,7 @@ name: Deploy Prod
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 env:
@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v4.1.1
         with:
           push: true
-          tags: stslex/proselection:lateset
+          tags: stslex/proselection:latest
           platforms: linux/amd64
           context: .
 
