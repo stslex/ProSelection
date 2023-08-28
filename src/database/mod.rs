@@ -1,6 +1,7 @@
 use rocket::fairing::AdHoc;
 use rocket::Rocket;
 use rocket_contrib::databases::diesel;
+pub mod auth;
 
 #[database("diesel_postgres_pool")]
 pub struct Conn(diesel::PgConnection);

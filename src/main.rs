@@ -14,7 +14,9 @@ use crate::routes::RoutesInitialized;
 
 mod config;
 pub mod database;
+pub mod handlers;
 pub mod routes;
+pub mod schema;
 
 fn main() {
     rocket::custom(config::from_env())
