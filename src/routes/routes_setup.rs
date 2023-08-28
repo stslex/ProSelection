@@ -1,16 +1,17 @@
 use rocket::Rocket;
 
-use crate::routes::routes;
-use crate::routes::TimesheetsRoutesInitialized;
+use crate::routes::auth::RoutesAuthInitialized;
+use crate::routes::RoutesInitialized;
+use crate::routes::test::RoutesTestInitialized;
+use crate::routes::user::RoutesUserInitialized;
 
-impl TimesheetsRoutesInitialized for Rocket {
-    fn mount_timesheet_routes(self) -> Self {
-        self.mount("/api-v1", routes![
-            routes::login,
-            routes::registration,
-            routes::hello,
-            routes::helloUsername,
-            routes::error
-        ])
+impl RoutesInitialized for Rocket {
+    fn mount_routes(self) -> Self {
+        self
+            .mount_test_routes()
+            .mount_auth_routes()
+            .mount_user_routes()
     }
 }
+
+pub const BASE_API_URL: &str = "/api-v1";

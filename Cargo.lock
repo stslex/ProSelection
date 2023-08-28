@@ -112,7 +112,7 @@ dependencies = [
  "diesel_derives",
  "pq-sys",
  "r2d2",
- "uuid 0.8.2",
+ "uuid",
 ]
 
 [[package]]
@@ -562,7 +562,7 @@ dependencies = [
  "rocket_contrib",
  "serde",
  "serde_json",
- "uuid 1.4.0",
+ "uuid",
 ]
 
 [[package]]
@@ -931,12 +931,6 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-
-[[package]]
-name = "uuid"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d023da39d1fde5a8a3fe1f3e01ca9632ada0a63e9797de55a879d6e2236277be"
 dependencies = [
  "getrandom",
  "serde",

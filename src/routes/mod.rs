@@ -1,7 +1,9 @@
-mod routes_setup;
-mod routes;
+mod auth;
 mod route_objects;
+mod routes_setup;
+mod test;
+mod user;
 
-pub trait TimesheetsRoutesInitialized {
-    fn mount_timesheet_routes(self) -> Self;
+pub trait RoutesInitialized {
+    fn mount_routes(self) -> Self;
 }
