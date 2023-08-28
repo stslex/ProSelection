@@ -9,18 +9,19 @@ extern crate rocket;
 #[macro_use]
 extern crate rocket_contrib;
 
-use crate::database::TimesheetsDatabaseInitialized;
+use crate::database::AppDatabaseInitialized;
 use crate::routes::RoutesInitialized;
 
 mod config;
 pub mod database;
 pub mod handlers;
 pub mod routes;
-pub mod schema;
+mod schema;
+// pub mod schema;
 
 fn main() {
     rocket::custom(config::from_env())
-        .mount_routes()
         .manage_database()
+        .mount_routes()
         .launch();
 }

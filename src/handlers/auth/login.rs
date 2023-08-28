@@ -1,5 +1,5 @@
 use crate::database;
-use crate::database::{AuthorizationDatabase, AuthorizationOutcome};
+use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome};
 
 pub type Token = String;
 

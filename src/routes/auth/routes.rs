@@ -4,11 +4,11 @@ use crate::database;
 use crate::handlers::auth;
 use crate::handlers::auth::login::LoginError;
 use crate::handlers::auth::registration::RegistrationError;
+use crate::routes::route_objects::ApiResponse;
 use crate::routes::route_objects::error_response::{
     ERROR_ALREADY_REGISTERED, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_PASSWORD,
     ERROR_WRONG_REQUEST,
 };
-use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
@@ -27,22 +27,16 @@ pub fn login(
     }
 }
 
-#[post(
-    "/registration",
-    format = "json",
-    data = "<maybe_registration_request>"
-)]
+#[post("/registration", format = "json", data = "<registration_request>")]
 pub fn registration(
-    maybe_registration_request: Option<Json<RegistrationRequest>>,
+    registration_request: Option<Json<RegistrationRequest>>,
     db: database::Conn,
 ) -> ApiResponse<'static, ()> {
-    let result = maybe_registration_request
-        .map(|r| auth::registration::registration(&r.login, &r.password, db));
-    return match result {
+    match registration_request.map(|r| auth::registration::registration(&r.login, &r.password, db)) {
         Some(Ok(_)) => ApiResponse::Ok(()),
         Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
         Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
         _ => ApiResponse::Err(ERROR_UNKNOWN),
-    };
+    }
 }

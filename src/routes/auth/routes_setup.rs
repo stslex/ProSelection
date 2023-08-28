@@ -7,6 +7,9 @@ use crate::routes::{
 
 impl RoutesAuthInitialized for Rocket {
     fn mount_auth_routes(self) -> Self {
-        self.mount(BASE_API_URL, routes![routes::login, routes::registration])
+        let base_url = &*(BASE_API_URL.to_owned() + BASE_USER_URL);
+        self.mount(base_url, routes![routes::login, routes::registration])
     }
 }
+
+const BASE_USER_URL: &str = "/passport";

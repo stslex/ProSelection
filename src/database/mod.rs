@@ -1,18 +1,18 @@
 use rocket::fairing::AdHoc;
 use rocket::Rocket;
 use rocket_contrib::databases::diesel;
+
 pub mod auth;
+pub mod user;
 
 #[database("diesel_postgres_pool")]
 pub struct Conn(diesel::PgConnection);
 
-pub trait TimesheetsDatabaseInitialized {
+pub trait AppDatabaseInitialized {
     fn manage_database(self) -> Self;
 }
 
-embed_migrations!("migrations");
-
-impl TimesheetsDatabaseInitialized for Rocket {
+impl AppDatabaseInitialized for Rocket {
     fn manage_database(self) -> Self {
         self.attach(Conn::fairing())
             .attach(AdHoc::on_attach("Running migration", |r| {
@@ -27,20 +27,4 @@ impl TimesheetsDatabaseInitialized for Rocket {
     }
 }
 
-pub trait AuthorizationDatabase {
-    fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    fn registration(&self, login: &str, password: &str) -> RegistrationOutcome;
-}
-
-pub enum RegistrationOutcome {
-    Ok,
-    AlreadyInUse,
-    WeakPassword,
-    Other,
-}
-
-pub enum AuthorizationOutcome {
-    Ok(String),
-    NotFound,
-    Other,
-}
+embed_migrations!("migrations");
