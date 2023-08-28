@@ -1,10 +1,11 @@
 use rocket_contrib::json::Json;
 
 use crate::database;
-use crate::routes::route_objects::ApiResponse;
 use crate::routes::route_objects::error_response::ERROR_WRONG_REQUEST;
-use crate::routes::route_objects::login_request::LoginRequest;
-use crate::routes::route_objects::registration_request::RegistrationRequest;
+use crate::routes::route_objects::ApiResponse;
+
+use super::auth_objects::login_request::LoginRequest;
+use super::auth_objects::registration_request::RegistrationRequest;
 
 #[post("/login", format = "json", data = "<maybe_login_request>")]
 pub fn login(
@@ -15,7 +16,11 @@ pub fn login(
     ApiResponse::Err(ERROR_WRONG_REQUEST)
 }
 
-#[post("/registration", format = "json", data = "<maybe_registration_request>")]
+#[post(
+    "/registration",
+    format = "json",
+    data = "<maybe_registration_request>"
+)]
 pub fn registration(
     maybe_registration_request: Option<Json<RegistrationRequest>>,
     db: database::Conn,
