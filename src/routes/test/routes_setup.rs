@@ -9,7 +9,11 @@ impl RoutesTestInitialized for Rocket {
     fn mount_test_routes(self) -> Self {
         self.mount(
             BASE_API_URL,
-            routes![routes::hello, routes::helloUsername, routes::error],
+            routes![
+                routes::hello,
+                routes::hello_username,
+                routes::error
+            ],
         )
     }
 }

@@ -1,0 +1,63 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://46.151.30.82:8000/api/v1",
+      "description": "prod"
+    },
+    {
+      "url": "http://46.151.30.82:8001/api/v1",
+      "description": "test"
+    },
+    {
+      "url": "http://0.0.0.0:8000/api/v1",
+      "description": "debug"
+    }
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hello/{username}": {
+      "parameters": [
+        {
+          "name": "username",
+          "in": "path",
+          "required": true,
+          "schema": {}
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
