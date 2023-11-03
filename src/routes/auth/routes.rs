@@ -2,13 +2,13 @@ use rocket_contrib::json::Json;
 
 use crate::database;
 use crate::handlers::auth;
-use crate::handlers::auth::login::LoginError;
+use crate::handlers::auth::objects::{LoginError, LoginOk};
 use crate::handlers::auth::registration::RegistrationError;
-use crate::routes::route_objects::ApiResponse;
 use crate::routes::route_objects::error_response::{
     ERROR_ALREADY_REGISTERED, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_PASSWORD,
     ERROR_WRONG_REQUEST,
 };
+use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
@@ -17,10 +17,10 @@ use super::auth_objects::registration_request::RegistrationRequest;
 pub fn login(
     login_request: Option<Json<LoginRequest>>,
     db: database::Conn,
-) -> ApiResponse<'static, String> {
+) -> ApiResponse<'static, LoginOk> {
     let result = login_request.map(|r| auth::login::login(r.login, r.password, db));
     match result {
-        Some(Ok(token)) => ApiResponse::Ok(token),
+        Some(Ok(outcome)) => ApiResponse::Ok(outcome),
         Some(Err(LoginError::NotFound)) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
         _ => ApiResponse::Err(ERROR_UNKNOWN),
@@ -32,7 +32,8 @@ pub fn registration(
     registration_request: Option<Json<RegistrationRequest>>,
     db: database::Conn,
 ) -> ApiResponse<'static, ()> {
-    match registration_request.map(|r| auth::registration::registration(&r.login, &r.password, db)) {
+    match registration_request.map(|r| auth::registration::registration(&r.login, &r.password, db))
+    {
         Some(Ok(_)) => ApiResponse::Ok(()),
         Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
         Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),

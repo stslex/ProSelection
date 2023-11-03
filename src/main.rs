@@ -17,6 +17,7 @@ pub mod database;
 pub mod handlers;
 pub mod routes;
 mod schema;
+pub mod utils;
 
 fn main() {
     rocket::custom(config::from_env())
