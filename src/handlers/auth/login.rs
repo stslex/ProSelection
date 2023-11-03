@@ -1,17 +1,24 @@
 use crate::database;
-use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome};
+use crate::database::auth::{AuthorizationDatabase, AuthorizationOk, AuthorizationOutcome};
 
-pub type Token = String;
+use super::objects::{LoginError, LoginOk};
 
-pub enum LoginError {
-    NotFound,
-    Other,
-}
-
-pub fn login(login: &str, password: &str, db: database::Conn) -> Result<Token, LoginError> {
+pub fn login<'a>(
+    login: &'a str,
+    password: &'a str,
+    db: database::Conn,
+) -> Result<LoginOk, LoginError> {
     match db.login(login, password) {
-        AuthorizationOutcome::Ok(s) => Ok(s),
+        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res)),
         AuthorizationOutcome::NotFound => Err(LoginError::NotFound),
         AuthorizationOutcome::Other => Err(LoginError::Other),
+    }
+}
+
+fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
+    LoginOk {
+        uuid: (result.uuid.to_owned()),
+        username: (result.username.to_owned()),
+        token: (result.token.to_owned()),
     }
 }

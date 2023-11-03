@@ -25,7 +25,13 @@ pub enum RegistrationOutcome {
 }
 
 pub enum AuthorizationOutcome {
-    Ok(String),
+    Ok(AuthorizationOk),
     NotFound,
     Other,
+}
+
+pub struct AuthorizationOk {
+    pub uuid: String,
+    pub username: String,
+    pub token: String,
 }

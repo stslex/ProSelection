@@ -1,12 +1,15 @@
-use diesel::ExpressionMethods;
 use diesel::prelude::*;
+use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
 pub use rocket_contrib::databases::diesel::Insertable;
 
-use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome, NewUser, RegistrationOutcome};
-use crate::database::Conn;
+use crate::database::auth::{
+    AuthorizationDatabase, AuthorizationOutcome, NewUser, RegistrationOutcome,
+};
 use crate::database::user::user_objects::user::User;
+use crate::database::Conn;
 use crate::schema::users;
+use crate::utils::jwt_utils::generate_jwt;
 
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
@@ -16,8 +19,11 @@ impl AuthorizationDatabase for Conn {
         {
             Ok(user) => {
                 if user.secret == password {
-                    //TODO token!!!!
-                    AuthorizationOutcome::Ok(user.id.to_string())
+                    AuthorizationOutcome::Ok(super::AuthorizationOk {
+                        uuid: (user.id.to_string()),
+                        username: (user.username),
+                        token: (generate_jwt()).to_owned(),
+                    })
                 } else {
                     AuthorizationOutcome::NotFound
                 }
@@ -41,9 +47,9 @@ impl AuthorizationDatabase for Conn {
         {
             Ok(_) => RegistrationOutcome::Ok,
             Err(diesel::result::Error::DatabaseError(
-                    diesel::result::DatabaseErrorKind::UniqueViolation,
-                    _,
-                )) => RegistrationOutcome::AlreadyInUse,
+                diesel::result::DatabaseErrorKind::UniqueViolation,
+                _,
+            )) => RegistrationOutcome::AlreadyInUse,
             _ => RegistrationOutcome::Other,
         };
     }
