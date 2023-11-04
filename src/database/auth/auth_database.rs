@@ -10,7 +10,6 @@ use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
 use crate::utils::jwt_utils::JwtMapper;
-use crate::utils::jwt_utils::JwtObject;
 use crate::utils::jwt_utils::JwtUtil;
 
 impl AuthorizationDatabase for Conn {

@@ -17,10 +17,11 @@ use super::auth_objects::registration_request::RegistrationRequest;
 pub fn login(
     login_request: Option<Json<LoginRequest>>,
     db: database::Conn,
-) -> ApiResponse<'static, LoginOk> {
-    let result = login_request.map(|r| auth::login::login(r.login, r.password, db));
+) -> ApiResponse<'static, Json<LoginOk>> {
+    let result: Option<Result<LoginOk, LoginError>> =
+        login_request.map(|r| auth::login::login(r.login, r.password, db));
     match result {
-        Some(Ok(outcome)) => ApiResponse::Ok(outcome),
+        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
         Some(Err(LoginError::NotFound)) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
         _ => ApiResponse::Err(ERROR_UNKNOWN),
