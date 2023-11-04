@@ -18,17 +18,17 @@ impl AuthorizationDatabase for Conn {
             .filter(users::username.eq(login.to_lowercase()))
             .get_result::<User>(&self.0)
         {
-            Ok(user) => {
-                if user.secret == password {
-                    AuthorizationOutcome::Ok(super::AuthorizationOk {
+            Ok(user) => match user.secret == password {
+                true => match user.map().generate() {
+                    Ok(token_res) => AuthorizationOutcome::Ok(super::AuthorizationOk {
                         uuid: (user.id.to_string()),
                         username: (user.username.clone()),
-                        token: (user.map().generate().to_owned()),
-                    })
-                } else {
-                    AuthorizationOutcome::NotFound
-                }
-            }
+                        token: token_res,
+                    }),
+                    Err(_) => AuthorizationOutcome::Other,
+                },
+                false => AuthorizationOutcome::NotFound,
+            },
             Err(diesel::result::Error::NotFound) => AuthorizationOutcome::NotFound,
             _ => AuthorizationOutcome::Other,
         }
