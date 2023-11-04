@@ -9,7 +9,8 @@ use crate::database::auth::{
 use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
-use crate::utils::jwt_utils::generate_jwt;
+use crate::utils::jwt_utils::JwtMapper;
+use crate::utils::jwt_utils::JwtUtil;
 
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
@@ -17,17 +18,17 @@ impl AuthorizationDatabase for Conn {
             .filter(users::username.eq(login.to_lowercase()))
             .get_result::<User>(&self.0)
         {
-            Ok(user) => {
-                if user.secret == password {
-                    AuthorizationOutcome::Ok(super::AuthorizationOk {
+            Ok(user) => match user.secret == password {
+                true => match user.map().generate() {
+                    Ok(token_res) => AuthorizationOutcome::Ok(super::AuthorizationOk {
                         uuid: (user.id.to_string()),
-                        username: (user.username),
-                        token: (generate_jwt()).to_owned(),
-                    })
-                } else {
-                    AuthorizationOutcome::NotFound
-                }
-            }
+                        username: (user.username.clone()),
+                        token: token_res,
+                    }),
+                    Err(_) => AuthorizationOutcome::Other,
+                },
+                false => AuthorizationOutcome::NotFound,
+            },
             Err(diesel::result::Error::NotFound) => AuthorizationOutcome::NotFound,
             _ => AuthorizationOutcome::Other,
         }
