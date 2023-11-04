@@ -9,7 +9,9 @@ use crate::database::auth::{
 use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
-use crate::utils::jwt_utils::generate_jwt;
+use crate::utils::jwt_utils::JwtMapper;
+use crate::utils::jwt_utils::JwtObject;
+use crate::utils::jwt_utils::JwtUtil;
 
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
@@ -21,8 +23,8 @@ impl AuthorizationDatabase for Conn {
                 if user.secret == password {
                     AuthorizationOutcome::Ok(super::AuthorizationOk {
                         uuid: (user.id.to_string()),
-                        username: (user.username),
-                        token: (generate_jwt()).to_owned(),
+                        username: (user.username.clone()),
+                        token: (user.map().generate().to_owned()),
                     })
                 } else {
                     AuthorizationOutcome::NotFound
