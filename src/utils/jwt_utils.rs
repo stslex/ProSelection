@@ -1,3 +1,8 @@
+use std::collections::BTreeMap;
+
+use hmac::{Hmac, Mac};
+use jwt::{Error, SignWithKey};
+use sha2::Sha256;
 use uuid::Uuid;
 
 use crate::database::user::user_objects::user::User;
@@ -21,12 +26,18 @@ impl JwtMapper for User {
 }
 
 pub trait JwtUtil {
-    fn generate(&self) -> &'static str;
+    fn generate(&self) -> Result<String, Error>;
 }
 
 impl JwtUtil for JwtObject {
-    fn generate(&self) -> &'static str {
-        // todo!("generate jwt");
-        "token"
+    fn generate(&self) -> Result<String, Error> {
+        // todo!("take from config")
+        let some_secret = b"some-secret";
+        let key: Hmac<Sha256> = Hmac::new_from_slice(some_secret)?;
+
+        let mut claims = BTreeMap::new();
+        claims.insert("sub", "someone");
+
+        claims.sign_with_key(&key)
     }
 }
