@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use hmac::{Hmac, Mac};
 use jwt::{Error, SignWithKey};
 use sha2::Sha256;
+use std::env;
 use uuid::Uuid;
 
 use crate::database::user::user_objects::user::User;
@@ -31,13 +32,16 @@ pub trait JwtUtil {
 
 impl JwtUtil for JwtObject {
     fn generate(&self) -> Result<String, Error> {
-        // todo!("take from config")
-        let some_secret = b"some-secret";
-        let key: Hmac<Sha256> = Hmac::new_from_slice(some_secret)?;
+        let env_secret = env::var("JWT_SECRET").expect("JWT_SECRET not found");
+        let key: Hmac<Sha256> =
+            Hmac::new_from_slice(env_secret.as_bytes()).expect("Failed to create HMAC key");
 
         let mut claims = BTreeMap::new();
-        claims.insert("sub", "someone");
+        claims.insert("uuid", self.uuid);
 
+        // TODO - Add expiration time
+        // TOOD - Add issuer
+        // TOOD - Add username
         claims.sign_with_key(&key)
     }
 }
