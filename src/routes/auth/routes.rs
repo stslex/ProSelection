@@ -32,10 +32,10 @@ pub fn login(
 pub fn registration(
     registration_request: Option<Json<RegistrationRequest>>,
     db: database::Conn,
-) -> ApiResponse<'static, ()> {
+) -> ApiResponse<'static, Json<LoginOk>> {
     match registration_request.map(|r| auth::registration::registration(&r.login, &r.password, db))
     {
-        Some(Ok(_)) => ApiResponse::Ok(()),
+        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
         Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
         Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
