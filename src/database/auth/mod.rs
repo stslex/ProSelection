@@ -18,7 +18,7 @@ pub trait AuthorizationDatabase {
 }
 
 pub enum RegistrationOutcome {
-    Ok,
+    Ok(AuthorizationOk),
     AlreadyInUse,
     WeakPassword,
     Other,

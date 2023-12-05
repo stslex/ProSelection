@@ -46,7 +46,14 @@ impl AuthorizationDatabase for Conn {
             .values(new_user)
             .get_result::<User>(&self.0)
         {
-            Ok(_) => RegistrationOutcome::Ok,
+            Ok(user) => match user.map().generate() {
+                Ok(token_res) => RegistrationOutcome::Ok(super::AuthorizationOk {
+                    uuid: (user.id.to_string()),
+                    username: (user.username.clone()),
+                    token: token_res,
+                }),
+                Err(_) => RegistrationOutcome::Other,
+            },
             Err(diesel::result::Error::DatabaseError(
                 diesel::result::DatabaseErrorKind::UniqueViolation,
                 _,
