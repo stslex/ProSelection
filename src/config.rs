@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::env;
 
 use dotenv::dotenv;
-use rocket::Config;
 use rocket::config::{Environment, Value};
+use rocket::Config;
 
 pub fn from_env() -> Config {
     dotenv().ok();
@@ -17,8 +17,8 @@ pub fn from_env() -> Config {
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("No DATABASE_URL environment variable found");
+    let database_url =
+        env::var("DATABASE_URL").expect("No DATABASE_URL environment variable found");
 
     database_config.insert("url", Value::from(database_url));
 

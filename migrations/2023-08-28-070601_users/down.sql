@@ -3,6 +3,9 @@ DROP
 INDEX IF EXISTS users_username_uindex;
 
 DROP
+INDEX IF EXISTS users_login_uindex;
+
+DROP
 INDEX IF EXISTS users_id_uindex;
 
 DROP TABLE IF EXISTS users;
