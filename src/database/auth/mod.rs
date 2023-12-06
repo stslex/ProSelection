@@ -8,13 +8,14 @@ mod auth_database;
 #[derive(Insertable, PartialEq, Debug)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
+    pub login: &'a str,
     pub username: &'a str,
     pub secret: &'a str,
 }
 
 pub trait AuthorizationDatabase {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    fn registration(&self, login: &str, password: &str) -> RegistrationOutcome;
+    fn registration(&self, login: &str, username: &str, password: &str) -> RegistrationOutcome;
 }
 
 pub enum RegistrationOutcome {

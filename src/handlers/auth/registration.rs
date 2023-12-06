@@ -1,7 +1,6 @@
+use super::objects::LoginOk;
 use crate::database;
 use crate::database::auth::{AuthorizationDatabase, AuthorizationOk, RegistrationOutcome};
-
-use super::objects::LoginOk;
 
 pub type Token = String;
 
@@ -13,10 +12,11 @@ pub enum RegistrationError {
 
 pub fn registration(
     login: &str,
+    username: &str,
     password: &str,
     db: database::Conn,
 ) -> Result<LoginOk, RegistrationError> {
-    match db.registration(login, password) {
+    match db.registration(login, username, password) {
         RegistrationOutcome::Ok(res) => Ok(map_auth_ok(res)),
         RegistrationOutcome::AlreadyInUse => Err(RegistrationError::LoginInUse),
         RegistrationOutcome::WeakPassword => Err(RegistrationError::WeakPassword),

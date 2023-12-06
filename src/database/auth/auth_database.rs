@@ -15,7 +15,7 @@ use crate::utils::jwt_utils::JwtUtil;
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
         match users::table
-            .filter(users::username.eq(login.to_lowercase()))
+            .filter(users::login.eq(login.to_lowercase()))
             .get_result::<User>(&self.0)
         {
             Ok(user) => match user.secret == password {
@@ -34,12 +34,13 @@ impl AuthorizationDatabase for Conn {
         }
     }
 
-    fn registration(&self, login: &str, password: &str) -> RegistrationOutcome {
+    fn registration(&self, login: &str, username: &str, password: &str) -> RegistrationOutcome {
         if password.len() < 8 {
             return RegistrationOutcome::WeakPassword;
         }
         let new_user = NewUser {
-            username: login,
+            login: login,
+            username: username,
             secret: password,
         };
         return match diesel::insert_into(users::table)
