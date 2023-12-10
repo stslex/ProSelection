@@ -18,8 +18,8 @@ impl JwtUtil for JwtObject {
         let access_token = self.generate_access()?;
         let refresh_token = self.generate_refresh()?;
         Ok(JwtResult {
-            access_token,
-            refresh_token,
+            access_token: access_token,
+            refresh_token: refresh_token,
         })
     }
 
@@ -52,7 +52,6 @@ impl JwtDecoder for &str {
         let key: Hmac<Sha256> = Hmac::new_from_slice(secret).expect("Failed to create key");
 
         let token: Token<Header, BTreeMap<String, String>, _> = self.verify_with_key(&key)?;
-        let header = token.header();
         let claims = token.claims();
 
         let current_time = chrono::Utc::now().timestamp();

@@ -12,6 +12,8 @@ use crate::schema::users;
 use crate::utils::jwt_objects::JwtMapper;
 use crate::utils::JwtUtil;
 
+use super::VerifyTokenOutcome;
+
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
         match users::table
@@ -23,8 +25,8 @@ impl AuthorizationDatabase for Conn {
                     Ok(token_res) => AuthorizationOutcome::Ok(super::AuthorizationOk {
                         uuid: (user.id.to_string()),
                         username: (user.username.clone()),
-                        access_token: token_res.access_token,
-                        refresh_token: token_res.refresh_token,
+                        access_token: token_res.access_token.to_owned(),
+                        refresh_token: token_res.refresh_token.to_owned(),
                     }),
                     Err(_) => AuthorizationOutcome::Other,
                 },
@@ -52,7 +54,7 @@ impl AuthorizationDatabase for Conn {
                 Ok(token_res) => RegistrationOutcome::Ok(super::AuthorizationOk {
                     uuid: (user.id.to_string()),
                     username: (user.username.clone()),
-                    access_token: token_res.access_token,
+                    access_token: token_res.access_token.to_owned(),
                     refresh_token: token_res.refresh_token,
                 }),
                 Err(_) => RegistrationOutcome::Other,
@@ -63,5 +65,26 @@ impl AuthorizationDatabase for Conn {
             )) => RegistrationOutcome::AlreadyInUse,
             _ => RegistrationOutcome::Other,
         };
+    }
+
+    fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome {
+        let uuid = uuid.parse::<uuid::Uuid>().unwrap();
+        match users::table
+            .filter(users::id.eq(uuid))
+            .filter(users::username.eq(username))
+            .get_result::<User>(&self.0)
+        {
+            Ok(user) => match user.map().generate() {
+                Ok(token_res) => VerifyTokenOutcome::Ok(super::AuthorizationOk {
+                    uuid: (user.id.to_string()),
+                    username: (user.username.clone()),
+                    access_token: token_res.access_token.to_owned(),
+                    refresh_token: token_res.refresh_token,
+                }),
+                Err(_) => VerifyTokenOutcome::Other,
+            },
+            Err(diesel::result::Error::NotFound) => VerifyTokenOutcome::NotFound,
+            _ => VerifyTokenOutcome::Other,
+        }
     }
 }

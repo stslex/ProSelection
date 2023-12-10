@@ -16,6 +16,7 @@ pub struct NewUser<'a> {
 pub trait AuthorizationDatabase {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
     fn registration(&self, login: &str, username: &str, password: &str) -> RegistrationOutcome;
+    fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
 }
 
 pub enum RegistrationOutcome {
@@ -26,6 +27,12 @@ pub enum RegistrationOutcome {
 }
 
 pub enum AuthorizationOutcome {
+    Ok(AuthorizationOk),
+    NotFound,
+    Other,
+}
+
+pub enum VerifyTokenOutcome {
     Ok(AuthorizationOk),
     NotFound,
     Other,

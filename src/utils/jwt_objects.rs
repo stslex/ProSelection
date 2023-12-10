@@ -27,3 +27,12 @@ impl JwtMapper for User {
         }
     }
 }
+
+impl JwtMapper for JwtDecoderResult {
+    fn map(&self) -> JwtObject {
+        JwtObject {
+            uuid: self.uuid.clone(),
+            username: self.username.clone(),
+        }
+    }
+}
