@@ -34,5 +34,6 @@ pub enum AuthorizationOutcome {
 pub struct AuthorizationOk {
     pub uuid: String,
     pub username: String,
-    pub token: String,
+    pub access_token: String,
+    pub refresh_token: String,
 }

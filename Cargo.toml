@@ -15,6 +15,7 @@ uuid = { version = "0.8.2", features = ["serde", "v4"] }
 dotenv = "0.15.0"
 swagger = "6.3.0"
 swagger-ui = "0.1.5"
+chrono = "0.4.19"
 # rocket-swagger-ui = "0.1.5"
 rocket_okapi = "0.5"
 schemars = "0.8.13"

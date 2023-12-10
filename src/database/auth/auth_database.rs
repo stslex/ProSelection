@@ -9,8 +9,8 @@ use crate::database::auth::{
 use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
-use crate::utils::jwt_utils::JwtMapper;
-use crate::utils::jwt_utils::JwtUtil;
+use crate::utils::jwt_objects::JwtMapper;
+use crate::utils::JwtUtil;
 
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
@@ -23,7 +23,8 @@ impl AuthorizationDatabase for Conn {
                     Ok(token_res) => AuthorizationOutcome::Ok(super::AuthorizationOk {
                         uuid: (user.id.to_string()),
                         username: (user.username.clone()),
-                        token: token_res,
+                        access_token: token_res.access_token,
+                        refresh_token: token_res.refresh_token,
                     }),
                     Err(_) => AuthorizationOutcome::Other,
                 },
@@ -51,7 +52,8 @@ impl AuthorizationDatabase for Conn {
                 Ok(token_res) => RegistrationOutcome::Ok(super::AuthorizationOk {
                     uuid: (user.id.to_string()),
                     username: (user.username.clone()),
-                    token: token_res,
+                    access_token: token_res.access_token,
+                    refresh_token: token_res.refresh_token,
                 }),
                 Err(_) => RegistrationOutcome::Other,
             },
