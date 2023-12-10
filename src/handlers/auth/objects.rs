@@ -9,5 +9,6 @@ pub enum LoginError {
 pub struct LoginOk {
     pub uuid: String,
     pub username: String,
-    pub token: String,
+    pub access_token: String,
+    pub refresh_token: String,
 }

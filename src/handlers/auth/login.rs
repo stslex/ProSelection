@@ -19,6 +19,7 @@ fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
     LoginOk {
         uuid: (result.uuid.to_owned()),
         username: (result.username.to_owned()),
-        token: (result.token.to_owned()),
+        access_token: (result.access_token.to_owned()),
+        refresh_token: (result.refresh_token.to_owned()),
     }
 }

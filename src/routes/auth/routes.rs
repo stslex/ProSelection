@@ -3,6 +3,7 @@ use rocket_contrib::json::Json;
 use crate::database;
 use crate::handlers::auth;
 use crate::handlers::auth::objects::{LoginError, LoginOk};
+use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
 use crate::routes::route_objects::error_response::{
     ERROR_ALREADY_REGISTERED, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_PASSWORD,
@@ -11,6 +12,7 @@ use crate::routes::route_objects::error_response::{
 use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
+use super::auth_objects::refresh_request::RefreshRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
 
 #[post("/login", format = "json", data = "<login_request>")]
@@ -39,6 +41,18 @@ pub fn registration(
         Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
         Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
         Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
+        None => ApiResponse::Err(ERROR_WRONG_REQUEST),
+        _ => ApiResponse::Err(ERROR_UNKNOWN),
+    }
+}
+
+#[post("/refresh", format = "json", data = "<refresh_request>")]
+pub fn refresh(
+    refresh_request: Option<Json<RefreshRequest>>,
+    db: database::Conn,
+) -> ApiResponse<'static, Json<RefreshOk>> {
+    match refresh_request.map(|r| auth::refresh::refresh(&r.refresh_token, db)) {
+        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
         _ => ApiResponse::Err(ERROR_UNKNOWN),
     }
