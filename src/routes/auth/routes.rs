@@ -6,14 +6,14 @@ use crate::handlers::auth::objects::{LoginError, LoginOk};
 use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
 use crate::routes::route_objects::error_response::{
-    ERROR_ALREADY_REGISTERED, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_PASSWORD,
-    ERROR_WRONG_REQUEST,
+    ERROR_ALREADY_REGISTERED, ERROR_TOKEN_SIGNATURE, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND,
+    ERROR_WEAK_PASSWORD, ERROR_WRONG_REQUEST,
 };
 use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
-use super::auth_objects::refresh_request::RefreshRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
+use crate::routes::auth::validators::refresh_token::RefreshToken;
 
 #[post("/login", format = "json", data = "<login_request>")]
 pub fn login(
@@ -46,14 +46,16 @@ pub fn registration(
     }
 }
 
-#[post("/refresh", format = "json", data = "<refresh_request>")]
+#[get("/refresh")]
 pub fn refresh(
-    refresh_request: Option<Json<RefreshRequest>>,
+    refresh_token: RefreshToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<RefreshOk>> {
-    match refresh_request.map(|r| auth::refresh::refresh(&r.refresh_token, db)) {
-        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
-        None => ApiResponse::Err(ERROR_WRONG_REQUEST),
+    match auth::refresh::refresh(&refresh_token.uuid, &refresh_token.username, db) {
+        Ok(outcome) => ApiResponse::Ok(Json(outcome)),
+        Err(auth::refresh::RefreshError::InvalidRefreshToken) => {
+            ApiResponse::Err(ERROR_TOKEN_SIGNATURE)
+        }
         _ => ApiResponse::Err(ERROR_UNKNOWN),
     }
 }
