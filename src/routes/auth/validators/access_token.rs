@@ -23,7 +23,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
                     username: claims.username,
                 }),
                 Err(error) => {
-                    log::warn!("Invalid access token: {}", error);
+                    log::error!("Invalid access token: {}", error);
                     Outcome::Failure((Status::Unauthorized, TokenError::InvalidToken))
                 }
             },
