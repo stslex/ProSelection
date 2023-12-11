@@ -50,3 +50,9 @@ pub const ERROR_ALREADY_REGISTERED: &'static ErrorResponse<'static> = &ErrorResp
     cause: "already_registered",
     status: Status::BadRequest,
 };
+
+// token error
+pub const ERROR_TOKEN_SIGNATURE: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "token_signature",
+    status: Status::Unauthorized,
+};
