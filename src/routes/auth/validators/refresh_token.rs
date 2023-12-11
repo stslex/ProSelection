@@ -23,7 +23,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for RefreshToken {
                     username: claims.username,
                 }),
                 Err(error) => {
-                    log::warn!("Invalid refresh token: {}", error);
+                    log::error!("Invalid refresh token: {}", error);
                     Outcome::Failure((Status::Unauthorized, RefreshError::InvalidRefreshToken))
                 }
             },

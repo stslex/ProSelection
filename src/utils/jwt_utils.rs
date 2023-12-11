@@ -35,7 +35,14 @@ impl JwtUtil for JwtObject {
         self.generate_token(secret, REFRESH_EXP_TIME_DAYS)
     }
 
-    fn generate_token(&self, env_secret: &[u8], exp_time: i64) -> Result<String, Error> {
+    fn generate_token(&self, env_secret: &[u8], exp_days: i64) -> Result<String, Error> {
+        log::info!("Generating token for user: {}", self.username);
+        let exp_time = chrono::Utc::now()
+            .checked_add_signed(chrono::Duration::days(exp_days))
+            .expect("Failed to add days")
+            .timestamp();
+        log::info!("exp_time: {}", exp_time);
+
         let key: Hmac<Sha256> = Hmac::new_from_slice(env_secret).expect("Failed to create key");
         let mut claims = BTreeMap::new();
         claims.insert("uuid", self.uuid.to_string());
@@ -65,8 +72,14 @@ impl JwtDecoder for &str {
         let claims = token.claims();
 
         let current_time = chrono::Utc::now().timestamp();
+
         let exp_time = claims.get("exp_time").unwrap().parse::<i64>().unwrap();
         if current_time > exp_time {
+            log::error!(
+                "Token expired, current time: {}, exp_time: {}",
+                current_time,
+                exp_time
+            );
             return Err(Error::InvalidSignature);
         }
         let result = JwtDecoderResult {
