@@ -17,12 +17,13 @@ impl<'a, 'r> FromRequest<'a, 'r> for RefreshToken {
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         let token = request.headers().get_one("refresh_token");
         match token {
-            Some(token) => match utils::JwtDecoder::decode(&token) {
+            Some(token) => match utils::JwtDecoder::decode_refresh(&token) {
                 Ok(claims) => Outcome::Success(RefreshToken {
                     uuid: claims.uuid,
                     username: claims.username,
                 }),
-                Err(_) => {
+                Err(error) => {
+                    log::warn!("Invalid refresh token: {}", error);
                     Outcome::Failure((Status::Unauthorized, RefreshError::InvalidRefreshToken))
                 }
             },
