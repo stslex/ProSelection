@@ -46,9 +46,19 @@ impl JwtUtil for JwtObject {
 }
 
 impl JwtDecoder for &str {
-    fn decode(&self) -> Result<JwtDecoderResult, Error> {
+    fn decode_access(&self) -> Result<JwtDecoderResult, Error> {
+        let env_secret = env::var("JWT_ACCESS_SECRET").expect("JWT_ACCESS_SECRET not found");
+        let secret = env_secret.as_bytes();
+        self.decode(secret)
+    }
+
+    fn decode_refresh(&self) -> Result<JwtDecoderResult, Error> {
         let env_secret = env::var("JWT_REFRESH_SECRET").expect("JWT_REFRESH_SECRET not found");
         let secret = env_secret.as_bytes();
+        self.decode(secret)
+    }
+
+    fn decode(&self, secret: &[u8]) -> Result<JwtDecoderResult, Error> {
         let key: Hmac<Sha256> = Hmac::new_from_slice(secret).expect("Failed to create key");
 
         let token: Token<Header, BTreeMap<String, String>, _> = self.verify_with_key(&key)?;

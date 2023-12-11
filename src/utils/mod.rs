@@ -13,5 +13,7 @@ pub trait JwtUtil {
 }
 
 pub trait JwtDecoder {
-    fn decode(&self) -> Result<JwtDecoderResult, Error>;
+    fn decode_refresh(&self) -> Result<JwtDecoderResult, Error>;
+    fn decode_access(&self) -> Result<JwtDecoderResult, Error>;
+    fn decode(&self, secret: &[u8]) -> Result<JwtDecoderResult, Error>;
 }

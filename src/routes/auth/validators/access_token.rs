@@ -17,12 +17,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         let token = request.headers().get_one("access_token");
         match token {
-            Some(token) => match utils::JwtDecoder::decode(&token) {
+            Some(token) => match utils::JwtDecoder::decode_access(&token) {
                 Ok(claims) => Outcome::Success(AccessToken {
                     uuid: claims.uuid,
                     username: claims.username,
                 }),
-                Err(_) => Outcome::Failure((Status::Unauthorized, TokenError::InvalidToken)),
+                Err(error) => {
+                    log::warn!("Invalid access token: {}", error);
+                    Outcome::Failure((Status::Unauthorized, TokenError::InvalidToken))
+                }
             },
             None => Outcome::Failure((Status::Unauthorized, TokenError::SomethingElse)),
         }
