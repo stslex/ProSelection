@@ -4,7 +4,7 @@ use rocket::{
     Request,
 };
 
-use crate::{handlers::auth::refresh::RefreshError, utils};
+use crate::{handlers::auth::refresh::RefreshError, utils::jwt_util::JwtDecoder};
 
 pub struct RefreshToken {
     pub uuid: String,
@@ -17,7 +17,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for RefreshToken {
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         let token = request.headers().get_one("refresh_token");
         match token {
-            Some(token) => match utils::JwtDecoder::decode_refresh(&token) {
+            Some(token) => match JwtDecoder::decode_refresh(&token) {
                 Ok(claims) => Outcome::Success(RefreshToken {
                     uuid: claims.uuid,
                     username: claims.username,

@@ -4,7 +4,7 @@ use rocket::{
     Request,
 };
 
-use crate::{handlers::auth::refresh::TokenError, utils};
+use crate::{handlers::auth::refresh::TokenError, utils::jwt_util::JwtDecoder};
 
 pub struct AccessToken {
     pub uuid: String,
@@ -17,7 +17,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         let token = request.headers().get_one("access_token");
         match token {
-            Some(token) => match utils::JwtDecoder::decode_access(&token) {
+            Some(token) => match JwtDecoder::decode_access(&token) {
                 Ok(claims) => Outcome::Success(AccessToken {
                     uuid: claims.uuid,
                     username: claims.username,

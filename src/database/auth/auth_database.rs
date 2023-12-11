@@ -9,8 +9,8 @@ use crate::database::auth::{
 use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
-use crate::utils::jwt_objects::JwtMapper;
-use crate::utils::JwtUtil;
+use crate::utils::jwt_util::objects::JwtMapper;
+use crate::utils::jwt_util::JwtGenerator;
 
 use super::VerifyTokenOutcome;
 
