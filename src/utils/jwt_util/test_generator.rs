@@ -1,0 +1,145 @@
+#[cfg(test)]
+mod test_generator {
+    use std::{collections::BTreeMap, env};
+
+    use hmac::{digest::KeyInit, Hmac};
+    use jwt::{Error, Header, Token, VerifyWithKey};
+    use sha2::Sha256;
+
+    use crate::utils::jwt_util::{objects::JwtObject, JwtGenerator};
+
+    const EXPECTED_UUID: &str = "expected_uuid";
+    const EXPECTED_USERNAME: &str = "expected_username";
+    const SECRET_TEST: &str = "secret_test";
+
+    #[test]
+    fn test_generate_access() {
+        // Arrange
+        let key: Hmac<Sha256> =
+            Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
+        let test_jwt_object = test_jwt_object();
+        env::set_var("JWT_ACCESS_SECRET", SECRET_TEST);
+
+        // Act
+        let result = test_jwt_object.generate_access();
+
+        // Assert
+        assert!(result.is_ok());
+        let jwt = result.unwrap();
+
+        let token_result: Result<Token<Header, BTreeMap<String, String>, jwt::Verified>, Error> =
+            jwt.verify_with_key(&key);
+        assert!(token_result.is_ok());
+        let binding = token_result.unwrap();
+        let claims = binding.claims();
+        assert_eq!(claims.get("uuid").unwrap(), EXPECTED_UUID);
+        assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
+    }
+
+    #[test]
+    fn test_generate_refresh() {
+        // Arrange
+        let key: Hmac<Sha256> =
+            Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
+        let test_jwt_object = test_jwt_object();
+        env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
+
+        // Act
+        let result = test_jwt_object.generate_refresh();
+
+        // Assert
+        assert!(result.is_ok());
+        let jwt = result.unwrap();
+
+        let token_result: Result<Token<Header, BTreeMap<String, String>, jwt::Verified>, Error> =
+            jwt.verify_with_key(&key);
+        assert!(token_result.is_ok());
+        let binding = token_result.unwrap();
+        let claims = binding.claims();
+        assert_eq!(claims.get("uuid").unwrap(), EXPECTED_UUID);
+        assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
+    }
+
+    #[test]
+    fn test_generate_token() {
+        // Arrange
+        let key: Hmac<Sha256> =
+            Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
+        let test_jwt_object = test_jwt_object();
+        let exp_days = 3;
+        env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
+
+        // Act
+        let result = test_jwt_object.generate_token(SECRET_TEST.as_bytes(), exp_days);
+
+        // Assert
+        assert!(result.is_ok());
+        let jwt = result.unwrap();
+
+        let token_result: Result<Token<Header, BTreeMap<String, String>, jwt::Verified>, Error> =
+            jwt.verify_with_key(&key);
+        assert!(token_result.is_ok());
+        let binding = token_result.unwrap();
+        let claims = binding.claims();
+        assert_eq!(claims.get("uuid").unwrap(), EXPECTED_UUID);
+        assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
+    }
+
+    #[test]
+    fn test_generate_token_out_of_rage() {
+        // Arrange
+        let test_jwt_object = test_jwt_object();
+        let exp_days = i64::MAX;
+        env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
+
+        // Act
+        let result = test_jwt_object.generate_token(SECRET_TEST.as_bytes(), exp_days);
+        // Assert
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_generate() {
+        // Arrange
+        let key: Hmac<Sha256> =
+            Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
+        let test_jwt_object = test_jwt_object();
+
+        env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
+        env::set_var("JWT_ACCESS_SECRET", SECRET_TEST);
+
+        // Act
+        let result = test_jwt_object.generate();
+
+        // Assert
+        assert!(result.is_ok());
+        let jwt_result = result.unwrap();
+
+        let token_refresh_result: Result<
+            Token<Header, BTreeMap<String, String>, jwt::Verified>,
+            Error,
+        > = jwt_result.refresh_token.verify_with_key(&key);
+        assert!(token_refresh_result.is_ok());
+        let binding = token_refresh_result.unwrap();
+        let claims = binding.claims();
+        assert_eq!(claims.get("uuid").unwrap(), EXPECTED_UUID);
+        assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
+
+        let token_access_result: Result<
+            Token<Header, BTreeMap<String, String>, jwt::Verified>,
+            Error,
+        > = jwt_result.access_token.verify_with_key(&key);
+        assert!(token_access_result.is_ok());
+        let binding = token_access_result.unwrap();
+        let claims = binding.claims();
+        assert_eq!(claims.get("uuid").unwrap(), EXPECTED_UUID);
+        assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
+    }
+
+    fn test_jwt_object() -> JwtObject {
+        JwtObject {
+            uuid: EXPECTED_UUID.to_string(),
+            username: EXPECTED_USERNAME.to_string(),
+        }
+    }
+}

@@ -6,6 +6,9 @@ pub mod decoder;
 pub mod generator;
 pub mod objects;
 
+mod test_decoder;
+mod test_generator;
+
 pub trait JwtGenerator {
     fn generate(&self) -> Result<JwtResult, Error>;
     fn generate_access(&self) -> Result<String, Error>;

@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, env};
 
+use chrono::Duration;
 use hmac::{Hmac, Mac};
 use jwt::{Error, SignWithKey};
 use sha2::Sha256;
@@ -36,8 +37,16 @@ impl JwtGenerator for JwtObject {
 
     fn generate_token(&self, env_secret: &[u8], exp_days: i64) -> Result<String, Error> {
         log::info!("Generating token for user: {}", self.username);
+
+        let days: Duration = match std::panic::catch_unwind(|| Duration::days(exp_days)) {
+            Ok(result) => result,
+            Err(_) => {
+                log::error!("Failed to create duration");
+                return Err(Error::InvalidSignature);
+            }
+        };
         let exp_time = chrono::Utc::now()
-            .checked_add_signed(chrono::Duration::days(exp_days))
+            .checked_add_signed(days)
             .expect("Failed to add days")
             .timestamp();
         log::info!("exp_time: {}", exp_time);
