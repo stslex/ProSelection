@@ -3,7 +3,7 @@ mod test_decoder {
 
     use std::{collections::BTreeMap, env};
 
-    use crate::utils::jwt_util::{objects::JwtDecoderResult, JwtDecoder};
+    use crate::utils::jwt_util::JwtDecoder;
     use hmac::{digest::KeyInit, Hmac};
     use jwt::{Error, SignWithKey};
     use sha2::Sha256;
@@ -87,7 +87,7 @@ mod test_decoder {
         let jwt = binding.as_str();
 
         // Act
-        let result: Result<JwtDecoderResult, Error> = jwt.decode(SECRET_TEST.as_bytes());
+        let result = jwt.decode(SECRET_TEST.as_bytes());
 
         // Assert
         assert!(result.is_ok());
@@ -113,7 +113,7 @@ mod test_decoder {
         let jwt = binding.as_str();
 
         // Act
-        let result: Result<JwtDecoderResult, Error> = jwt.decode(SECRET_TEST.as_bytes());
+        let result = jwt.decode(SECRET_TEST.as_bytes());
 
         // Assert
         assert!(result.is_err());
