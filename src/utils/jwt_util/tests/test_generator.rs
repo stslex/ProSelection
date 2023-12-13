@@ -6,7 +6,7 @@ mod test_generator {
     use jwt::{Error, Header, Token, VerifyWithKey};
     use sha2::Sha256;
 
-    use crate::utils::jwt_util::{objects::JwtObject, JwtGenerator};
+    use crate::utils::jwt_util::{generator::JwtGeneratorError, objects::JwtObject, JwtGenerator};
 
     const EXPECTED_UUID: &str = "expected_uuid";
     const EXPECTED_USERNAME: &str = "expected_username";
@@ -96,6 +96,7 @@ mod test_generator {
         let result = test_jwt_object.generate_token(SECRET_TEST.as_bytes(), exp_days);
         // Assert
         assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), JwtGeneratorError::DurationOutOfBound);
     }
 
     #[test]

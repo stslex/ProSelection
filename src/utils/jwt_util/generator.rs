@@ -57,8 +57,8 @@ impl JwtGenerator for JwtObject {
         let days: Duration = match std::panic::catch_unwind(|| Duration::days(exp_days)) {
             Ok(result) => result,
             Err(_) => {
-                log::error!("Failed to create duration");
-                return Err(JwtGeneratorError::TimeCreationError);
+                log::error!("Failed to create duration / out of bound");
+                return Err(JwtGeneratorError::DurationOutOfBound);
             }
         };
         let exp_time = match chrono::Utc::now().checked_add_signed(days) {
@@ -98,6 +98,7 @@ impl JwtGenerator for JwtObject {
 #[derive(Debug)]
 pub enum JwtGeneratorError {
     InvalidEnvSecret,
+    DurationOutOfBound,
     TimeCreationError,
     SignWithKey,
     CreateKey,
@@ -110,6 +111,20 @@ impl std::fmt::Display for JwtGeneratorError {
             JwtGeneratorError::TimeCreationError => write!(f, "Time creation error"),
             JwtGeneratorError::SignWithKey => write!(f, "Sign with key error"),
             JwtGeneratorError::CreateKey => write!(f, "Create key error"),
+            JwtGeneratorError::DurationOutOfBound => write!(f, "Duration out of bound"),
+        }
+    }
+}
+
+impl PartialEq for JwtGeneratorError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (JwtGeneratorError::InvalidEnvSecret, JwtGeneratorError::InvalidEnvSecret) => true,
+            (JwtGeneratorError::DurationOutOfBound, JwtGeneratorError::DurationOutOfBound) => true,
+            (JwtGeneratorError::TimeCreationError, JwtGeneratorError::TimeCreationError) => true,
+            (JwtGeneratorError::SignWithKey, JwtGeneratorError::SignWithKey) => true,
+            (JwtGeneratorError::CreateKey, JwtGeneratorError::CreateKey) => true,
+            _ => false,
         }
     }
 }
