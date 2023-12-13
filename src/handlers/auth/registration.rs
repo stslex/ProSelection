@@ -1,10 +1,17 @@
 use super::objects::LoginOk;
 use crate::database;
-use crate::database::auth::{AuthorizationDatabase, AuthorizationOk, RegistrationOutcome};
+use crate::database::auth::reg_objects::{
+    RegistrationData, RegistrationFieldValidError, RegistrationOutcome,
+};
+use crate::database::auth::{AuthorizationDatabase, AuthorizationOk};
 
 pub enum RegistrationError {
     LoginInUse,
     WeakPassword,
+    WeakUsername,
+    WeakLogin,
+    PasswordTooLong,
+    EqualLoginPassword,
     Other,
 }
 
@@ -14,11 +21,23 @@ pub fn registration(
     password: &str,
     db: database::Conn,
 ) -> Result<LoginOk, RegistrationError> {
-    match db.registration(login, username, password) {
+    match db.registration(RegistrationData {
+        login: login,
+        username: username,
+        password: password,
+    }) {
         RegistrationOutcome::Ok(res) => Ok(map_auth_ok(res)),
         RegistrationOutcome::AlreadyInUse => Err(RegistrationError::LoginInUse),
-        RegistrationOutcome::WeakPassword => Err(RegistrationError::WeakPassword),
-        _ => Err(RegistrationError::Other),
+        RegistrationOutcome::RegistrationFieldValid(err) => match err {
+            RegistrationFieldValidError::WeakPassword => Err(RegistrationError::WeakPassword),
+            RegistrationFieldValidError::WeakUsername => Err(RegistrationError::WeakUsername),
+            RegistrationFieldValidError::WeakLogin => Err(RegistrationError::WeakLogin),
+            RegistrationFieldValidError::PasswordTooLong => Err(RegistrationError::PasswordTooLong),
+            RegistrationFieldValidError::EqualLoginPassword => {
+                Err(RegistrationError::EqualLoginPassword)
+            }
+        },
+        RegistrationOutcome::Other => Err(RegistrationError::Other),
     }
 }
 

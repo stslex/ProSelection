@@ -50,6 +50,22 @@ pub const ERROR_ALREADY_REGISTERED: &'static ErrorResponse<'static> = &ErrorResp
     cause: "already_registered",
     status: Status::BadRequest,
 };
+pub const ERROR_WEAK_USERNAME: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "weak_username",
+    status: Status::BadRequest,
+};
+pub const ERROR_WEAK_LOGIN: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "weak_login",
+    status: Status::BadRequest,
+};
+pub const ERROR_PASSWORD_TOO_LONG: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "password_too_long",
+    status: Status::BadRequest,
+};
+pub const ERROR_EQUAL_DATA: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "equal_login_password",
+    status: Status::BadRequest,
+};
 
 // token error
 pub const ERROR_TOKEN_SIGNATURE: &'static ErrorResponse<'static> = &ErrorResponse {

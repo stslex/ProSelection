@@ -3,16 +3,18 @@ use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
 pub use rocket_contrib::databases::diesel::Insertable;
 
-use crate::database::auth::{
-    AuthorizationDatabase, AuthorizationOutcome, NewUser, RegistrationOutcome,
-};
+use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome, NewUser};
 use crate::database::user::user_objects::user::User;
 use crate::database::Conn;
 use crate::schema::users;
 use crate::utils::jwt_util::objects::JwtMapper;
 use crate::utils::jwt_util::JwtGenerator;
 
+use super::reg_objects::RegistrationFieldValid;
+use super::reg_validation::AuthValidation;
+use super::RegistrationData;
 use super::VerifyTokenOutcome;
+use crate::database::auth::RegistrationOutcome;
 
 impl AuthorizationDatabase for Conn {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
@@ -37,14 +39,19 @@ impl AuthorizationDatabase for Conn {
         }
     }
 
-    fn registration(&self, login: &str, username: &str, password: &str) -> RegistrationOutcome {
-        if password.len() < 8 {
-            return RegistrationOutcome::WeakPassword;
+    fn registration(&self, data: RegistrationData) -> RegistrationOutcome {
+        match data.validate() {
+            RegistrationFieldValid::Ok => (),
+            RegistrationFieldValid::Error(err) => {
+                log::debug!("Registration field validation error: {:?}", err.to_string());
+                return RegistrationOutcome::RegistrationFieldValid(err);
+            }
         }
+        let login_binding = data.login.to_owned().to_lowercase();
         let new_user = NewUser {
-            login: login,
-            username: username,
-            secret: password,
+            login: &login_binding,
+            username: data.username,
+            secret: data.password,
         };
         return match diesel::insert_into(users::table)
             .values(new_user)

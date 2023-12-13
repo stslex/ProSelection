@@ -3,7 +3,11 @@ use rocket_contrib::databases::diesel::Insertable;
 
 use crate::schema::users;
 
+use self::reg_objects::{RegistrationData, RegistrationOutcome};
+
 mod auth_database;
+pub mod reg_objects;
+mod reg_validation;
 
 #[derive(Insertable, PartialEq, Debug)]
 #[table_name = "users"]
@@ -15,15 +19,8 @@ pub struct NewUser<'a> {
 
 pub trait AuthorizationDatabase {
     fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    fn registration(&self, login: &str, username: &str, password: &str) -> RegistrationOutcome;
+    fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
     fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
-}
-
-pub enum RegistrationOutcome {
-    Ok(AuthorizationOk),
-    AlreadyInUse,
-    WeakPassword,
-    Other,
 }
 
 pub enum AuthorizationOutcome {

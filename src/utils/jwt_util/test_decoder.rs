@@ -3,9 +3,9 @@ mod test_decoder {
 
     use std::{collections::BTreeMap, env};
 
-    use crate::utils::jwt_util::JwtDecoder;
+    use crate::utils::jwt_util::{decoder::JwtDecoderError, JwtDecoder};
     use hmac::{digest::KeyInit, Hmac};
-    use jwt::{Error, SignWithKey};
+    use jwt::SignWithKey;
     use sha2::Sha256;
 
     const EXPECTED_UUID: &str = "expected_uuid";
@@ -117,9 +117,6 @@ mod test_decoder {
 
         // Assert
         assert!(result.is_err());
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            Error::InvalidSignature.to_string()
-        );
+        assert_eq!(result.err().unwrap(), JwtDecoderError::ExpiredSignature);
     }
 }

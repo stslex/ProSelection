@@ -104,3 +104,17 @@ impl std::fmt::Display for JwtDecoderError {
         }
     }
 }
+
+impl PartialEq for JwtDecoderError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (JwtDecoderError::InvalidEnvSecret, JwtDecoderError::InvalidEnvSecret) => true,
+            (JwtDecoderError::InvalidSignature, JwtDecoderError::InvalidSignature) => true,
+            (JwtDecoderError::ExpiredSignature, JwtDecoderError::ExpiredSignature) => true,
+            (JwtDecoderError::ParceError(message1), JwtDecoderError::ParceError(message2)) => {
+                message1 == message2
+            }
+            _ => false,
+        }
+    }
+}
