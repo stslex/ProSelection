@@ -7,9 +7,7 @@ use self::{
 pub mod decoder;
 pub mod generator;
 pub mod objects;
-
-mod test_decoder;
-mod test_generator;
+mod tests;
 
 pub trait JwtGenerator {
     fn generate(&self) -> Result<JwtResult, JwtGeneratorError>;
