@@ -3,6 +3,7 @@ use rocket::Rocket;
 use rocket_contrib::databases::diesel;
 
 pub mod auth;
+pub mod tests;
 pub mod user;
 
 #[database("diesel_postgres_pool")]

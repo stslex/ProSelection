@@ -1,8 +1,8 @@
-name: Rust
+name: Rust Build
 
 on:
   push:
-    branches: ["master"]
+    branches: ["dev, master"]
   pull_request:
 
 env:
@@ -15,11 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup PostgreSQL
-        uses: Harmon758/postgresql-action@v1.0.0
+      - name: Build
+        run: cargo build --verbose
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup postgres
+        uses: ikalnytskyi/action-setup-postgres@v4
 
       - name: Run tests
         run: cargo test --verbose
-
-      - name: Build
-        run: cargo build --verbose

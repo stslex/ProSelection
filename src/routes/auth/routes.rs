@@ -6,8 +6,9 @@ use crate::handlers::auth::objects::{LoginError, LoginOk};
 use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
 use crate::routes::route_objects::error_response::{
-    ERROR_ALREADY_REGISTERED, ERROR_TOKEN_SIGNATURE, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND,
-    ERROR_WEAK_PASSWORD, ERROR_WRONG_REQUEST,
+    ERROR_ALREADY_REGISTERED, ERROR_EQUAL_DATA, ERROR_PASSWORD_TOO_LONG, ERROR_TOKEN_SIGNATURE,
+    ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_LOGIN, ERROR_WEAK_PASSWORD,
+    ERROR_WEAK_USERNAME, ERROR_WRONG_REQUEST,
 };
 use crate::routes::route_objects::ApiResponse;
 
@@ -41,8 +42,12 @@ pub fn registration(
         Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
         Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
         Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
+        Some(Err(RegistrationError::WeakUsername)) => ApiResponse::Err(ERROR_WEAK_USERNAME),
+        Some(Err(RegistrationError::WeakLogin)) => ApiResponse::Err(ERROR_WEAK_LOGIN),
+        Some(Err(RegistrationError::PasswordTooLong)) => ApiResponse::Err(ERROR_PASSWORD_TOO_LONG),
+        Some(Err(RegistrationError::EqualLoginPassword)) => ApiResponse::Err(ERROR_EQUAL_DATA),
+        Some(Err(RegistrationError::Other)) => ApiResponse::Err(ERROR_UNKNOWN),
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
-        _ => ApiResponse::Err(ERROR_UNKNOWN),
     }
 }
 
