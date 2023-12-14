@@ -7,11 +7,12 @@ pub struct RegistrationData<'a> {
     pub username: &'a str,
 }
 
+#[derive(Debug)]
 pub enum RegistrationOutcome {
     Ok(AuthorizationOk),
     AlreadyInUse,
     RegistrationFieldValid(RegistrationFieldValidError),
-    Other,
+    Other(String),
 }
 
 #[derive(Debug)]

@@ -53,6 +53,7 @@ impl AuthorizationDatabase for Conn {
             username: data.username,
             secret: data.password,
         };
+
         return match diesel::insert_into(users::table)
             .values(new_user)
             .get_result::<User>(&self.0)
@@ -64,13 +65,19 @@ impl AuthorizationDatabase for Conn {
                     access_token: token_res.access_token.to_owned(),
                     refresh_token: token_res.refresh_token,
                 }),
-                Err(_) => RegistrationOutcome::Other,
+                Err(err) => {
+                    eprintln!("Token generation error: {:?}", err.to_string());
+                    RegistrationOutcome::Other(err.to_string())
+                }
             },
             Err(diesel::result::Error::DatabaseError(
                 diesel::result::DatabaseErrorKind::UniqueViolation,
                 _,
             )) => RegistrationOutcome::AlreadyInUse,
-            _ => RegistrationOutcome::Other,
+            Err(err) => {
+                eprintln!("Database error: {:?}", err.to_string());
+                RegistrationOutcome::Other(err.to_string())
+            }
         };
     }
 

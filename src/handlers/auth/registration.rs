@@ -37,7 +37,7 @@ pub fn registration(
                 Err(RegistrationError::EqualLoginPassword)
             }
         },
-        RegistrationOutcome::Other => Err(RegistrationError::Other),
+        RegistrationOutcome::Other(_) => Err(RegistrationError::Other),
     }
 }
 
