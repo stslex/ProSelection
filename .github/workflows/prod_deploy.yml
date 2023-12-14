@@ -16,9 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup PostgreSQL
-        uses: Harmon758/postgresql-action@v1.0.0
-
       - name: Build
         run: cargo build --verbose
 
@@ -29,8 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup PostgreSQL
-        uses: Harmon758/postgresql-action@v1.0.0
+      - name: Setup Postgres
+        uses: ikalnytskyi/action-setup-postgres@v4
 
       - name: Run tests
         run: cargo test --verbose
