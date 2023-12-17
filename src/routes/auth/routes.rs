@@ -14,7 +14,7 @@ use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
-use crate::routes::auth::validators::refresh_token::RefreshToken;
+use super::validators::RefreshToken;
 
 #[post("/login", format = "json", data = "<login_request>")]
 pub fn login(
