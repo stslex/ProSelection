@@ -6,12 +6,18 @@ use rocket::{
 
 use crate::{handlers::auth::refresh::RefreshError, utils::jwt_util::JwtDecoder};
 
-use super::{RefreshToken, TokenParser};
+use super::{ApiKeyParcer, RefreshToken, TokenParser};
 
 impl<'a, 'r> FromRequest<'a, 'r> for RefreshToken {
     type Error = RefreshError;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        match ApiKeyParcer::parce(request) {
+            Ok(_api_key) => {}
+            Err(_error) => {
+                return Outcome::Failure((Status::Unauthorized, RefreshError::InvalidApiKey))
+            }
+        }
         let token = match TokenParser::get_token(request) {
             Some(token) => token,
             None => {

@@ -4,17 +4,25 @@ use rocket::{
     Request,
 };
 
-use crate::{handlers::auth::refresh::TokenError, utils::jwt_util::JwtDecoder};
+use crate::{handlers::auth::refresh::AccessTokenError, utils::jwt_util::JwtDecoder};
 
-use super::{AccessToken, TokenParser};
+use super::{AccessToken, ApiKeyParcer, TokenParser};
 
 impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
-    type Error = TokenError;
+    type Error = AccessTokenError;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        match ApiKeyParcer::parce(request) {
+            Ok(_api_key) => {}
+            Err(_error) => {
+                return Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidApiKey))
+            }
+        }
         let token = match TokenParser::get_token(request) {
             Some(token) => token,
-            None => return Outcome::Failure((Status::Unauthorized, TokenError::InvalidToken)),
+            None => {
+                return Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidToken))
+            }
         };
         let binding = token.as_str();
         match JwtDecoder::decode_access(&binding) {
@@ -24,7 +32,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
             }),
             Err(error) => {
                 log::error!("Invalid access token: {}", error);
-                Outcome::Failure((Status::Unauthorized, TokenError::InvalidToken))
+                Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidToken))
             }
         }
     }
