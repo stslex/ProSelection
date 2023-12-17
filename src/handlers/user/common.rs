@@ -1,5 +1,7 @@
-use crate::database;
-use crate::database::user::common::{UserCommonDatabase, UserCommonOutcome};
+use crate::database::{
+    self,
+    user::{user_objects::UserCommonOutcome, UserDatabase},
+};
 
 pub fn count(db: database::Conn) -> Result<String, CommonError> {
     match db.get_user_count() {

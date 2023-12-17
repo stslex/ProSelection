@@ -44,31 +44,41 @@ pub const ERROR_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse
 // registration error
 pub const ERROR_WEAK_PASSWORD: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "weak_password",
-    status: Status::BadRequest,
+    status: Status::LengthRequired,
 };
 pub const ERROR_ALREADY_REGISTERED: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "already_registered",
-    status: Status::BadRequest,
+    status: Status::Conflict,
 };
 pub const ERROR_WEAK_USERNAME: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "weak_username",
-    status: Status::BadRequest,
+    status: Status::LengthRequired,
 };
 pub const ERROR_WEAK_LOGIN: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "weak_login",
-    status: Status::BadRequest,
+    status: Status::LengthRequired,
 };
 pub const ERROR_PASSWORD_TOO_LONG: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "password_too_long",
-    status: Status::BadRequest,
+    status: Status::LengthRequired,
 };
 pub const ERROR_EQUAL_DATA: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "equal_login_password",
-    status: Status::BadRequest,
+    status: Status::LengthRequired,
 };
 
 // token error
 pub const ERROR_TOKEN_SIGNATURE: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "token_signature",
     status: Status::Unauthorized,
+};
+
+// user error
+pub const ERROR_USER_UUID_INVALID: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "uuid_invalid",
+    status: Status::BadRequest,
+};
+pub const ERROR_USER_NOT_FOUND_BY_UUID: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "user_not_found_by_uuid",
+    status: Status::BadRequest,
 };

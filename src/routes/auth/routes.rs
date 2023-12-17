@@ -5,6 +5,7 @@ use crate::handlers::auth;
 use crate::handlers::auth::objects::{LoginError, LoginOk};
 use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
+use crate::routes::auth::validators;
 use crate::routes::route_objects::error_response::{
     ERROR_ALREADY_REGISTERED, ERROR_EQUAL_DATA, ERROR_PASSWORD_TOO_LONG, ERROR_TOKEN_SIGNATURE,
     ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_LOGIN, ERROR_WEAK_PASSWORD,
@@ -14,11 +15,11 @@ use crate::routes::route_objects::ApiResponse;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
-use super::validators::RefreshToken;
 
 #[post("/login", format = "json", data = "<login_request>")]
 pub fn login(
     login_request: Option<Json<LoginRequest>>,
+    _api_key_validator: validators::ApiKey,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
     let result: Option<Result<LoginOk, LoginError>> =
@@ -34,6 +35,7 @@ pub fn login(
 #[post("/registration", format = "json", data = "<registration_request>")]
 pub fn registration(
     registration_request: Option<Json<RegistrationRequest>>,
+    _api_key_validator: validators::ApiKey,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
     match registration_request
@@ -53,7 +55,7 @@ pub fn registration(
 
 #[get("/refresh")]
 pub fn refresh(
-    refresh_token: RefreshToken,
+    refresh_token: validators::RefreshToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<RefreshOk>> {
     match auth::refresh::refresh(&refresh_token.uuid, &refresh_token.username, db) {

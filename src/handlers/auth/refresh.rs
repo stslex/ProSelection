@@ -29,10 +29,12 @@ pub struct RefreshOk {
 pub enum RefreshError {
     InvalidRefreshToken,
     SomethingElse,
+    InvalidApiKey,
 }
 
 #[derive(Debug)]
-pub enum TokenError {
+pub enum AccessTokenError {
     InvalidToken,
     SomethingElse,
+    InvalidApiKey,
 }
