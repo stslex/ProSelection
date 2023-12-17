@@ -15,7 +15,6 @@ mod tests {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let conn = get_test_conn();
-        let _ = embedded_migrations::run(&*conn);
 
         let expected_username = "test_username";
         let data = RegistrationData {
@@ -24,8 +23,10 @@ mod tests {
             password: "test_password",
         };
 
-        let outcome =
-            conn.test_transaction::<RegistrationOutcome, Error, _>(|| Ok(conn.registration(data)));
+        let outcome = conn.test_transaction::<RegistrationOutcome, Error, _>(|| {
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            Ok(conn.registration(data))
+        });
         println!("result: {:?}", outcome);
         let is_valid = match outcome {
             RegistrationOutcome::Ok(res) => {
@@ -44,7 +45,6 @@ mod tests {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let conn = get_test_conn();
-        let _ = embedded_migrations::run(&*conn);
 
         let data = RegistrationData {
             login: "test_login",
@@ -52,8 +52,10 @@ mod tests {
             password: "", // invalid password
         };
 
-        let outcome =
-            conn.test_transaction::<RegistrationOutcome, Error, _>(|| Ok(conn.registration(data)));
+        let outcome = conn.test_transaction::<RegistrationOutcome, Error, _>(|| {
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            Ok(conn.registration(data))
+        });
 
         let is_valid = match outcome {
             RegistrationOutcome::RegistrationFieldValid(error) => match error {
@@ -70,7 +72,6 @@ mod tests {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let conn = get_test_conn();
-        let _ = embedded_migrations::run(&*conn);
 
         let username = "test_username";
         let data = RegistrationData {
@@ -80,6 +81,7 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<VerifyTokenOutcome, Error, _>(|| {
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
             let reg_outcome = conn.registration(data);
             match reg_outcome {
                 RegistrationOutcome::Ok(res) => Ok(conn.verify_token(&res.uuid, &res.username)),
@@ -99,12 +101,12 @@ mod tests {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let conn = get_test_conn();
-        let _ = embedded_migrations::run(&*conn);
 
         let username = "test_username";
         let uuid = uuid::Uuid::new_v4().to_string();
 
         let outcome = conn.test_transaction::<VerifyTokenOutcome, Error, _>(|| {
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
             Ok(conn.verify_token(&uuid, username))
         });
 
@@ -132,7 +134,7 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<AuthorizationOutcome, Error, _>(|| {
-            let _ = embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
             conn.registration(data);
             Ok(conn.login(login, password))
         });
@@ -152,12 +154,13 @@ mod tests {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let conn = get_test_conn();
-        let _ = embedded_migrations::run(&*conn);
 
         let login = "test_login";
         let password = "invalid_password";
-        let outcome = conn
-            .test_transaction::<AuthorizationOutcome, Error, _>(|| Ok(conn.login(login, password)));
+        let outcome = conn.test_transaction::<AuthorizationOutcome, Error, _>(|| {
+            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            Ok(conn.login(login, password))
+        });
 
         let is_valid = match outcome {
             AuthorizationOutcome::Ok(_) => false,
