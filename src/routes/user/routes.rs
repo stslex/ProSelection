@@ -55,7 +55,7 @@ pub fn get_user(
     }
 }
 
-#[get("/<username>")]
+#[get("/?username&<username>")]
 pub fn get_user_by_username(
     _access_token: AccessToken,
     username: String,
