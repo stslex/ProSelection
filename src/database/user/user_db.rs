@@ -350,7 +350,7 @@ impl UserDatabase for Conn {
             }
         };
         favourite::table
-            .filter(favourite::uuid.eq(uuid))
+            .filter(favourite::user_uuid.eq(uuid))
             .filter(favourite::favourite_uuid.eq(favourite_uuid))
             .first::<Favourite>(&self.0)
             .map(|_| true)

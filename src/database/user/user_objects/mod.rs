@@ -25,6 +25,8 @@ pub struct NewFollow<'a> {
 #[derive(Insertable, PartialEq, Debug)]
 #[table_name = "favourite"]
 pub struct NewFavourite<'a> {
+    pub user_uuid: Uuid,
+    pub favourite_uuid: Uuid,
     pub title: &'a str,
 }
 
@@ -32,7 +34,8 @@ pub struct NewFavourite<'a> {
 #[derive(Queryable, PartialEq, Debug, Clone)]
 pub struct Follower {
     pub uuid: Uuid,
-    pub follow_uuid: Uuid,
+    pub follower_uuid: Uuid,
+    pub followed_uuid: Uuid,
     pub username: String,
     pub avatar_url: String,
 }
@@ -41,6 +44,7 @@ pub struct Follower {
 #[derive(Queryable, PartialEq, Debug, Clone)]
 pub struct Favourite {
     pub uuid: Uuid,
+    pub user_uuid: Uuid,
     pub favourite_uuid: Uuid,
     pub title: String,
 }
