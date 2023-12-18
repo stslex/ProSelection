@@ -14,6 +14,12 @@ impl RoutesUserInitialized for Rocket {
                 routes::get_current_user,
                 routes::get_user,
                 routes::get_user_by_username,
+                routes::post_add_favourite,
+                routes::delete_remove_favourite,
+                routes::get_is_favourite,
+                routes::post_follow,
+                routes::delete_follow,
+                routes::get_is_following,
             ],
         )
     }

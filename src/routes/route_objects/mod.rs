@@ -21,3 +21,17 @@ where
         }
     }
 }
+
+pub enum ApiMesResponse<'a> {
+    Ok(&'static str),
+    Err(&'a ErrorResponse<'a>),
+}
+
+impl<'r, 'a> Responder<'r> for ApiMesResponse<'r> {
+    fn respond_to(self, request: &Request) -> Result<'r> {
+        match self {
+            ApiMesResponse::Ok(t) => t.respond_to(request),
+            ApiMesResponse::Err(e) => e.respond_to(request),
+        }
+    }
+}

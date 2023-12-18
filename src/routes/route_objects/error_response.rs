@@ -82,3 +82,31 @@ pub const ERROR_USER_NOT_FOUND_BY_UUID: &'static ErrorResponse<'static> = &Error
     cause: "user_not_found_by_uuid",
     status: Status::BadRequest,
 };
+
+// follow error
+pub const ERROR_FOLLOW_UUID_INVALID: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "uuid_invalid",
+    status: Status::BadRequest,
+};
+pub const ERROR_FOLLOW_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "user_not_found",
+    status: Status::BadRequest,
+};
+pub const ERROR_FOLLOW_CONFLICT: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "conflict",
+    status: Status::Conflict,
+};
+
+// favourite error
+pub const ERROR_FAVOURITE_UUID_INVALID: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "favourite_uuid_invalid",
+    status: Status::BadRequest,
+};
+pub const ERROR_FAVOURITE_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "favourite_user_not_found",
+    status: Status::BadRequest,
+};
+pub const ERROR_FAVOURITE_CONFLICT: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "favourite_conflict",
+    status: Status::Conflict,
+};

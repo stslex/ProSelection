@@ -14,18 +14,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    following (uuid, following_uuid){
-        uuid -> Uuid,
-        following_uuid -> Uuid,
-        username -> Varchar,
-        avatar_url -> Varchar,
-    }
-}
-
-diesel::table! {
-    followers (uuid, follower_uuid){
-        uuid -> Uuid,
+    follow (follower_uuid, followed_uuid){
         follower_uuid -> Uuid,
+        followed_uuid -> Uuid,
         username -> Varchar,
         avatar_url -> Varchar,
     }
@@ -35,5 +26,6 @@ diesel::table! {
     favourite (uuid, favourite_uuid){
         uuid -> Uuid,
         favourite_uuid -> Uuid,
+        title -> Varchar,
     }
 }

@@ -69,6 +69,16 @@ pub struct UserResponse {
     pub favourites_count: i64,
 }
 
+#[derive(Serialize)]
+pub struct IsFavouriteResponse {
+    pub is_favourite: bool,
+}
+
+#[derive(Serialize)]
+pub struct IsFollowingResponse {
+    pub is_following: bool,
+}
+
 pub enum UserError {
     UuidInvalid,
     Other,

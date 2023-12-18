@@ -29,3 +29,8 @@ impl AppDatabaseInitialized for Rocket {
 }
 
 embed_migrations!("migrations");
+
+pub enum DatabaseResponse<ERROR> {
+    Ok,
+    Err(ERROR),
+}
