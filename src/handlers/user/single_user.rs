@@ -2,18 +2,15 @@ use serde::Serialize;
 
 use crate::database::{
     self,
-    user::{user_db::GetUserError, UserDatabase},
+    user::{user_db::GetByUuidError, user_objects::user::User, UserDatabase},
 };
 
 pub fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, UserError> {
     match db.get_user(uuid) {
-        Ok(user) => Ok(UserResponse {
-            uuid: user.id.to_string(),
-            username: user.username,
-        }),
+        Ok(user) => Ok(map_user_info(&user, db)),
         Err(err) => match err {
-            GetUserError::UuidInvalid => Err(UserError::UuidInvalid),
-            GetUserError::InternalError => Err(UserError::Other),
+            GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
+            GetByUuidError::InternalError => Err(UserError::Other),
         },
     }
 }
@@ -23,13 +20,40 @@ pub fn get_user_by_username<'a>(
     db: database::Conn,
 ) -> Result<UserResponse, UserError> {
     match db.get_user_by_username(username) {
-        Ok(user) => Ok(UserResponse {
-            uuid: user.id.to_string(),
-            username: user.username,
-        }),
+        Ok(user) => Ok(map_user_info(&user, db)),
         Err(err) => match err {
-            GetUserError::UuidInvalid => Err(UserError::UuidInvalid),
-            GetUserError::InternalError => Err(UserError::Other),
+            GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
+            GetByUuidError::InternalError => Err(UserError::Other),
+        },
+    }
+}
+
+fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
+    UserResponse {
+        uuid: user.id.to_string(),
+        username: user.username.clone(),
+        bio: user.bio.clone(),
+        avatar_url: user.avatar_url.clone(),
+        followers_count: match db.get_followers_count(&user.id.to_string()) {
+            Ok(count) => count,
+            Err(err) => {
+                eprintln!("Error getting followers count: {}", err);
+                0
+            }
+        },
+        following_count: match db.get_following_count(&user.id.to_string()) {
+            Ok(count) => count,
+            Err(err) => {
+                eprintln!("Error getting following count: {}", err);
+                0
+            }
+        },
+        favourites_count: match db.get_favourites_count(&user.id.to_string()) {
+            Ok(count) => count,
+            Err(err) => {
+                eprintln!("Error getting favourites count: {}", err);
+                0
+            }
         },
     }
 }
@@ -38,6 +62,11 @@ pub fn get_user_by_username<'a>(
 pub struct UserResponse {
     pub uuid: String,
     pub username: String,
+    pub avatar_url: String,
+    pub bio: String,
+    pub followers_count: i64,
+    pub following_count: i64,
+    pub favourites_count: i64,
 }
 
 pub enum UserError {
