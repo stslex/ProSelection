@@ -8,6 +8,12 @@ INDEX IF EXISTS users_login_uindex;
 DROP
 INDEX IF EXISTS users_id_uindex;
 
+DROP
+INDEX IF EXISTS avatar_url_uindex;
+
+DROP
+INDEX IF EXISTS bio_uindex;
+
 DROP TABLE IF EXISTS users;
 
 DROP
