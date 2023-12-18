@@ -11,6 +11,12 @@ create table IF NOT EXISTS users
     avatar_url text                          not null
 );
 
+alter table users
+add column if not exists bio text not null;
+
+alter table users
+add column if not exists avatar_url text not null;
+
 create unique index IF NOT EXISTS users_id_uindex
     on users (id);
 

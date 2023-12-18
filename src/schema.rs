@@ -30,6 +30,8 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(favourite -> users (user_uuid));
+// diesel_migrations::embed_migrations!();
 
-diesel::allow_tables_to_appear_in_same_query!(favourite, follow, users,);
+// diesel::joinable!(favourite -> users (user_uuid));
+
+// diesel::allow_tables_to_appear_in_same_query!(favourite, follow, users,);
