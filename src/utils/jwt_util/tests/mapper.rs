@@ -13,6 +13,8 @@ mod tests {
             username: "john_doe".to_owned(),
             login: "login".to_owned(),
             secret: "smth_secret".to_owned(),
+            avatar_url: "avatar_url".to_owned(),
+            bio: "bio".to_owned(),
         };
 
         let jwt_mapper = user.map();

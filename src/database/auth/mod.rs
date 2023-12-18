@@ -16,6 +16,8 @@ pub struct NewUser<'a> {
     pub login: &'a str,
     pub username: &'a str,
     pub secret: &'a str,
+    pub avatar_url: &'a str,
+    pub bio: &'a str,
 }
 
 pub trait AuthorizationDatabase {

@@ -52,6 +52,8 @@ impl AuthorizationDatabase for Conn {
             login: &login_binding,
             username: data.username,
             secret: data.password,
+            avatar_url: "",
+            bio: "",
         };
 
         return match diesel::insert_into(users::table)

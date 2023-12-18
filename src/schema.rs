@@ -1,6 +1,23 @@
 // @generated automatically by Diesel CLI.
 
-use rocket_contrib::databases::diesel;
+diesel::table! {
+    favourite (uuid) {
+        uuid -> Uuid,
+        user_uuid -> Uuid,
+        favourite_uuid -> Uuid,
+        title -> Varchar,
+    }
+}
+
+diesel::table! {
+    follow (uuid) {
+        uuid -> Uuid,
+        follower_uuid -> Uuid,
+        followed_uuid -> Uuid,
+        username -> Varchar,
+        avatar_url -> Text,
+    }
+}
 
 diesel::table! {
     users (id) {
@@ -8,5 +25,13 @@ diesel::table! {
         login -> Varchar,
         username -> Varchar,
         secret -> Text,
+        bio -> Varchar,
+        avatar_url -> Varchar,
     }
 }
+
+// diesel_migrations::embed_migrations!();
+
+// diesel::joinable!(favourite -> users (user_uuid));
+
+// diesel::allow_tables_to_appear_in_same_query!(favourite, follow, users,);

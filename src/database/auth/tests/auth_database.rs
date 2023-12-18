@@ -24,7 +24,8 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<RegistrationOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             Ok(conn.registration(data))
         });
         println!("result: {:?}", outcome);
@@ -53,7 +54,8 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<RegistrationOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             Ok(conn.registration(data))
         });
 
@@ -81,7 +83,8 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<VerifyTokenOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             let reg_outcome = conn.registration(data);
             match reg_outcome {
                 RegistrationOutcome::Ok(res) => Ok(conn.verify_token(&res.uuid, &res.username)),
@@ -106,7 +109,8 @@ mod tests {
         let uuid = uuid::Uuid::new_v4().to_string();
 
         let outcome = conn.test_transaction::<VerifyTokenOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             Ok(conn.verify_token(&uuid, username))
         });
 
@@ -134,7 +138,8 @@ mod tests {
         };
 
         let outcome = conn.test_transaction::<AuthorizationOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             conn.registration(data);
             Ok(conn.login(login, password))
         });
@@ -158,7 +163,8 @@ mod tests {
         let login = "test_login";
         let password = "invalid_password";
         let outcome = conn.test_transaction::<AuthorizationOutcome, Error, _>(|| {
-            embedded_migrations::run(&*conn).expect("Failed to run migrations");
+            let out = &mut std::io::stdout();
+            let _ = embedded_migrations::run_with_output(&*conn, out);
             Ok(conn.login(login, password))
         });
 
