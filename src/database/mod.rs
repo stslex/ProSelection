@@ -1,6 +1,6 @@
-use rocket::fairing::AdHoc;
 use rocket::Rocket;
-use rocket_contrib::databases::diesel;
+use rocket::{fairing::AdHoc, Build};
+use rocket_sync_db_pools::{database, diesel};
 
 pub mod auth;
 pub mod tests;
@@ -13,7 +13,7 @@ pub trait AppDatabaseInitialized {
     fn manage_database(self) -> Self;
 }
 
-impl AppDatabaseInitialized for Rocket {
+impl AppDatabaseInitialized for Rocket<Build> {
     fn manage_database(self) -> Self {
         self.attach(Conn::fairing())
             .attach(AdHoc::on_attach("Running migration", |r| {

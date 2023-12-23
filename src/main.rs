@@ -15,7 +15,8 @@ pub mod routes;
 mod schema;
 pub mod utils;
 
-fn main() {
+#[rocket::main]
+async fn main() {
     rocket::custom(config::from_env())
         .manage_database()
         .mount_routes()
