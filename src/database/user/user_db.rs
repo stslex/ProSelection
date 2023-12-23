@@ -9,18 +9,19 @@ use crate::{
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
-pub use rocket_contrib::databases::diesel::Insertable;
+use rocket_sync_db_pools::diesel::Insertable;
 use uuid::Uuid;
 
+#[async_trait]
 impl UserDatabase for Conn {
-    fn get_user_count(&self) -> UserCommonOutcome<String> {
-        match users::table.get_results::<User>(&self.0) {
+    async fn get_user_count(&self) -> UserCommonOutcome<String> {
+        match users::table.get_results::<User>(&mut &self.0) {
             Ok(items) => UserCommonOutcome::Ok(items.len().to_string()),
             Err(_) => UserCommonOutcome::Error,
         }
     }
 
-    fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError> {
+    async fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -40,7 +41,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
+    async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
         match users::table
             .filter(users::username.eq(username))
             .first::<User>(&self.0)
@@ -53,7 +54,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -80,7 +81,7 @@ impl UserDatabase for Conn {
     ///
     /// * `uuid` - The uuid of the user to get the followers count for.
     ///
-    fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -107,7 +108,7 @@ impl UserDatabase for Conn {
     ///
     /// * `uuid` - The uuid of the user to get the following count for.
     ///
-    fn get_following_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_following_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -128,7 +129,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn follow_user(
+    async fn follow_user(
         &self,
         follower_uuid: &str,
         followed_uuid: &str,
@@ -171,7 +172,7 @@ impl UserDatabase for Conn {
                 };
                 diesel::insert_into(follow::table)
                     .values(records)
-                    .execute(&self.0)
+                    .execute(&mut &self.0)
                     .map(|_| DatabaseResponse::Ok)
                     .map_err(|err| {
                         eprintln!("Error following user: {}", err);
@@ -187,7 +188,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn un_follow_user(
+    async fn un_follow_user(
         &self,
         follower_uuid: &str,
         followed_uuid: &str,
@@ -211,7 +212,7 @@ impl UserDatabase for Conn {
                 .filter(follow::follower_uuid.eq(follower_uuid))
                 .filter(follow::followed_uuid.eq(followed_uuid)),
         )
-        .execute(&self.0)
+        .execute(&mut &self.0)
         .map(|_| DatabaseResponse::Ok)
         .map_err(|err| {
             eprintln!("Error unfollowing user: {}", err);
@@ -226,7 +227,11 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn is_following(&self, follower_uuid: &str, followed_uuid: &str) -> Result<bool, FollowError> {
+    async fn is_following(
+        &self,
+        follower_uuid: &str,
+        followed_uuid: &str,
+    ) -> Result<bool, FollowError> {
         let follower_uuid = match Uuid::parse_str(follower_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -249,7 +254,7 @@ impl UserDatabase for Conn {
             .or_else(|_| Ok(false))
     }
 
-    fn add_favourite(
+    async fn add_favourite(
         &self,
         uuid: &str,
         favourite_uuid: &str,
@@ -279,7 +284,7 @@ impl UserDatabase for Conn {
                         favourite::uuid.eq(uuid),
                         favourite::favourite_uuid.eq(favourite_uuid),
                     ))
-                    .execute(&self.0)
+                    .execute(&mut &self.0)
                     .map(|_| DatabaseResponse::Ok)
                     .map_err(|err| {
                         eprintln!("Error adding favourite: {}", err);
@@ -295,7 +300,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn remove_favourite(
+    async fn remove_favourite(
         &self,
         uuid: &str,
         favourite_uuid: &str,
@@ -319,7 +324,7 @@ impl UserDatabase for Conn {
                 .filter(favourite::uuid.eq(uuid))
                 .filter(favourite::favourite_uuid.eq(favourite_uuid)),
         )
-        .execute(&self.0)
+        .execute(&mut &self.0)
         .map(|_| DatabaseResponse::Ok)
         .map_err(|err| {
             eprintln!("Error removing favourite: {}", err);
@@ -334,7 +339,7 @@ impl UserDatabase for Conn {
         }
     }
 
-    fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
+    async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {

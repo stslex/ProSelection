@@ -8,10 +8,11 @@ use crate::{handlers::auth::refresh::AccessTokenError, utils::jwt_util::JwtDecod
 
 use super::{AccessToken, ApiKeyParcer, TokenParser};
 
-impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
+#[async_trait]
+impl<'r> FromRequest<'r> for AccessToken {
     type Error = AccessTokenError;
 
-    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         match ApiKeyParcer::parce(request) {
             Ok(_api_key) => {}
             Err(_error) => {

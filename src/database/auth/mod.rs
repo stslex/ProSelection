@@ -1,5 +1,5 @@
 pub use diesel::ExpressionMethods;
-use rocket_contrib::databases::diesel::Insertable;
+use rocket_sync_db_pools::diesel::Insertable;
 
 use crate::schema::users;
 
@@ -20,10 +20,11 @@ pub struct NewUser<'a> {
     pub bio: &'a str,
 }
 
+#[async_trait]
 pub trait AuthorizationDatabase {
-    fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
-    fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
+    async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
+    async fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
+    async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
 }
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use rocket_contrib::json::Json;
+use rocket::serde::json::Json;
 
 use crate::database;
 use crate::handlers::auth;
@@ -17,7 +17,7 @@ use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
 
 #[post("/login", format = "json", data = "<login_request>")]
-pub fn login(
+pub async fn login(
     login_request: Option<Json<LoginRequest>>,
     _api_key_validator: validators::ApiKey,
     db: database::Conn,
@@ -33,7 +33,7 @@ pub fn login(
 }
 
 #[post("/registration", format = "json", data = "<registration_request>")]
-pub fn registration(
+pub async fn registration(
     registration_request: Option<Json<RegistrationRequest>>,
     _api_key_validator: validators::ApiKey,
     db: database::Conn,
@@ -54,7 +54,7 @@ pub fn registration(
 }
 
 #[get("/refresh")]
-pub fn refresh(
+pub async fn refresh(
     refresh_token: validators::RefreshToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<RefreshOk>> {

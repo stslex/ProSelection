@@ -5,7 +5,7 @@ use crate::database::{
     user::{user_db::GetByUuidError, user_objects::user::User, UserDatabase},
 };
 
-pub fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, UserError> {
+pub async fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, UserError> {
     match db.get_user(uuid) {
         Ok(user) => Ok(map_user_info(&user, db)),
         Err(err) => match err {
@@ -15,7 +15,7 @@ pub fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, U
     }
 }
 
-pub fn get_user_by_username<'a>(
+pub async fn get_user_by_username<'a>(
     username: &'a str,
     db: database::Conn,
 ) -> Result<UserResponse, UserError> {
@@ -28,7 +28,7 @@ pub fn get_user_by_username<'a>(
     }
 }
 
-fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
+async fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),

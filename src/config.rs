@@ -21,9 +21,10 @@ pub fn from_env() -> Config {
 
     database_config.insert("url", Value::from(database_url));
 
-    databases.insert("diesel_postgres_pool", Value::from(database_config));
+    databases.insert("diesel_postgres_pool", database_config);
 
-    rocket::Config::figment()
+    let provider = rocket::Config::figment()
         .merge(("port", port))
-        .merge(("databases", databases))
+        .merge(("databases", databases));
+    Config::from(provider)
 }

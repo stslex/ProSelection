@@ -8,10 +8,11 @@ use crate::{handlers::auth::refresh::RefreshError, utils::jwt_util::JwtDecoder};
 
 use super::{ApiKeyParcer, RefreshToken, TokenParser};
 
-impl<'a, 'r> FromRequest<'a, 'r> for RefreshToken {
+#[async_trait]
+impl<'r> FromRequest<'r> for RefreshToken {
     type Error = RefreshError;
 
-    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         match ApiKeyParcer::parce(request) {
             Ok(_api_key) => {}
             Err(_error) => {

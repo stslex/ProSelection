@@ -3,7 +3,7 @@ use crate::database::auth::{AuthorizationDatabase, AuthorizationOk, Authorizatio
 
 use super::objects::{LoginError, LoginOk};
 
-pub fn login<'a>(
+pub async fn login<'a>(
     login: &'a str,
     password: &'a str,
     db: database::Conn,
@@ -15,7 +15,7 @@ pub fn login<'a>(
     }
 }
 
-fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
+async fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
     LoginOk {
         uuid: (result.uuid.to_owned()),
         username: (result.username.to_owned()),

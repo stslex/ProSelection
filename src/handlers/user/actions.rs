@@ -13,7 +13,7 @@ pub enum FavouriteResponse {
     Error(FavouriteError),
 }
 
-pub fn follow_user<'a>(
+pub async fn follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
@@ -24,7 +24,7 @@ pub fn follow_user<'a>(
     }
 }
 
-pub fn un_follow_user<'a>(
+pub async fn un_follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
@@ -35,7 +35,7 @@ pub fn un_follow_user<'a>(
     }
 }
 
-pub fn is_following<'a>(
+pub async fn is_following<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
@@ -46,14 +46,18 @@ pub fn is_following<'a>(
     }
 }
 
-pub fn add_favourite<'a>(uuid: &'a str, title: &'a str, db: database::Conn) -> FavouriteResponse {
+pub async fn add_favourite<'a>(
+    uuid: &'a str,
+    title: &'a str,
+    db: database::Conn,
+) -> FavouriteResponse {
     match db.add_favourite(uuid, title) {
         database::DatabaseResponse::Ok => FavouriteResponse::Ok,
         database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
     }
 }
 
-pub fn remove_favourite<'a>(
+pub async fn remove_favourite<'a>(
     uuid: &'a str,
     title: &'a str,
     db: database::Conn,
@@ -64,7 +68,7 @@ pub fn remove_favourite<'a>(
     }
 }
 
-pub fn is_favourite<'a>(
+pub async fn is_favourite<'a>(
     uuid: &'a str,
     title: &'a str,
     db: database::Conn,

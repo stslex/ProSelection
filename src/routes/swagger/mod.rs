@@ -1,14 +1,16 @@
 use std::fs::File;
 
-use rocket::Rocket;
+use rocket::{Build, Rocket};
 // use rocket_okapi::swagger_ui::{make_swagger_ui, SwaggerUIConfig};
 
+#[async_trait]
 pub trait SwaggerRouteInitialized {
-    fn mount_swagger_route(self) -> Self;
+    async fn mount_swagger_route(self) -> Self;
 }
 
-impl SwaggerRouteInitialized for Rocket {
-    fn mount_swagger_route(self) -> Self {
+#[async_trait]
+impl SwaggerRouteInitialized for Rocket<Build> {
+    async fn mount_swagger_route(self) -> Self {
         self.mount("/api/v1/swagger", routes![open_api])
         // .mount("/api/v1/swagger", make_swagger_ui(&get_docs()))
         // todo fix swagger ui

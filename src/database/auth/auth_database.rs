@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
-pub use rocket_contrib::databases::diesel::Insertable;
+pub use rocket_sync_db_pools::diesel::Insertable;
 
 use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome, NewUser};
 use crate::database::user::user_objects::user::User;
@@ -16,8 +16,9 @@ use super::RegistrationData;
 use super::VerifyTokenOutcome;
 use crate::database::auth::RegistrationOutcome;
 
+#[async_trait]
 impl AuthorizationDatabase for Conn {
-    fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
+    async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
         match users::table
             .filter(users::login.eq(login.to_lowercase()))
             .get_result::<User>(&self.0)
@@ -39,7 +40,7 @@ impl AuthorizationDatabase for Conn {
         }
     }
 
-    fn registration(&self, data: RegistrationData) -> RegistrationOutcome {
+    async fn registration(&self, data: RegistrationData) -> RegistrationOutcome {
         match data.validate() {
             RegistrationFieldValid::Ok => (),
             RegistrationFieldValid::Error(err) => {
@@ -58,7 +59,7 @@ impl AuthorizationDatabase for Conn {
 
         return match diesel::insert_into(users::table)
             .values(new_user)
-            .get_result::<User>(&self.0)
+            .get_result::<User>(&mut &self.0)
         {
             Ok(user) => match user.map().generate() {
                 Ok(token_res) => RegistrationOutcome::Ok(super::AuthorizationOk {
@@ -83,7 +84,7 @@ impl AuthorizationDatabase for Conn {
         };
     }
 
-    fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome {
+    async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome {
         let uuid = uuid.parse::<uuid::Uuid>().unwrap();
         match users::table
             .filter(users::id.eq(uuid))

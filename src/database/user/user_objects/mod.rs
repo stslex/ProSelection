@@ -2,7 +2,7 @@ pub mod user;
 
 use crate::schema::favourite;
 use crate::schema::follow;
-use rocket_contrib::databases::diesel::Insertable;
+use rocket_sync_db_pools::diesel::Insertable;
 use uuid::Uuid;
 
 /// Represents the outcome of common user operations.

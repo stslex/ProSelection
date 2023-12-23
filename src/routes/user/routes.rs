@@ -13,7 +13,7 @@ use crate::routes::route_objects::{ApiMesResponse, ApiResponse};
 use crate::{database, handlers};
 
 #[get("/count")]
-pub fn get_user_count(
+pub async fn get_user_count(
     _access_token: AccessToken,
     db: database::Conn,
 ) -> ApiResponse<'static, String> {
@@ -25,7 +25,7 @@ pub fn get_user_count(
 }
 
 #[get("/")]
-pub fn get_current_user(
+pub async fn get_current_user(
     access_token: AccessToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
@@ -42,7 +42,7 @@ pub fn get_current_user(
 }
 
 #[get("/<uuid>")]
-pub fn get_user(
+pub async fn get_user(
     _access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -60,7 +60,7 @@ pub fn get_user(
 }
 
 #[get("/?username&<username>")]
-pub fn get_user_by_username(
+pub async fn get_user_by_username(
     _access_token: AccessToken,
     username: String,
     db: database::Conn,
@@ -78,7 +78,7 @@ pub fn get_user_by_username(
 }
 
 #[post("/<uuid>/follow")]
-pub fn post_follow(
+pub async fn post_follow(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -98,7 +98,7 @@ pub fn post_follow(
 }
 
 #[delete("/<uuid>/follow")]
-pub fn delete_follow(
+pub async fn delete_follow(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -118,7 +118,7 @@ pub fn delete_follow(
 }
 
 #[get("/<uuid>/is_following")]
-pub fn get_is_following(
+pub async fn get_is_following(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -138,7 +138,7 @@ pub fn get_is_following(
 }
 
 #[post("/<uuid>/favourite")]
-pub fn post_add_favourite(
+pub async fn post_add_favourite(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -158,7 +158,7 @@ pub fn post_add_favourite(
 }
 
 #[delete("/<uuid>/favourite")]
-pub fn delete_remove_favourite(
+pub async fn delete_remove_favourite(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
@@ -178,7 +178,7 @@ pub fn delete_remove_favourite(
 }
 
 #[get("/<uuid>/is_favourite")]
-pub fn get_is_favourite(
+pub async fn get_is_favourite(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,

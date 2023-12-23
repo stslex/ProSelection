@@ -10,11 +10,12 @@ pub enum ApiResponse<'a, T> {
     Err(&'a ErrorResponse<'a>),
 }
 
-impl<'r, 'a, T> Responder<'r> for ApiResponse<'r, T>
+#[async_trait]
+impl<'r, 'o: 'r, T> Responder<'r, 'o> for ApiResponse<'r, T>
 where
-    T: Responder<'r>,
+    T: Responder<'r, 'o>,
 {
-    fn respond_to(self, request: &Request) -> Result<'r> {
+    async fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         match self {
             ApiResponse::Ok(t) => t.respond_to(request),
             ApiResponse::Err(e) => e.respond_to(request),
@@ -27,8 +28,9 @@ pub enum ApiMesResponse<'a> {
     Err(&'a ErrorResponse<'a>),
 }
 
-impl<'r, 'a> Responder<'r> for ApiMesResponse<'r> {
-    fn respond_to(self, request: &Request) -> Result<'r> {
+#[async_trait]
+impl<'r, 'o: 'r> Responder<'r, 'o> for ApiMesResponse<'r> {
+    async fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         match self {
             ApiMesResponse::Ok(t) => t.respond_to(request),
             ApiMesResponse::Err(e) => e.respond_to(request),
