@@ -7,7 +7,7 @@ pub trait AuthValidation {
     fn validate(&self) -> RegistrationFieldValid;
 }
 
-impl<'a> AuthValidation for RegistrationData<'a> {
+impl<'a> AuthValidation for RegistrationData {
     fn validate(&self) -> RegistrationFieldValid {
         if self.password.len() < 8 {
             return RegistrationFieldValid::Error(RegistrationFieldValidError::WeakPassword);

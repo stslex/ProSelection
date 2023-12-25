@@ -38,20 +38,21 @@ impl AppDatabaseInitialized for Rocket<Build> {
     }
 }
 
+#[derive(Clone)]
 pub enum DatabaseResponse<ERROR> {
     Ok,
     Err(ERROR),
 }
 
-trait OpenError<T> {
+trait OpenError<T: Clone> {
     fn open_error(&self) -> T;
 }
 
-impl<T> OpenError<DatabaseResponse<T>> for Result<DatabaseResponse<T>, DatabaseResponse<T>> {
+impl<T: Clone> OpenError<DatabaseResponse<T>> for Result<DatabaseResponse<T>, DatabaseResponse<T>> {
     fn open_error(&self) -> DatabaseResponse<T> {
-        match &self {
-            Ok(value) => *value,
-            Err(value) => *value,
+        match self {
+            Ok(value) => value.clone(),
+            Err(value) => value.clone(),
         }
     }
 }

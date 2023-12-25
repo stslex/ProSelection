@@ -1,6 +1,7 @@
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
+use rocket::data;
 pub use rocket_sync_db_pools::diesel::Insertable;
 
 use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome, NewUser};
@@ -19,7 +20,9 @@ use crate::database::auth::RegistrationOutcome;
 #[async_trait]
 impl AuthorizationDatabase for Conn {
     async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
-        self.run(|db| {
+        let login = login.to_owned();
+        let password = password.to_owned();
+        self.run(move |db| {
             match users::table
                 .filter(users::login.eq(login.to_lowercase()))
                 .get_result::<User>(db)
@@ -51,17 +54,17 @@ impl AuthorizationDatabase for Conn {
                 return RegistrationOutcome::RegistrationFieldValid(err);
             }
         }
-        let login_binding = data.login.to_owned().to_lowercase();
+
         let new_user = NewUser {
-            login: &login_binding,
-            username: data.username,
-            secret: data.password,
-            avatar_url: "",
-            bio: "",
+            login: data.login.to_owned(),
+            username: data.username.to_owned(),
+            secret: data.password.to_owned(),
+            avatar_url: "".to_string(),
+            bio: "".to_string(),
         };
 
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match diesel::insert_into(users::table)
                     .values(new_user)
                     .get_result::<User>(db)
@@ -93,8 +96,9 @@ impl AuthorizationDatabase for Conn {
 
     async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome {
         let uuid = uuid.parse::<uuid::Uuid>().unwrap();
+        let username = username.to_owned();
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match users::table
                     .filter(users::id.eq(uuid))
                     .filter(users::username.eq(username))

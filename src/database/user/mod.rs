@@ -44,7 +44,7 @@ pub trait UserDatabase {
     async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FavouriteError {
     UuidInvalid,
     UserNotFound,
@@ -72,7 +72,7 @@ impl std::fmt::Display for DatabaseResponse<FavouriteError> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FollowError {
     UuidInvalid,
     UserNotFound,

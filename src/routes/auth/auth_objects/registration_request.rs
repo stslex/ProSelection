@@ -1,11 +1,11 @@
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct RegistrationRequest {
+pub struct RegistrationRequest<'a> {
     #[serde(rename = "login")]
-    pub login: &'static str,
+    pub login: &'a str,
     #[serde(rename = "username")]
-    pub username: &'static str,
+    pub username: &'a str,
     #[serde(rename = "password")]
-    pub password: &'static str,
+    pub password: &'a str,
 }

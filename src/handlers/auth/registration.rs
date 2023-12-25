@@ -23,9 +23,9 @@ pub async fn registration(
 ) -> Result<LoginOk, RegistrationError> {
     match db
         .registration(RegistrationData {
-            login: login,
-            username: username,
-            password: password,
+            login: login.to_owned(),
+            username: username.to_owned(),
+            password: password.to_owned(),
         })
         .await
     {

@@ -1,4 +1,4 @@
-use rocket_contrib::json::Json;
+use rocket::serde::json::Json;
 
 use crate::database::user::{FavouriteError, FollowError};
 use crate::handlers::user::actions::{self, FavouriteResponse, FollowResponse};
@@ -17,8 +17,7 @@ pub async fn get_user_count(
     _access_token: AccessToken,
     db: database::Conn,
 ) -> ApiResponse<'static, String> {
-    let result = handlers::user::common::count(db);
-    match result {
+    match handlers::user::common::count(db).await {
         Ok(count) => ApiResponse::Ok(count),
         Err(_) => ApiResponse::Err(ERROR_UNKNOWN),
     }
@@ -29,7 +28,7 @@ pub async fn get_current_user(
     access_token: AccessToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user(&access_token.uuid, db) {
+    match handlers::user::single_user::get_user(&access_token.uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -47,7 +46,7 @@ pub async fn get_user(
     uuid: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user(&uuid, db) {
+    match handlers::user::single_user::get_user(&uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -65,7 +64,7 @@ pub async fn get_user_by_username(
     username: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user_by_username(&username, db) {
+    match handlers::user::single_user::get_user_by_username(&username, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -83,7 +82,7 @@ pub async fn post_follow(
     uuid: String,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::follow_user(&access_token.uuid, &uuid, db) {
+    match actions::follow_user(&access_token.uuid, &uuid, db).await {
         FollowResponse::Ok => ApiMesResponse::Ok("success"),
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -103,7 +102,7 @@ pub async fn delete_follow(
     uuid: String,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::un_follow_user(&access_token.uuid, &uuid, db) {
+    match actions::un_follow_user(&access_token.uuid, &uuid, db).await {
         FollowResponse::Ok => ApiMesResponse::Ok("success"),
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -123,7 +122,7 @@ pub async fn get_is_following(
     uuid: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<IsFollowingResponse>> {
-    match actions::is_following(&access_token.uuid, &uuid, db) {
+    match actions::is_following(&access_token.uuid, &uuid, db).await {
         Ok(is_following) => ApiResponse::Ok(Json(IsFollowingResponse { is_following })),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -143,7 +142,7 @@ pub async fn post_add_favourite(
     uuid: String,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::add_favourite(&access_token.uuid, &uuid, db) {
+    match actions::add_favourite(&access_token.uuid, &uuid, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -163,7 +162,7 @@ pub async fn delete_remove_favourite(
     uuid: String,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::remove_favourite(&access_token.uuid, &uuid, db) {
+    match actions::remove_favourite(&access_token.uuid, &uuid, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -183,7 +182,7 @@ pub async fn get_is_favourite(
     uuid: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<IsFollowingResponse>> {
-    match actions::is_favourite(&access_token.uuid, &uuid, db) {
+    match actions::is_favourite(&access_token.uuid, &uuid, db).await {
         Ok(is_favourite) => ApiResponse::Ok(Json(IsFollowingResponse {
             is_following: is_favourite,
         })),

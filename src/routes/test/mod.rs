@@ -1,6 +1,7 @@
 mod routes;
 mod routes_setup;
 
+#[async_trait]
 pub trait RoutesTestInitialized {
-    fn mount_test_routes(self) -> Self;
+    async fn mount_test_routes(self) -> Self;
 }

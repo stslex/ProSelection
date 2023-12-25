@@ -1,6 +1,3 @@
-use std::option;
-
-use rocket::outcome;
 use rocket::serde::json::Json;
 
 use crate::database;
@@ -20,13 +17,13 @@ use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
 
 #[post("/login", format = "json", data = "<login_request>")]
-pub async fn login(
-    login_request: Option<Json<LoginRequest>>,
+pub async fn login<'a>(
+    login_request: Option<Json<LoginRequest<'a>>>,
     _api_key_validator: validators::ApiKey,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
-    match login_request.map(|r| auth::login::login(r.login, r.password, db)) {
-        Some(option) => match option.await {
+    match login_request {
+        Some(r) => match auth::login::login(r.login, r.password, db).await {
             Ok(outcome) => ApiResponse::Ok(Json(outcome)),
             Err(LoginError::NotFound) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
             Err(LoginError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
@@ -36,8 +33,8 @@ pub async fn login(
 }
 
 #[post("/registration", format = "json", data = "<registration_request>")]
-pub async fn registration(
-    registration_request: Option<Json<RegistrationRequest>>,
+pub async fn registration<'a>(
+    registration_request: Option<Json<RegistrationRequest<'a>>>,
     _api_key_validator: validators::ApiKey,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {

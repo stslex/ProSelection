@@ -32,7 +32,7 @@ impl UserDatabase for Conn {
         };
         self.0
             .run(
-                |db| match users::table.filter(users::id.eq(uuid)).first::<User>(db) {
+                move |db| match users::table.filter(users::id.eq(uuid)).first::<User>(db) {
                     Ok(user) => Ok(user),
                     Err(err) => {
                         eprintln!("Error getting user: {}", err);
@@ -44,8 +44,9 @@ impl UserDatabase for Conn {
     }
 
     async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
+        let username = username.to_owned();
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match users::table
                     .filter(users::username.eq(username))
                     .first::<User>(db)
@@ -69,7 +70,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match favourite::table
                     .filter(favourite::uuid.eq(uuid))
                     .count()
@@ -100,7 +101,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match follow::table
                     .filter(follow::followed_uuid.eq(uuid))
                     .count()
@@ -131,7 +132,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 match follow::table
                     .filter(follow::follower_uuid.eq(uuid))
                     .count()
@@ -167,7 +168,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 let followed_user = match users::table
                     .filter(users::id.eq(followed_uuid))
                     .first::<User>(db)
@@ -229,7 +230,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 diesel::delete(
                     follow::table
                         .filter(follow::follower_uuid.eq(follower_uuid))
@@ -266,7 +267,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 follow::table
                     .filter(follow::follower_uuid.eq(follower_uuid))
                     .filter(follow::followed_uuid.eq(followed_uuid))
@@ -297,7 +298,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 favourite::table
                     .filter(favourite::uuid.eq(uuid))
                     .filter(favourite::favourite_uuid.eq(favourite_uuid))
@@ -342,7 +343,7 @@ impl UserDatabase for Conn {
         };
 
         self.0
-            .run(|db| {
+            .run(move |db| {
                 diesel::delete(
                     favourite::table
                         .filter(favourite::uuid.eq(uuid))
@@ -375,7 +376,7 @@ impl UserDatabase for Conn {
             }
         };
         self.0
-            .run(|db| {
+            .run(move |db| {
                 favourite::table
                     .filter(favourite::user_uuid.eq(uuid))
                     .filter(favourite::favourite_uuid.eq(favourite_uuid))

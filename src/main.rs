@@ -19,6 +19,8 @@ pub mod utils;
 async fn main() {
     rocket::custom(config::from_env())
         .manage_database()
+        .await
         .mount_routes()
+        .await
         .launch();
 }
