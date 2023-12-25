@@ -43,8 +43,7 @@ mod test_db_transition {
     #[test]
     fn test_db_transition() {
         let mut connection = establish_connection().unwrap();
-        let result =
-            connection.test_transaction::<Result<_, Error>, Error, _>(|con| Ok(Ok("test")));
+        let result = connection.test_transaction::<Result<_, Error>, Error, _>(|_| Ok(Ok("test")));
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "test");
     }
@@ -54,7 +53,7 @@ mod test_db_transition {
         let connection = get_test_conn().await;
         let result = connection
             .run(|con| {
-                con.test_transaction::<Result<String, Error>, Error, _>(|conn| {
+                con.test_transaction::<Result<String, Error>, Error, _>(|_| {
                     Ok(Ok("test".to_string()))
                 })
             })
@@ -66,7 +65,7 @@ mod test_db_transition {
     #[test]
     fn test_db_transition_error() {
         let mut connection = establish_connection().unwrap();
-        let result = connection.test_transaction::<Result<String, Error>, Error, _>(|con| {
+        let result = connection.test_transaction::<Result<String, Error>, Error, _>(|_| {
             Ok(Err(Error::RollbackTransaction))
         });
 

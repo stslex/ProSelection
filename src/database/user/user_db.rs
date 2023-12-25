@@ -182,13 +182,8 @@ impl UserDatabase for Conn {
                 follow::table
                     .filter(follow::follower_uuid.eq(follower_uuid))
                     .filter(follow::followed_uuid.eq(followed_uuid))
-                    // .filter(follow::follower_uuid.eq(follower_uuid))
-                    // .filter(follow::followed_uuid.eq(followed_uuid))
                     .first::<Follower>(db)
-                    .map(|res: Follower| {
-                        // Result.Err(DatabaseResponse::Err(super::FollowError::Conflict))
-                        DatabaseResponse::Err(super::FollowError::Conflict)
-                    })
+                    .map(|_: Follower| DatabaseResponse::Err(super::FollowError::Conflict))
                     .or_else(|_| {
                         let records = NewFollow {
                             follower_uuid: follower_uuid.clone(),

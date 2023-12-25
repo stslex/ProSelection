@@ -1,7 +1,6 @@
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
-use rocket::data;
 pub use rocket_sync_db_pools::diesel::Insertable;
 
 use crate::database::auth::{AuthorizationDatabase, AuthorizationOutcome, NewUser};
