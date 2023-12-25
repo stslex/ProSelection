@@ -18,7 +18,7 @@ pub async fn follow_user<'a>(
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> FollowResponse {
-    match db.follow_user(follower_uuid, followed_uuid) {
+    match db.follow_user(follower_uuid, followed_uuid).await {
         database::DatabaseResponse::Ok => FollowResponse::Ok,
         database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
     }
@@ -29,7 +29,7 @@ pub async fn un_follow_user<'a>(
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> FollowResponse {
-    match db.un_follow_user(follower_uuid, followed_uuid) {
+    match db.un_follow_user(follower_uuid, followed_uuid).await {
         database::DatabaseResponse::Ok => FollowResponse::Ok,
         database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
     }
@@ -40,7 +40,7 @@ pub async fn is_following<'a>(
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> Result<bool, FollowError> {
-    match db.is_following(follower_uuid, followed_uuid) {
+    match db.is_following(follower_uuid, followed_uuid).await {
         Ok(is_following) => Ok(is_following),
         Err(err) => Err(err),
     }
@@ -51,7 +51,7 @@ pub async fn add_favourite<'a>(
     title: &'a str,
     db: database::Conn,
 ) -> FavouriteResponse {
-    match db.add_favourite(uuid, title) {
+    match db.add_favourite(uuid, title).await {
         database::DatabaseResponse::Ok => FavouriteResponse::Ok,
         database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
     }
@@ -62,7 +62,7 @@ pub async fn remove_favourite<'a>(
     title: &'a str,
     db: database::Conn,
 ) -> FavouriteResponse {
-    match db.remove_favourite(uuid, title) {
+    match db.remove_favourite(uuid, title).await {
         database::DatabaseResponse::Ok => FavouriteResponse::Ok,
         database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
     }
@@ -73,7 +73,7 @@ pub async fn is_favourite<'a>(
     title: &'a str,
     db: database::Conn,
 ) -> Result<bool, FavouriteError> {
-    match db.is_favourite(uuid, title) {
+    match db.is_favourite(uuid, title).await {
         Ok(is_favourite) => Ok(is_favourite),
         Err(err) => Err(err),
     }

@@ -8,8 +8,8 @@ pub async fn login<'a>(
     password: &'a str,
     db: database::Conn,
 ) -> Result<LoginOk, LoginError> {
-    match db.login(login, password) {
-        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res)),
+    match db.login(login, password).await {
+        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res).await),
         AuthorizationOutcome::NotFound => Err(LoginError::NotFound),
         AuthorizationOutcome::Other => Err(LoginError::Other),
     }

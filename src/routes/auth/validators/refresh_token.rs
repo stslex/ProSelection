@@ -16,13 +16,13 @@ impl<'r> FromRequest<'r> for RefreshToken {
         match ApiKeyParcer::parce(request) {
             Ok(_api_key) => {}
             Err(_error) => {
-                return Outcome::Failure((Status::Unauthorized, RefreshError::InvalidApiKey))
+                return Outcome::Error((Status::Unauthorized, RefreshError::InvalidApiKey))
             }
         }
         let token = match TokenParser::get_token(request) {
             Some(token) => token,
             None => {
-                return Outcome::Failure((Status::Unauthorized, RefreshError::InvalidRefreshToken))
+                return Outcome::Error((Status::Unauthorized, RefreshError::InvalidRefreshToken))
             }
         };
         let binding = token.as_str();
@@ -33,7 +33,7 @@ impl<'r> FromRequest<'r> for RefreshToken {
             }),
             Err(error) => {
                 log::error!("Invalid refresh token: {}", error);
-                Outcome::Failure((Status::Unauthorized, RefreshError::InvalidRefreshToken))
+                Outcome::Error((Status::Unauthorized, RefreshError::InvalidRefreshToken))
             }
         }
     }

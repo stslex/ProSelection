@@ -6,8 +6,8 @@ use crate::database::{
 };
 
 pub async fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, UserError> {
-    match db.get_user(uuid) {
-        Ok(user) => Ok(map_user_info(&user, db)),
+    match db.get_user(uuid).await {
+        Ok(user) => Ok(map_user_info(&user, db).await),
         Err(err) => match err {
             GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
             GetByUuidError::InternalError => Err(UserError::Other),
@@ -19,8 +19,8 @@ pub async fn get_user_by_username<'a>(
     username: &'a str,
     db: database::Conn,
 ) -> Result<UserResponse, UserError> {
-    match db.get_user_by_username(username) {
-        Ok(user) => Ok(map_user_info(&user, db)),
+    match db.get_user_by_username(username).await {
+        Ok(user) => Ok(map_user_info(&user, db).await),
         Err(err) => match err {
             GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
             GetByUuidError::InternalError => Err(UserError::Other),
@@ -34,21 +34,21 @@ async fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
         username: user.username.clone(),
         bio: user.bio.clone(),
         avatar_url: user.avatar_url.clone(),
-        followers_count: match db.get_followers_count(&user.id.to_string()) {
+        followers_count: match db.get_followers_count(&user.id.to_string()).await {
             Ok(count) => count,
             Err(err) => {
                 eprintln!("Error getting followers count: {}", err);
                 0
             }
         },
-        following_count: match db.get_following_count(&user.id.to_string()) {
+        following_count: match db.get_following_count(&user.id.to_string()).await {
             Ok(count) => count,
             Err(err) => {
                 eprintln!("Error getting following count: {}", err);
                 0
             }
         },
-        favourites_count: match db.get_favourites_count(&user.id.to_string()) {
+        favourites_count: match db.get_favourites_count(&user.id.to_string()).await {
             Ok(count) => count,
             Err(err) => {
                 eprintln!("Error getting favourites count: {}", err);

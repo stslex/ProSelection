@@ -15,17 +15,20 @@ pub enum RegistrationError {
     Other,
 }
 
-pub fn registration(
+pub async fn registration(
     login: &str,
     username: &str,
     password: &str,
     db: database::Conn,
 ) -> Result<LoginOk, RegistrationError> {
-    match db.registration(RegistrationData {
-        login: login,
-        username: username,
-        password: password,
-    }) {
+    match db
+        .registration(RegistrationData {
+            login: login,
+            username: username,
+            password: password,
+        })
+        .await
+    {
         RegistrationOutcome::Ok(res) => Ok(map_auth_ok(res)),
         RegistrationOutcome::AlreadyInUse => Err(RegistrationError::LoginInUse),
         RegistrationOutcome::RegistrationFieldValid(err) => match err {

@@ -1,3 +1,6 @@
+use std::option;
+
+use rocket::outcome;
 use rocket::serde::json::Json;
 
 use crate::database;
@@ -22,13 +25,13 @@ pub async fn login(
     _api_key_validator: validators::ApiKey,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
-    let result: Option<Result<LoginOk, LoginError>> =
-        login_request.map(|r| auth::login::login(r.login, r.password, db));
-    match result {
-        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
-        Some(Err(LoginError::NotFound)) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
+    match login_request.map(|r| auth::login::login(r.login, r.password, db)) {
+        Some(option) => match option.await {
+            Ok(outcome) => ApiResponse::Ok(Json(outcome)),
+            Err(LoginError::NotFound) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
+            Err(LoginError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
+        },
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
-        _ => ApiResponse::Err(ERROR_UNKNOWN),
     }
 }
 
@@ -41,14 +44,17 @@ pub async fn registration(
     match registration_request
         .map(|r| auth::registration::registration(&r.login, &r.username, &r.password, db))
     {
-        Some(Ok(outcome)) => ApiResponse::Ok(Json(outcome)),
-        Some(Err(RegistrationError::LoginInUse)) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
-        Some(Err(RegistrationError::WeakPassword)) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
-        Some(Err(RegistrationError::WeakUsername)) => ApiResponse::Err(ERROR_WEAK_USERNAME),
-        Some(Err(RegistrationError::WeakLogin)) => ApiResponse::Err(ERROR_WEAK_LOGIN),
-        Some(Err(RegistrationError::PasswordTooLong)) => ApiResponse::Err(ERROR_PASSWORD_TOO_LONG),
-        Some(Err(RegistrationError::EqualLoginPassword)) => ApiResponse::Err(ERROR_EQUAL_DATA),
-        Some(Err(RegistrationError::Other)) => ApiResponse::Err(ERROR_UNKNOWN),
+        Some(option) => match option.await {
+            Ok(outcome) => ApiResponse::Ok(Json(outcome)),
+            Err(RegistrationError::LoginInUse) => ApiResponse::Err(ERROR_ALREADY_REGISTERED),
+            Err(RegistrationError::WeakPassword) => ApiResponse::Err(ERROR_WEAK_PASSWORD),
+            Err(RegistrationError::WeakLogin) => ApiResponse::Err(ERROR_WEAK_LOGIN),
+            Err(RegistrationError::WeakUsername) => ApiResponse::Err(ERROR_WEAK_USERNAME),
+            Err(RegistrationError::PasswordTooLong) => ApiResponse::Err(ERROR_PASSWORD_TOO_LONG),
+            Err(RegistrationError::EqualLoginPassword) => ApiResponse::Err(ERROR_EQUAL_DATA),
+            Err(RegistrationError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
+        },
+
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
     }
 }
@@ -58,7 +64,7 @@ pub async fn refresh(
     refresh_token: validators::RefreshToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<RefreshOk>> {
-    match auth::refresh::refresh(&refresh_token.uuid, &refresh_token.username, db) {
+    match auth::refresh::refresh(&refresh_token.uuid, &refresh_token.username, db).await {
         Ok(outcome) => ApiResponse::Ok(Json(outcome)),
         Err(auth::refresh::RefreshError::InvalidRefreshToken) => {
             ApiResponse::Err(ERROR_TOKEN_SIGNATURE)

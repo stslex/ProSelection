@@ -16,14 +16,12 @@ impl<'r> FromRequest<'r> for AccessToken {
         match ApiKeyParcer::parce(request) {
             Ok(_api_key) => {}
             Err(_error) => {
-                return Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidApiKey))
+                return Outcome::Error((Status::Unauthorized, AccessTokenError::InvalidApiKey))
             }
         }
         let token = match TokenParser::get_token(request) {
             Some(token) => token,
-            None => {
-                return Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidToken))
-            }
+            None => return Outcome::Error((Status::Unauthorized, AccessTokenError::InvalidToken)),
         };
         let binding = token.as_str();
         match JwtDecoder::decode_access(&binding) {
@@ -33,7 +31,7 @@ impl<'r> FromRequest<'r> for AccessToken {
             }),
             Err(error) => {
                 log::error!("Invalid access token: {}", error);
-                Outcome::Failure((Status::Unauthorized, AccessTokenError::InvalidToken))
+                Outcome::Error((Status::Unauthorized, AccessTokenError::InvalidToken))
             }
         }
     }

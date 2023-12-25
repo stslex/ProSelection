@@ -12,8 +12,11 @@ rocket_sync_db_pools = { version = "0.1.0", features = [
 ] }
 # rocket_okapi = "0.5"
 
+tokio = "1.35.1"
+tokio-test = "0.4.3"
+
 diesel = { version = "2.1.4", features = ["postgres", "uuid", "r2d2"] }
-diesel_migrations = "1.4.0"
+diesel_migrations = { version = "2.1.0", features = ["postgres"] }
 
 serde = { version = "1.0.103", features = ["derive"] }
 
