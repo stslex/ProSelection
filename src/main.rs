@@ -15,11 +15,12 @@ pub mod routes;
 mod schema;
 pub mod utils;
 
-#[rocket::launch]
-async fn launch() -> Rocket<Build> {
+#[rocket::main]
+async fn main() {
+    dotenv::dotenv().ok();
     rocket::custom(config::from_env())
         .manage_database()
         .await
         .mount_routes()
-        .await
+        .await;
 }

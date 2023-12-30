@@ -1,3 +1,9 @@
+use std::env;
+
+use diesel::r2d2;
+use diesel::r2d2::ConnectionManager;
+use diesel::r2d2::Pool;
+use diesel::PgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use rocket::Build;
 use rocket::Rocket;
@@ -34,8 +40,18 @@ pub trait AppDatabaseInitialized {
 #[rocket::async_trait]
 impl AppDatabaseInitialized for Rocket<Build> {
     async fn manage_database(self) -> Self {
-        self.attach(Conn::fairing())
+        let database_url =
+            env::var("DATABASE_URL").expect("No DATABASE_URL environment variable found");
+        self.manage(create_db_pool(&database_url))
+            .attach(Conn::fairing())
     }
+}
+
+fn create_db_pool(database_url: &str) -> Pool<ConnectionManager<PgConnection>> {
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool")
 }
 
 #[derive(Clone)]
