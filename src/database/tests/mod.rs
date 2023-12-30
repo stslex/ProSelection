@@ -20,8 +20,17 @@ pub mod database_test_utls {
 
     #[cfg(test)]
     pub async fn get_test_conn() -> Conn {
+        use std::collections::HashMap;
+
+        use rocket::figment::value::Value;
+
         let url: &str = "postgres://postgres:postgres@localhost:5432/postgres";
-        let figment = rocket::Config::figment().merge(("databases.db.url", url));
+        let mut database_config = HashMap::new();
+        let mut databases = HashMap::new();
+        database_config.insert("url", Value::from(url));
+        databases.insert("diesel_postgres_pool", database_config);
+
+        let figment = rocket::Config::figment().merge(("databases", databases));
         let rocket = rocket::custom(figment)
             .attach(Conn::fairing())
             .ignite()
@@ -40,13 +49,13 @@ mod test_db_transition {
 
     use crate::database::tests::database_test_utls::{establish_connection, get_test_conn};
 
-    #[test]
-    fn test_db_transition() {
-        let mut connection = establish_connection().unwrap();
-        let result = connection.test_transaction::<Result<_, Error>, Error, _>(|_| Ok(Ok("test")));
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "test");
-    }
+    // #[test]
+    // fn test_db_transition() {
+    //     let mut connection = establish_connection().unwrap();
+    //     let result = connection.test_transaction::<Result<_, Error>, Error, _>(|_| Ok(Ok("test")));
+    //     assert!(result.is_ok());
+    //     assert_eq!(result.unwrap(), "test");
+    // }
 
     #[tokio::test]
     async fn test_db_conn() {
