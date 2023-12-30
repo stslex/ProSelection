@@ -3,6 +3,7 @@ mod routes;
 mod routes_setup;
 pub mod validators;
 
+#[async_trait]
 pub trait RoutesAuthInitialized {
-    fn mount_auth_routes(self) -> Self;
+    async fn mount_auth_routes(self) -> Self;
 }

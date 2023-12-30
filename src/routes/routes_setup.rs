@@ -1,17 +1,23 @@
-use rocket::Rocket;
+use rocket::{Build, Rocket};
 
 use crate::routes::auth::RoutesAuthInitialized;
-use crate::routes::swagger::SwaggerRouteInitialized;
 use crate::routes::test::RoutesTestInitialized;
 use crate::routes::user::RoutesUserInitialized;
 use crate::routes::RoutesInitialized;
 
-impl RoutesInitialized for Rocket {
-    fn mount_routes(self) -> Self {
+use super::swagger::SwaggerRouteInitialized;
+
+#[async_trait]
+impl RoutesInitialized for Rocket<Build> {
+    async fn mount_routes(self) -> Self {
         self.mount_test_routes()
+            .await
             .mount_auth_routes()
+            .await
             .mount_user_routes()
+            .await
             .mount_swagger_route()
+            .await
     }
 }
 

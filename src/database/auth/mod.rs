@@ -1,5 +1,5 @@
 pub use diesel::ExpressionMethods;
-use rocket_contrib::databases::diesel::Insertable;
+use rocket_sync_db_pools::diesel::Insertable;
 
 use crate::schema::users;
 
@@ -12,18 +12,19 @@ mod tests;
 
 #[derive(Insertable, PartialEq, Debug)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
-    pub login: &'a str,
-    pub username: &'a str,
-    pub secret: &'a str,
-    pub avatar_url: &'a str,
-    pub bio: &'a str,
+pub struct NewUser {
+    pub login: String,
+    pub username: String,
+    pub secret: String,
+    pub avatar_url: String,
+    pub bio: String,
 }
 
+#[async_trait]
 pub trait AuthorizationDatabase {
-    fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
-    fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
+    async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
+    async fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
+    async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
 }
 
 #[derive(Debug)]

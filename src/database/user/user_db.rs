@@ -3,24 +3,26 @@ use super::{
     FavouriteError, FollowError, UserDatabase,
 };
 use crate::{
-    database::{Conn, DatabaseResponse},
+    database::{Conn, DatabaseResponse, OpenError},
     schema::{favourite, follow, users},
 };
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
-pub use rocket_contrib::databases::diesel::Insertable;
 use uuid::Uuid;
 
+#[async_trait]
 impl UserDatabase for Conn {
-    fn get_user_count(&self) -> UserCommonOutcome<String> {
-        match users::table.get_results::<User>(&self.0) {
-            Ok(items) => UserCommonOutcome::Ok(items.len().to_string()),
-            Err(_) => UserCommonOutcome::Error,
-        }
+    async fn get_user_count(&self) -> UserCommonOutcome<String> {
+        self.0
+            .run(|db| match users::table.get_results::<User>(db) {
+                Ok(items) => UserCommonOutcome::Ok(items.len().to_string()),
+                Err(_) => UserCommonOutcome::Error,
+            })
+            .await
     }
 
-    fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError> {
+    async fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -28,32 +30,38 @@ impl UserDatabase for Conn {
                 return Err(GetByUuidError::UuidInvalid);
             }
         };
-        match users::table
-            .filter(users::id.eq(uuid))
-            .first::<User>(&self.0)
-        {
-            Ok(user) => Ok(user),
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                Err(GetByUuidError::InternalError)
-            }
-        }
+        self.0
+            .run(
+                move |db| match users::table.filter(users::id.eq(uuid)).first::<User>(db) {
+                    Ok(user) => Ok(user),
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        Err(GetByUuidError::InternalError)
+                    }
+                },
+            )
+            .await
     }
 
-    fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
-        match users::table
-            .filter(users::username.eq(username))
-            .first::<User>(&self.0)
-        {
-            Ok(user) => Ok(user),
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                Err(GetByUuidError::InternalError)
-            }
-        }
+    async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
+        let username = username.to_owned();
+        self.0
+            .run(move |db| {
+                match users::table
+                    .filter(users::username.eq(username))
+                    .first::<User>(db)
+                {
+                    Ok(user) => Ok(user),
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        Err(GetByUuidError::InternalError)
+                    }
+                }
+            })
+            .await
     }
 
-    fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -61,17 +69,21 @@ impl UserDatabase for Conn {
                 return Err(GetByUuidError::UuidInvalid);
             }
         };
-        match favourite::table
-            .filter(favourite::uuid.eq(uuid))
-            .count()
-            .get_result::<i64>(&self.0)
-        {
-            Ok(count) => Ok(count),
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                Err(GetByUuidError::InternalError)
-            }
-        }
+        self.0
+            .run(move |db| {
+                match favourite::table
+                    .filter(favourite::uuid.eq(uuid))
+                    .count()
+                    .get_result::<i64>(db)
+                {
+                    Ok(count) => Ok(count),
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        Err(GetByUuidError::InternalError)
+                    }
+                }
+            })
+            .await
     }
 
     /// Get the number of followers for a user.
@@ -80,7 +92,7 @@ impl UserDatabase for Conn {
     ///
     /// * `uuid` - The uuid of the user to get the followers count for.
     ///
-    fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -88,17 +100,21 @@ impl UserDatabase for Conn {
                 return Err(GetByUuidError::UuidInvalid);
             }
         };
-        match follow::table
-            .filter(follow::followed_uuid.eq(uuid))
-            .count()
-            .get_result::<i64>(&self.0)
-        {
-            Ok(count) => Ok(count),
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                Err(GetByUuidError::InternalError)
-            }
-        }
+        self.0
+            .run(move |db| {
+                match follow::table
+                    .filter(follow::followed_uuid.eq(uuid))
+                    .count()
+                    .get_result::<i64>(db)
+                {
+                    Ok(count) => Ok(count),
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        Err(GetByUuidError::InternalError)
+                    }
+                }
+            })
+            .await
     }
 
     /// Get the number of users a user is following.
@@ -107,7 +123,7 @@ impl UserDatabase for Conn {
     ///
     /// * `uuid` - The uuid of the user to get the following count for.
     ///
-    fn get_following_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
+    async fn get_following_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -115,20 +131,24 @@ impl UserDatabase for Conn {
                 return Err(GetByUuidError::UuidInvalid);
             }
         };
-        match follow::table
-            .filter(follow::follower_uuid.eq(uuid))
-            .count()
-            .get_result::<i64>(&self.0)
-        {
-            Ok(count) => Ok(count),
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                Err(GetByUuidError::InternalError)
-            }
-        }
+        self.0
+            .run(move |db| {
+                match follow::table
+                    .filter(follow::follower_uuid.eq(uuid))
+                    .count()
+                    .get_result::<i64>(db)
+                {
+                    Ok(count) => Ok(count),
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        Err(GetByUuidError::InternalError)
+                    }
+                }
+            })
+            .await
     }
 
-    fn follow_user(
+    async fn follow_user(
         &self,
         follower_uuid: &str,
         followed_uuid: &str,
@@ -147,47 +167,45 @@ impl UserDatabase for Conn {
                 return DatabaseResponse::Err(super::FollowError::UserNotFound);
             }
         };
-        let followed_user = match users::table
-            .filter(users::id.eq(followed_uuid))
-            .first::<User>(&self.0)
-        {
-            Ok(user) => user,
-            Err(err) => {
-                eprintln!("Error getting user: {}", err);
-                return DatabaseResponse::Err(super::FollowError::UserNotFound);
-            }
-        };
-        let res = follow::table
-            .filter(follow::follower_uuid.eq(follower_uuid))
-            .filter(follow::followed_uuid.eq(followed_uuid))
-            .first::<Follower>(&self.0)
-            .map(|_| DatabaseResponse::Err(super::FollowError::Conflict))
-            .or_else(|_| {
-                let records = NewFollow {
-                    follower_uuid: follower_uuid.clone(),
-                    followed_uuid: followed_uuid.clone(),
-                    username: &followed_user.username,
-                    avatar_url: &followed_user.avatar_url,
+        self.0
+            .run(move |db| {
+                let followed_user = match users::table
+                    .filter(users::id.eq(followed_uuid))
+                    .first::<User>(db)
+                {
+                    Ok(user) => user,
+                    Err(err) => {
+                        eprintln!("Error getting user: {}", err);
+                        return DatabaseResponse::Err(super::FollowError::UserNotFound);
+                    }
                 };
-                diesel::insert_into(follow::table)
-                    .values(records)
-                    .execute(&self.0)
-                    .map(|_| DatabaseResponse::Ok)
-                    .map_err(|err| {
-                        eprintln!("Error following user: {}", err);
-                        DatabaseResponse::Err(super::FollowError::InternalError)
+                follow::table
+                    .filter(follow::follower_uuid.eq(follower_uuid))
+                    .filter(follow::followed_uuid.eq(followed_uuid))
+                    .first::<Follower>(db)
+                    .map(|_: Follower| DatabaseResponse::Err(super::FollowError::Conflict))
+                    .or_else(|_| {
+                        let records = NewFollow {
+                            follower_uuid: follower_uuid.clone(),
+                            followed_uuid: followed_uuid.clone(),
+                            username: &followed_user.username,
+                            avatar_url: &followed_user.avatar_url,
+                        };
+                        diesel::insert_into(follow::table)
+                            .values(records)
+                            .execute(db)
+                            .map(|_| DatabaseResponse::Ok)
+                            .map_err(|err| {
+                                eprintln!("Error following user: {}", err);
+                                DatabaseResponse::Err(super::FollowError::InternalError)
+                            })
                     })
-            });
-        match res {
-            Ok(res) => res,
-            Err(error) => {
-                eprintln!("Error following user: {}", error);
-                error
-            }
-        }
+                    .open_error()
+            })
+            .await
     }
 
-    fn un_follow_user(
+    async fn un_follow_user(
         &self,
         follower_uuid: &str,
         followed_uuid: &str,
@@ -206,27 +224,29 @@ impl UserDatabase for Conn {
                 return DatabaseResponse::Err(super::FollowError::UserNotFound);
             }
         };
-        let res = diesel::delete(
-            follow::table
-                .filter(follow::follower_uuid.eq(follower_uuid))
-                .filter(follow::followed_uuid.eq(followed_uuid)),
-        )
-        .execute(&self.0)
-        .map(|_| DatabaseResponse::Ok)
-        .map_err(|err| {
-            eprintln!("Error unfollowing user: {}", err);
-            DatabaseResponse::Err(super::FollowError::InternalError)
-        });
-        match res {
-            Ok(res) => res,
-            Err(error) => {
-                eprintln!("Error unfollowing user: {}", error);
-                error
-            }
-        }
+        self.0
+            .run(move |db| {
+                diesel::delete(
+                    follow::table
+                        .filter(follow::follower_uuid.eq(follower_uuid))
+                        .filter(follow::followed_uuid.eq(followed_uuid)),
+                )
+                .execute(db)
+                .map(|_| DatabaseResponse::Ok)
+                .map_err(|err| {
+                    eprintln!("Error unfollowing user: {}", err);
+                    DatabaseResponse::Err(super::FollowError::InternalError)
+                })
+                .open_error()
+            })
+            .await
     }
 
-    fn is_following(&self, follower_uuid: &str, followed_uuid: &str) -> Result<bool, FollowError> {
+    async fn is_following(
+        &self,
+        follower_uuid: &str,
+        followed_uuid: &str,
+    ) -> Result<bool, FollowError> {
         let follower_uuid = match Uuid::parse_str(follower_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -241,15 +261,19 @@ impl UserDatabase for Conn {
                 return Result::Err(super::FollowError::UserNotFound);
             }
         };
-        follow::table
-            .filter(follow::follower_uuid.eq(follower_uuid))
-            .filter(follow::followed_uuid.eq(followed_uuid))
-            .first::<Follower>(&self.0)
-            .map(|_| true)
-            .or_else(|_| Ok(false))
+        self.0
+            .run(move |db| {
+                follow::table
+                    .filter(follow::follower_uuid.eq(follower_uuid))
+                    .filter(follow::followed_uuid.eq(followed_uuid))
+                    .first::<Follower>(db)
+                    .map(|_| true)
+                    .or_else(|_| Ok(false))
+            })
+            .await
     }
 
-    fn add_favourite(
+    async fn add_favourite(
         &self,
         uuid: &str,
         favourite_uuid: &str,
@@ -268,34 +292,32 @@ impl UserDatabase for Conn {
                 return DatabaseResponse::Err(super::FavouriteError::UserNotFound);
             }
         };
-        let res = favourite::table
-            .filter(favourite::uuid.eq(uuid))
-            .filter(favourite::favourite_uuid.eq(favourite_uuid))
-            .first::<Favourite>(&self.0)
-            .map(|_| DatabaseResponse::Err(super::FavouriteError::Conflict))
-            .or_else(|_| {
-                diesel::insert_into(favourite::table)
-                    .values((
-                        favourite::uuid.eq(uuid),
-                        favourite::favourite_uuid.eq(favourite_uuid),
-                    ))
-                    .execute(&self.0)
-                    .map(|_| DatabaseResponse::Ok)
-                    .map_err(|err| {
-                        eprintln!("Error adding favourite: {}", err);
-                        DatabaseResponse::Err(super::FavouriteError::InternalError)
+        self.0
+            .run(move |db| {
+                favourite::table
+                    .filter(favourite::uuid.eq(uuid))
+                    .filter(favourite::favourite_uuid.eq(favourite_uuid))
+                    .first::<Favourite>(db)
+                    .map(|_| DatabaseResponse::Err(super::FavouriteError::Conflict))
+                    .or_else(|_| {
+                        diesel::insert_into(favourite::table)
+                            .values((
+                                favourite::uuid.eq(uuid),
+                                favourite::favourite_uuid.eq(favourite_uuid),
+                            ))
+                            .execute(db)
+                            .map(|_| DatabaseResponse::Ok)
+                            .map_err(|err| {
+                                eprintln!("Error adding favourite: {}", err);
+                                DatabaseResponse::Err(super::FavouriteError::InternalError)
+                            })
                     })
-            });
-        match res {
-            Ok(res) => res,
-            Err(error) => {
-                eprintln!("Error adding favourite: {}", error);
-                error
-            }
-        }
+                    .open_error()
+            })
+            .await
     }
 
-    fn remove_favourite(
+    async fn remove_favourite(
         &self,
         uuid: &str,
         favourite_uuid: &str,
@@ -314,27 +336,26 @@ impl UserDatabase for Conn {
                 return DatabaseResponse::Err(super::FavouriteError::UserNotFound);
             }
         };
-        let res = diesel::delete(
-            favourite::table
-                .filter(favourite::uuid.eq(uuid))
-                .filter(favourite::favourite_uuid.eq(favourite_uuid)),
-        )
-        .execute(&self.0)
-        .map(|_| DatabaseResponse::Ok)
-        .map_err(|err| {
-            eprintln!("Error removing favourite: {}", err);
-            DatabaseResponse::Err(super::FavouriteError::InternalError)
-        });
-        match res {
-            Ok(res) => res,
-            Err(error) => {
-                eprintln!("Error removing favourite: {}", error);
-                error
-            }
-        }
+
+        self.0
+            .run(move |db| {
+                diesel::delete(
+                    favourite::table
+                        .filter(favourite::uuid.eq(uuid))
+                        .filter(favourite::favourite_uuid.eq(favourite_uuid)),
+                )
+                .execute(db)
+                .map(|_| DatabaseResponse::Ok)
+                .map_err(|err| {
+                    eprintln!("Error removing favourite: {}", err);
+                    DatabaseResponse::Err(super::FavouriteError::InternalError)
+                })
+                .open_error()
+            })
+            .await
     }
 
-    fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
+    async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -349,12 +370,16 @@ impl UserDatabase for Conn {
                 return Result::Err(super::FavouriteError::UserNotFound);
             }
         };
-        favourite::table
-            .filter(favourite::user_uuid.eq(uuid))
-            .filter(favourite::favourite_uuid.eq(favourite_uuid))
-            .first::<Favourite>(&self.0)
-            .map(|_| true)
-            .or_else(|_| Ok(false))
+        self.0
+            .run(move |db| {
+                favourite::table
+                    .filter(favourite::user_uuid.eq(uuid))
+                    .filter(favourite::favourite_uuid.eq(favourite_uuid))
+                    .first::<Favourite>(db)
+                    .map(|_| true)
+                    .or_else(|_| Ok(false))
+            })
+            .await
     }
 }
 

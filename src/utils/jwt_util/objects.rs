@@ -10,6 +10,7 @@ pub struct JwtResult {
     pub refresh_token: String,
 }
 
+#[derive(Clone)]
 pub struct JwtDecoderResult {
     pub uuid: String,
     pub username: String,
