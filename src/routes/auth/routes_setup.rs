@@ -5,9 +5,8 @@ use crate::routes::{
     routes_setup::BASE_API_URL,
 };
 
-#[async_trait]
 impl RoutesAuthInitialized for Rocket<Build> {
-    async fn mount_auth_routes(self) -> Self {
+    fn mount_auth_routes(self) -> Self {
         let base_url = &*(BASE_API_URL.to_owned() + BASE_USER_URL);
         self.mount(
             base_url,

@@ -36,7 +36,7 @@ impl AuthorizationDatabase for Conn {
                         }),
                         Err(_) => AuthorizationOutcome::Other,
                     },
-                    false => AuthorizationOutcome::NotFound,
+                    false => AuthorizationOutcome::InvalidPassword,
                 },
                 Err(diesel::result::Error::NotFound) => AuthorizationOutcome::NotFound,
                 _ => AuthorizationOutcome::Other,

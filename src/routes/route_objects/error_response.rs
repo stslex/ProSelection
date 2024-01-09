@@ -42,6 +42,11 @@ pub const ERROR_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse
     status: Status::BadRequest,
 };
 
+pub const ERROR_INVALID_PASSWORD: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "invalid password",
+    status: Status::BadRequest,
+};
+
 // registration error
 pub const ERROR_WEAK_PASSWORD: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "weak_password",

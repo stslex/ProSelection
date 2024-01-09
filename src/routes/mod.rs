@@ -5,7 +5,6 @@ mod swagger;
 mod test;
 mod user;
 
-#[async_trait]
 pub trait RoutesInitialized {
-    async fn mount_routes(self) -> Self;
+    fn mount_routes(self) -> Self;
 }

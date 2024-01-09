@@ -1,6 +1,4 @@
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use rocket::Build;
-use rocket::Rocket;
 use rocket_sync_db_pools::{database, diesel};
 
 pub mod auth;
@@ -23,18 +21,6 @@ impl Conn {
         })
         .await
         .map_err(|_| ())
-    }
-}
-
-#[rocket::async_trait]
-pub trait AppDatabaseInitialized {
-    async fn manage_database(self) -> Self;
-}
-
-#[rocket::async_trait]
-impl AppDatabaseInitialized for Rocket<Build> {
-    async fn manage_database(self) -> Self {
-        self.attach(Conn::fairing())
     }
 }
 

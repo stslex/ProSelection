@@ -11,7 +11,7 @@ mod reg_validation;
 mod tests;
 
 #[derive(Insertable, PartialEq, Debug)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct NewUser {
     pub login: String,
     pub username: String,
@@ -31,6 +31,7 @@ pub trait AuthorizationDatabase {
 pub enum AuthorizationOutcome {
     Ok(AuthorizationOk),
     NotFound,
+    InvalidPassword,
     Other,
 }
 
@@ -57,6 +58,7 @@ impl std::fmt::Display for AuthorizationOutcome {
             AuthorizationOutcome::Ok(_) => write!(f, "Ok"),
             AuthorizationOutcome::NotFound => write!(f, "NotFound"),
             AuthorizationOutcome::Other => write!(f, "Other"),
+            AuthorizationOutcome::InvalidPassword => write!(f, "Invalid password"),
         }
     }
 }

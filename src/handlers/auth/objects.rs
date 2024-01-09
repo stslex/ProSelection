@@ -12,6 +12,7 @@ pub struct LoginOk {
 pub enum LoginError {
     NotFound,
     Other,
+    InvalidPassword,
 }
 
 impl std::fmt::Display for LoginError {
@@ -19,6 +20,7 @@ impl std::fmt::Display for LoginError {
         match self {
             LoginError::NotFound => write!(f, "Login not found"),
             LoginError::Other => write!(f, "Other login error"),
+            LoginError::InvalidPassword => write!(f, "Invalid password"),
         }
     }
 }

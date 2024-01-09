@@ -7,9 +7,9 @@ use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
 use crate::routes::auth::validators;
 use crate::routes::route_objects::error_response::{
-    ERROR_ALREADY_REGISTERED, ERROR_EQUAL_DATA, ERROR_PASSWORD_TOO_LONG, ERROR_TOKEN_SIGNATURE,
-    ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_LOGIN, ERROR_WEAK_PASSWORD,
-    ERROR_WEAK_USERNAME, ERROR_WRONG_REQUEST,
+    ERROR_ALREADY_REGISTERED, ERROR_EQUAL_DATA, ERROR_INVALID_PASSWORD, ERROR_PASSWORD_TOO_LONG,
+    ERROR_TOKEN_SIGNATURE, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_LOGIN,
+    ERROR_WEAK_PASSWORD, ERROR_WEAK_USERNAME, ERROR_WRONG_REQUEST,
 };
 use crate::routes::route_objects::ApiResponse;
 
@@ -27,6 +27,7 @@ pub async fn login<'a>(
             Ok(outcome) => ApiResponse::Ok(Json(outcome)),
             Err(LoginError::NotFound) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
             Err(LoginError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
+            Err(LoginError::InvalidPassword) => ApiResponse::Err(ERROR_INVALID_PASSWORD),
         },
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
     }
