@@ -4,6 +4,7 @@ use crate::database::auth::reg_objects::{
     RegistrationData, RegistrationFieldValidError, RegistrationOutcome,
 };
 use crate::database::auth::{AuthorizationDatabase, AuthorizationOk};
+use crate::utils::AppHasher;
 
 pub enum RegistrationError {
     LoginInUse,
@@ -21,11 +22,12 @@ pub async fn registration(
     password: &str,
     db: database::Conn,
 ) -> Result<LoginOk, RegistrationError> {
+    // todo add validation here
     match db
         .registration(RegistrationData {
-            login: login.to_owned(),
+            login: login.hash(),
             username: username.to_owned(),
-            password: password.to_owned(),
+            password: password.hash(),
         })
         .await
     {
