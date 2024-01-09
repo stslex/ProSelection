@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 use std::env;
 
+use dotenv::dotenv;
 use rocket::figment::value::Value;
-use rocket::Config;
+use rocket::figment::Figment;
 
-pub fn from_env() -> Config {
+pub fn from_env() -> Figment {
+    dotenv().ok();
+
     let port = env::var("PORT")
         .unwrap_or_else(|_| "8000".to_string())
         .parse::<u16>()
@@ -20,8 +23,7 @@ pub fn from_env() -> Config {
 
     databases.insert("diesel_postgres_pool", database_config);
 
-    let provider = rocket::Config::figment()
+    rocket::Config::figment()
         .merge(("port", port))
-        .merge(("databases", databases));
-    Config::from(provider)
+        .merge(("databases", databases))
 }
