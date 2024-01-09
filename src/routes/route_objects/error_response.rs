@@ -1,7 +1,8 @@
 use rocket::http::{ContentType, Status};
-use rocket::response::content::Json;
 use rocket::response::{Responder, Result};
+use rocket::serde::json::Json;
 use rocket::{Request, Response};
+use serde_json::json;
 
 #[derive(Copy, Clone)]
 pub struct ErrorResponse<'a> {
@@ -9,8 +10,8 @@ pub struct ErrorResponse<'a> {
     status: Status,
 }
 
-impl<'r> Responder<'r> for ErrorResponse<'r> {
-    fn respond_to(self, request: &Request) -> Result<'r> {
+impl<'r, 'o: 'r> Responder<'r, 'o> for ErrorResponse<'r> {
+    fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         if let Ok(response) = Json(json!({"error": self.cause})).respond_to(request) {
             Response::build_from(response)
                 .status(self.status)
@@ -38,6 +39,11 @@ pub const ERROR_WRONG_REQUEST: &'static ErrorResponse<'static> = &ErrorResponse 
 // login error
 pub const ERROR_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "user_not_found",
+    status: Status::BadRequest,
+};
+
+pub const ERROR_INVALID_PASSWORD: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "invalid password",
     status: Status::BadRequest,
 };
 

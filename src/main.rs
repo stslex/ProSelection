@@ -1,16 +1,11 @@
-#![feature(decl_macro)]
-
 #[macro_use]
 extern crate diesel;
 #[macro_use]
-extern crate diesel_migrations;
-#[macro_use]
 extern crate rocket;
-#[macro_use]
-extern crate rocket_contrib;
 
-use crate::database::AppDatabaseInitialized;
 use crate::routes::RoutesInitialized;
+use database::Conn;
+use rocket::{Build, Rocket};
 
 mod config;
 pub mod database;
@@ -19,9 +14,9 @@ pub mod routes;
 mod schema;
 pub mod utils;
 
-fn main() {
+#[rocket::launch]
+fn launch() -> Rocket<Build> {
     rocket::custom(config::from_env())
-        .manage_database()
+        .attach(Conn::fairing())
         .mount_routes()
-        .launch();
 }

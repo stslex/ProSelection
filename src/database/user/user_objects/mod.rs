@@ -2,7 +2,7 @@ pub mod user;
 
 use crate::schema::favourite;
 use crate::schema::follow;
-use rocket_contrib::databases::diesel::Insertable;
+use rocket_sync_db_pools::diesel::Insertable;
 use uuid::Uuid;
 
 /// Represents the outcome of common user operations.
@@ -13,7 +13,7 @@ pub enum UserCommonOutcome<T> {
 
 /// Represents a new following relationship to be inserted into the database.
 #[derive(Insertable, PartialEq, Debug)]
-#[table_name = "follow"]
+#[diesel(table_name = follow)]
 pub struct NewFollow<'a> {
     pub follower_uuid: Uuid,
     pub followed_uuid: Uuid,
@@ -23,7 +23,7 @@ pub struct NewFollow<'a> {
 
 /// Represents a new favorite item to be inserted into the database.
 #[derive(Insertable, PartialEq, Debug)]
-#[table_name = "favourite"]
+#[diesel(table_name = favourite)]
 pub struct NewFavourite<'a> {
     pub user_uuid: Uuid,
     pub favourite_uuid: Uuid,

@@ -1,18 +1,19 @@
-use std::collections::HashMap;
 use std::env;
 
-use dotenv::dotenv;
-use rocket::config::{Environment, Value};
-use rocket::Config;
+use std::collections::HashMap;
 
-pub fn from_env() -> Config {
+use dotenv::dotenv;
+use rocket::figment::{value::Value, Figment};
+
+pub fn from_env() -> Figment {
     dotenv().ok();
-    let environment = Environment::active().expect("Environment Not Found");
 
     let port = env::var("PORT")
         .unwrap_or_else(|_| "8000".to_string())
         .parse::<u16>()
         .expect("PORT environment variable should parse to an integer");
+
+    let address = env::var("ADDRESS").unwrap_or_else(|_| "0.0.0.0".to_string());
 
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
@@ -22,12 +23,10 @@ pub fn from_env() -> Config {
 
     database_config.insert("url", Value::from(database_url));
 
-    databases.insert("diesel_postgres_pool", Value::from(database_config));
+    databases.insert("diesel_postgres_pool", database_config);
 
-    Config::build(environment)
-        .environment(environment)
-        .port(port)
-        .extra("databases", databases)
-        .finalize()
-        .unwrap()
+    Figment::from(rocket::Config::default())
+        .merge(("address", address))
+        .merge(("port", port))
+        .merge(("databases", databases))
 }

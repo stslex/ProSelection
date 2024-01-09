@@ -3,19 +3,20 @@ use crate::database::auth::{AuthorizationDatabase, AuthorizationOk, Authorizatio
 
 use super::objects::{LoginError, LoginOk};
 
-pub fn login<'a>(
+pub async fn login<'a>(
     login: &'a str,
     password: &'a str,
     db: database::Conn,
 ) -> Result<LoginOk, LoginError> {
-    match db.login(login, password) {
-        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res)),
+    match db.login(login, password).await {
+        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res).await),
         AuthorizationOutcome::NotFound => Err(LoginError::NotFound),
         AuthorizationOutcome::Other => Err(LoginError::Other),
+        AuthorizationOutcome::InvalidPassword => Err(LoginError::InvalidPassword),
     }
 }
 
-fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
+async fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
     LoginOk {
         uuid: (result.uuid.to_owned()),
         username: (result.username.to_owned()),

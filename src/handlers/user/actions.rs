@@ -13,63 +13,67 @@ pub enum FavouriteResponse {
     Error(FavouriteError),
 }
 
-pub fn follow_user<'a>(
+pub async fn follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> FollowResponse {
-    match db.follow_user(follower_uuid, followed_uuid) {
+    match db.follow_user(follower_uuid, followed_uuid).await {
         database::DatabaseResponse::Ok => FollowResponse::Ok,
         database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
     }
 }
 
-pub fn un_follow_user<'a>(
+pub async fn un_follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> FollowResponse {
-    match db.un_follow_user(follower_uuid, followed_uuid) {
+    match db.un_follow_user(follower_uuid, followed_uuid).await {
         database::DatabaseResponse::Ok => FollowResponse::Ok,
         database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
     }
 }
 
-pub fn is_following<'a>(
+pub async fn is_following<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
 ) -> Result<bool, FollowError> {
-    match db.is_following(follower_uuid, followed_uuid) {
+    match db.is_following(follower_uuid, followed_uuid).await {
         Ok(is_following) => Ok(is_following),
         Err(err) => Err(err),
     }
 }
 
-pub fn add_favourite<'a>(uuid: &'a str, title: &'a str, db: database::Conn) -> FavouriteResponse {
-    match db.add_favourite(uuid, title) {
-        database::DatabaseResponse::Ok => FavouriteResponse::Ok,
-        database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
-    }
-}
-
-pub fn remove_favourite<'a>(
+pub async fn add_favourite<'a>(
     uuid: &'a str,
     title: &'a str,
     db: database::Conn,
 ) -> FavouriteResponse {
-    match db.remove_favourite(uuid, title) {
+    match db.add_favourite(uuid, title).await {
         database::DatabaseResponse::Ok => FavouriteResponse::Ok,
         database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
     }
 }
 
-pub fn is_favourite<'a>(
+pub async fn remove_favourite<'a>(
+    uuid: &'a str,
+    title: &'a str,
+    db: database::Conn,
+) -> FavouriteResponse {
+    match db.remove_favourite(uuid, title).await {
+        database::DatabaseResponse::Ok => FavouriteResponse::Ok,
+        database::DatabaseResponse::Err(err) => FavouriteResponse::Error(err),
+    }
+}
+
+pub async fn is_favourite<'a>(
     uuid: &'a str,
     title: &'a str,
     db: database::Conn,
 ) -> Result<bool, FavouriteError> {
-    match db.is_favourite(uuid, title) {
+    match db.is_favourite(uuid, title).await {
         Ok(is_favourite) => Ok(is_favourite),
         Err(err) => Err(err),
     }

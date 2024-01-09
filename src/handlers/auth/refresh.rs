@@ -4,8 +4,12 @@ use crate::database::{
 };
 use serde::Serialize;
 
-pub fn refresh(uuid: &str, username: &str, db: database::Conn) -> Result<RefreshOk, RefreshError> {
-    match db.verify_token(uuid, username) {
+pub async fn refresh(
+    uuid: &str,
+    username: &str,
+    db: database::Conn,
+) -> Result<RefreshOk, RefreshError> {
+    match db.verify_token(uuid, username).await {
         auth::VerifyTokenOutcome::Ok(result) => Ok(RefreshOk {
             uuid: result.uuid,
             username: result.username,
