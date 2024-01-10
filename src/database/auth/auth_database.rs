@@ -10,8 +10,6 @@ use crate::schema::users;
 use crate::utils::jwt_util::objects::JwtMapper;
 use crate::utils::jwt_util::JwtGenerator;
 
-use super::reg_objects::RegistrationFieldValid;
-use super::reg_validation::AuthValidation;
 use super::RegistrationData;
 use super::VerifyTokenOutcome;
 use crate::database::auth::RegistrationOutcome;
@@ -46,14 +44,6 @@ impl AuthorizationDatabase for Conn {
     }
 
     async fn registration(&self, data: RegistrationData) -> RegistrationOutcome {
-        match data.validate() {
-            RegistrationFieldValid::Ok => (),
-            RegistrationFieldValid::Error(err) => {
-                log::debug!("Registration field validation error: {:?}", err.to_string());
-                return RegistrationOutcome::RegistrationFieldValid(err);
-            }
-        }
-
         let new_user = NewUser {
             login: data.login.to_owned(),
             username: data.username.to_owned(),

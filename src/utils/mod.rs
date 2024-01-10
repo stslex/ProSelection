@@ -5,12 +5,14 @@ use std::{
 
 pub mod jwt_util;
 
+#[async_trait]
 pub trait AppHasher {
-    fn hash(&self) -> String;
+    async fn hash(&self) -> String;
 }
 
+#[async_trait]
 impl AppHasher for str {
-    fn hash(&self) -> String {
+    async fn hash(&self) -> String {
         let mut hasher = DefaultHasher::new();
         let value = &self;
         value.hash(&mut hasher);
