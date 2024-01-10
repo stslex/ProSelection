@@ -2,7 +2,7 @@
 mod tests {
 
     use crate::database::auth::{
-        reg_objects::{RegistrationData, RegistrationFieldValidError, RegistrationOutcome},
+        reg_objects::{RegistrationData, RegistrationOutcome},
         AuthorizationDatabase, AuthorizationOutcome, VerifyTokenOutcome,
     };
     use crate::database::tests::database_test_utls::get_test_conn;
@@ -46,37 +46,6 @@ mod tests {
             _ => false,
         };
         assert!(is_valid)
-    }
-
-    #[tokio::test]
-    async fn test_registration_invalid_data() {
-        env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
-        env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
-
-        let data = RegistrationData {
-            login: "test_login".to_owned(),
-            username: "test_username".to_owned(),
-            password: "".to_owned(), // invalid password
-        };
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
-
-        let outcome = connection.registration(data).await;
-
-        let is_valid = match outcome {
-            RegistrationOutcome::RegistrationFieldValid(error) => match error {
-                RegistrationFieldValidError::WeakPassword => true,
-                _ => false,
-            },
-            _ => false,
-        };
-        assert!(is_valid);
     }
 
     #[tokio::test]

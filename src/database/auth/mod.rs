@@ -7,7 +7,6 @@ use self::reg_objects::{RegistrationData, RegistrationOutcome};
 
 mod auth_database;
 pub mod reg_objects;
-mod reg_validation;
 mod tests;
 
 #[derive(Insertable, PartialEq, Debug)]
