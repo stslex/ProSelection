@@ -13,17 +13,16 @@ use super::{
 const ACCESS_EXP_TIME_DAYS: i64 = 7;
 const REFRESH_EXP_TIME_DAYS: i64 = 30;
 
+#[async_trait]
 impl JwtGenerator for JwtObject {
-    fn generate(&self) -> Result<JwtResult, JwtGeneratorError> {
-        let access_token = self.generate_access()?;
-        let refresh_token = self.generate_refresh()?;
+    async fn generate(&self) -> Result<JwtResult, JwtGeneratorError> {
         Ok(JwtResult {
-            access_token: access_token,
-            refresh_token: refresh_token,
+            access_token: self.generate_access().await?,
+            refresh_token: self.generate_refresh().await?,
         })
     }
 
-    fn generate_access(&self) -> Result<String, JwtGeneratorError> {
+    async fn generate_access(&self) -> Result<String, JwtGeneratorError> {
         let env_secret = match env::var("JWT_ACCESS_SECRET") {
             Ok(result) => result,
             Err(_) => {
@@ -32,10 +31,10 @@ impl JwtGenerator for JwtObject {
             }
         };
         let secret = env_secret.as_bytes();
-        self.generate_token(secret, ACCESS_EXP_TIME_DAYS)
+        self.generate_token(secret, ACCESS_EXP_TIME_DAYS).await
     }
 
-    fn generate_refresh(&self) -> Result<String, JwtGeneratorError> {
+    async fn generate_refresh(&self) -> Result<String, JwtGeneratorError> {
         let env_secret = match env::var("JWT_REFRESH_SECRET") {
             Ok(result) => result,
             Err(_) => {
@@ -44,10 +43,10 @@ impl JwtGenerator for JwtObject {
             }
         };
         let secret = env_secret.as_bytes();
-        self.generate_token(secret, REFRESH_EXP_TIME_DAYS)
+        self.generate_token(secret, REFRESH_EXP_TIME_DAYS).await
     }
 
-    fn generate_token(
+    async fn generate_token(
         &self,
         env_secret: &[u8],
         exp_days: i64,

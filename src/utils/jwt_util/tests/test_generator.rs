@@ -12,8 +12,8 @@ mod test_generator {
     const EXPECTED_USERNAME: &str = "expected_username";
     const SECRET_TEST: &str = "secret_test";
 
-    #[test]
-    fn test_generate_access() {
+    #[tokio::test]
+    async fn test_generate_access() {
         // Arrange
         let key: Hmac<Sha256> =
             Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
@@ -21,7 +21,7 @@ mod test_generator {
         env::set_var("JWT_ACCESS_SECRET", SECRET_TEST);
 
         // Act
-        let result = test_jwt_object.generate_access();
+        let result = test_jwt_object.generate_access().await;
 
         // Assert
         assert!(result.is_ok());
@@ -36,8 +36,8 @@ mod test_generator {
         assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
     }
 
-    #[test]
-    fn test_generate_refresh() {
+    #[tokio::test]
+    async fn test_generate_refresh() {
         // Arrange
         let key: Hmac<Sha256> =
             Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
@@ -45,7 +45,7 @@ mod test_generator {
         env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
 
         // Act
-        let result = test_jwt_object.generate_refresh();
+        let result = test_jwt_object.generate_refresh().await;
 
         // Assert
         assert!(result.is_ok());
@@ -60,8 +60,8 @@ mod test_generator {
         assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
     }
 
-    #[test]
-    fn test_generate_token() {
+    #[tokio::test]
+    async fn test_generate_token() {
         // Arrange
         let key: Hmac<Sha256> =
             Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
@@ -70,7 +70,9 @@ mod test_generator {
         env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
 
         // Act
-        let result = test_jwt_object.generate_token(SECRET_TEST.as_bytes(), exp_days);
+        let result = test_jwt_object
+            .generate_token(SECRET_TEST.as_bytes(), exp_days)
+            .await;
 
         // Assert
         assert!(result.is_ok());
@@ -85,22 +87,24 @@ mod test_generator {
         assert_eq!(claims.get("username").unwrap(), EXPECTED_USERNAME);
     }
 
-    #[test]
-    fn test_generate_token_out_of_rage() {
+    #[tokio::test]
+    async fn test_generate_token_out_of_rage() {
         // Arrange
         let test_jwt_object = test_jwt_object();
         let exp_days = i64::MAX;
         env::set_var("JWT_REFRESH_SECRET", SECRET_TEST);
 
         // Act
-        let result = test_jwt_object.generate_token(SECRET_TEST.as_bytes(), exp_days);
+        let result = test_jwt_object
+            .generate_token(SECRET_TEST.as_bytes(), exp_days)
+            .await;
         // Assert
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), JwtGeneratorError::DurationOutOfBound);
     }
 
-    #[test]
-    fn test_generate() {
+    #[tokio::test]
+    async fn test_generate() {
         // Arrange
         let key: Hmac<Sha256> =
             Hmac::new_from_slice(SECRET_TEST.as_bytes()).expect("Failed to create key");
@@ -110,7 +114,7 @@ mod test_generator {
         env::set_var("JWT_ACCESS_SECRET", SECRET_TEST);
 
         // Act
-        let result = test_jwt_object.generate();
+        let result = test_jwt_object.generate().await;
 
         // Assert
         assert!(result.is_ok());
