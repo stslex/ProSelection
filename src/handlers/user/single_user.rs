@@ -34,27 +34,18 @@ async fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
         username: user.username.clone(),
         bio: user.bio.clone(),
         avatar_url: user.avatar_url.clone(),
-        followers_count: match db.get_followers_count(&user.id.to_string()).await {
-            Ok(count) => count,
-            Err(err) => {
-                eprintln!("Error getting followers count: {}", err);
-                0
-            }
-        },
-        following_count: match db.get_following_count(&user.id.to_string()).await {
-            Ok(count) => count,
-            Err(err) => {
-                eprintln!("Error getting following count: {}", err);
-                0
-            }
-        },
-        favourites_count: match db.get_favourites_count(&user.id.to_string()).await {
-            Ok(count) => count,
-            Err(err) => {
-                eprintln!("Error getting favourites count: {}", err);
-                0
-            }
-        },
+        followers_count: db
+            .get_followers_count(&user.id.to_string())
+            .await
+            .unwrap_or(0),
+        following_count: db
+            .get_following_count(&user.id.to_string())
+            .await
+            .unwrap_or(0),
+        favourites_count: db
+            .get_favourites_count(&user.id.to_string())
+            .await
+            .unwrap_or(0),
     }
 }
 
