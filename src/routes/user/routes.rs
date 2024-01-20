@@ -1,7 +1,9 @@
 use rocket::serde::json::Json;
+use serde::{Deserialize, Serialize};
 
 use crate::database::user::{FavouriteError, FollowError};
 use crate::handlers::user::actions::{self, FavouriteResponse, FollowResponse};
+use crate::handlers::user::search::UserSearchResponse;
 use crate::handlers::user::single_user::{IsFollowingResponse, UserError, UserResponse};
 use crate::routes::auth::validators::AccessToken;
 use crate::routes::route_objects::error_response::{
@@ -56,6 +58,27 @@ pub async fn get_user(
             };
         }
     }
+}
+
+#[get("/search?<params..>")]
+pub async fn get_user_search<'a>(
+    _access_token: AccessToken,
+    params: UserSearchParams<'a>,
+    db: database::Conn,
+) -> ApiResponse<'static, Json<UserSearchResponse>> {
+    // handlers::user::search
+    log::info!("query: {}", params.query);
+    log::info!("page: {}", params.page);
+    log::info!("page_size: {}", params.page_size);
+    let test_response = UserSearchResponse { users: Vec::new() };
+    ApiResponse::Ok(Json(test_response))
+}
+
+#[derive(Deserialize, FromForm)]
+pub struct UserSearchParams<'a> {
+    query: &'a str,
+    page: i64,
+    page_size: i64,
 }
 
 #[get("/?username&<username>")]
