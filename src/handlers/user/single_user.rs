@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::Serialize;
 
 use crate::database::{
@@ -6,6 +8,7 @@ use crate::database::{
 };
 
 pub async fn get_user<'a>(uuid: &'a str, db: database::Conn) -> Result<UserResponse, UserError> {
+    let db = Arc::new(db);
     match db.get_user(uuid).await {
         Ok(user) => Ok(map_user_info(&user, db).await),
         Err(err) => match err {
@@ -19,6 +22,7 @@ pub async fn get_user_by_username<'a>(
     username: &'a str,
     db: database::Conn,
 ) -> Result<UserResponse, UserError> {
+    let db = Arc::new(db);
     match db.get_user_by_username(username).await {
         Ok(user) => Ok(map_user_info(&user, db).await),
         Err(err) => match err {
@@ -28,7 +32,7 @@ pub async fn get_user_by_username<'a>(
     }
 }
 
-async fn map_user_info(user: &User, db: database::Conn) -> UserResponse {
+pub async fn map_user_info(user: &User, db: Arc<database::Conn>) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),

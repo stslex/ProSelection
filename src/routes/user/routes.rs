@@ -1,9 +1,9 @@
 use rocket::serde::json::Json;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::database::user::{FavouriteError, FollowError};
 use crate::handlers::user::actions::{self, FavouriteResponse, FollowResponse};
-use crate::handlers::user::search::UserSearchResponse;
+use crate::handlers::user::search::{UserSearchError, UserSearchResponse};
 use crate::handlers::user::single_user::{IsFollowingResponse, UserError, UserResponse};
 use crate::routes::auth::validators::AccessToken;
 use crate::routes::route_objects::error_response::{
@@ -62,16 +62,25 @@ pub async fn get_user(
 
 #[get("/search?<params..>")]
 pub async fn get_user_search<'a>(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     params: UserSearchParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserSearchResponse>> {
-    // handlers::user::search
-    log::info!("query: {}", params.query);
-    log::info!("page: {}", params.page);
-    log::info!("page_size: {}", params.page_size);
-    let test_response = UserSearchResponse { users: Vec::new() };
-    ApiResponse::Ok(Json(test_response))
+    let request = handlers::user::search::UserSearchRequest {
+        query: params.query,
+        uuid: &access_token.uuid,
+        page: params.page,
+        page_size: params.page_size,
+    };
+    match handlers::user::search::search_user(&request, db).await {
+        Ok(response) => ApiResponse::Ok(Json(response)),
+        Err(err) => {
+            eprint!("Error: {:?}", err);
+            return match err {
+                UserSearchError::Other => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+            };
+        }
+    }
 }
 
 #[derive(Deserialize, FromForm)]
