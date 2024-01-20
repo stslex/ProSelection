@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{
     database::{Conn, DatabaseResponse, OpenError},
+    handlers::user::search::{UserSearchError, UserSearchRequest},
     schema::{favourite, follow, users},
 };
 use diesel::prelude::*;
@@ -40,6 +41,37 @@ impl UserDatabase for Conn {
                     }
                 },
             )
+            .await
+    }
+
+    async fn search_users(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<User>, UserSearchError> {
+        let query = request.query.to_owned();
+        let uuid = match Uuid::parse_str(request.uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
+        let limit = request.page_size;
+        let offset = request.page * request.page_size;
+        self.0
+            .run(move |db| {
+                let users: Vec<User> = users::table
+                    .filter(users::username.ilike(format!("%{}%", query)))
+                    .filter(users::id.ne(uuid))
+                    .limit(limit)
+                    .offset(offset)
+                    .get_results::<User>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting users: {}", err);
+                        UserSearchError::Other
+                    })?;
+                Ok(users)
+            })
             .await
     }
 

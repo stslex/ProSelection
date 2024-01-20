@@ -1,3 +1,5 @@
+use crate::handlers::user::search::{UserSearchError, UserSearchRequest};
+
 use self::{
     user_db::GetByUuidError,
     user_objects::{user::User, UserCommonOutcome},
@@ -12,6 +14,8 @@ pub mod user_objects;
 pub trait UserDatabase {
     async fn get_user_count(&self) -> UserCommonOutcome<String>;
     async fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError>;
+    async fn search_users(&self, request: &UserSearchRequest)
+        -> Result<Vec<User>, UserSearchError>;
     async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError>;
     async fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError>;
     async fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError>;
