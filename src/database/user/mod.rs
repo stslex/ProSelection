@@ -2,7 +2,7 @@ use crate::handlers::user::search::{UserSearchError, UserSearchRequest};
 
 use self::{
     user_db::GetByUuidError,
-    user_objects::{user::User, UserCommonOutcome},
+    user_objects::{user::User, Favourite, Follower, UserCommonOutcome},
 };
 
 use super::DatabaseResponse;
@@ -46,6 +46,18 @@ pub trait UserDatabase {
         favourite_uuid: &str,
     ) -> DatabaseResponse<FavouriteError>;
     async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError>;
+    async fn get_user_followers(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Follower>, UserSearchError>;
+    async fn get_user_favourites(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Favourite>, UserSearchError>;
+    async fn get_user_following(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Follower>, UserSearchError>;
 }
 
 #[derive(Debug, Clone)]

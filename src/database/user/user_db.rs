@@ -75,6 +75,99 @@ impl UserDatabase for Conn {
             .await
     }
 
+    async fn get_user_followers(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Follower>, UserSearchError> {
+        let uuid = match Uuid::parse_str(request.uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
+        let limit = request.page_size;
+        let offset = request.page * request.page_size;
+        self.0
+            .run(move |db| {
+                let users: Vec<Follower> = follow::table
+                    .filter(follow::followed_uuid.eq(uuid))
+                    .limit(limit)
+                    .offset(offset)
+                    .get_results::<Follower>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting users: {}", err);
+                        UserSearchError::Other
+                    })?
+                    .into_iter()
+                    .collect();
+                Ok(users)
+            })
+            .await
+    }
+
+    async fn get_user_favourites(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Favourite>, UserSearchError> {
+        let uuid = match Uuid::parse_str(request.uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
+        let limit = request.page_size;
+        let offset = request.page * request.page_size;
+        self.0
+            .run(move |db| {
+                let users: Vec<Favourite> = favourite::table
+                    .filter(favourite::uuid.eq(uuid))
+                    .limit(limit)
+                    .offset(offset)
+                    .get_results::<Favourite>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting users: {}", err);
+                        UserSearchError::Other
+                    })?
+                    .into_iter()
+                    .collect();
+                Ok(users)
+            })
+            .await
+    }
+
+    async fn get_user_following(
+        &self,
+        request: &UserSearchRequest,
+    ) -> Result<Vec<Follower>, UserSearchError> {
+        let uuid = match Uuid::parse_str(request.uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
+        let limit = request.page_size;
+        let offset = request.page * request.page_size;
+        self.0
+            .run(move |db| {
+                let users: Vec<Follower> = follow::table
+                    .filter(follow::follower_uuid.eq(uuid))
+                    .limit(limit)
+                    .offset(offset)
+                    .get_results::<Follower>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting users: {}", err);
+                        UserSearchError::Other
+                    })?
+                    .into_iter()
+                    .collect();
+                Ok(users)
+            })
+            .await
+    }
+
     async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
         let username = username.to_owned();
         self.0

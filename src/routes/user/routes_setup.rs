@@ -22,6 +22,9 @@ impl RoutesUserInitialized for Rocket<Build> {
                 routes::post_follow,
                 routes::delete_follow,
                 routes::get_is_following,
+                routes::get_user_favourites,
+                routes::get_user_followers,
+                routes::get_user_following,
             ],
         )
     }
