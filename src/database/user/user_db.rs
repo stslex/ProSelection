@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     database::{Conn, DatabaseResponse, OpenError},
-    handlers::user::search::{UserSearchError, UserSearchRequest},
+    handlers::user::search::{UserPagingRequest, UserSearchError, UserSearchRequest},
     schema::{favourite, follow, users},
 };
 use diesel::prelude::*;
@@ -77,7 +77,7 @@ impl UserDatabase for Conn {
 
     async fn get_user_followers(
         &self,
-        request: &UserSearchRequest,
+        request: &UserPagingRequest,
     ) -> Result<Vec<Follower>, UserSearchError> {
         let uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,
@@ -108,7 +108,7 @@ impl UserDatabase for Conn {
 
     async fn get_user_favourites(
         &self,
-        request: &UserSearchRequest,
+        request: &UserPagingRequest,
     ) -> Result<Vec<Favourite>, UserSearchError> {
         let uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,
@@ -139,7 +139,7 @@ impl UserDatabase for Conn {
 
     async fn get_user_following(
         &self,
-        request: &UserSearchRequest,
+        request: &UserPagingRequest,
     ) -> Result<Vec<Follower>, UserSearchError> {
         let uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,

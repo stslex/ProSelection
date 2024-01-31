@@ -26,7 +26,7 @@ pub async fn search_user<'a>(
 }
 
 pub async fn get_user_favourites<'a>(
-    request: &'a UserSearchRequest<'a>,
+    request: &'a UserPagingRequest<'a>,
     db: database::Conn,
 ) -> Result<UserFavouriteResponse, UserSearchError> {
     let db = Arc::new(db);
@@ -46,7 +46,7 @@ pub async fn get_user_favourites<'a>(
 }
 
 pub async fn get_user_followers<'a>(
-    request: &'a UserSearchRequest<'a>,
+    request: &'a UserPagingRequest<'a>,
     db: database::Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
@@ -67,7 +67,7 @@ pub async fn get_user_followers<'a>(
 }
 
 pub async fn get_user_following<'a>(
-    request: &'a UserSearchRequest<'a>,
+    request: &'a UserPagingRequest<'a>,
     db: database::Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
@@ -89,6 +89,12 @@ pub async fn get_user_following<'a>(
 
 pub struct UserSearchRequest<'a> {
     pub query: &'a str,
+    pub uuid: &'a str,
+    pub page: i64,
+    pub page_size: i64,
+}
+
+pub struct UserPagingRequest<'a> {
     pub uuid: &'a str,
     pub page: i64,
     pub page_size: i64,

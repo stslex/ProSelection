@@ -87,13 +87,12 @@ pub async fn get_user_search<'a>(
 
 #[get("/favourites?<params..>")]
 pub async fn get_user_favourites<'a>(
-    access_token: AccessToken,
-    params: UserSearchParams<'a>,
+    _access_token: AccessToken,
+    params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
-    let request = handlers::user::search::UserSearchRequest {
-        query: params.query,
-        uuid: &access_token.uuid,
+    let request = handlers::user::search::UserPagingRequest {
+        uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
     };
@@ -110,13 +109,12 @@ pub async fn get_user_favourites<'a>(
 
 #[get("/followers?<params..>")]
 pub async fn get_user_followers<'a>(
-    access_token: AccessToken,
-    params: UserSearchParams<'a>,
+    _access_token: AccessToken,
+    params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
-    let request = handlers::user::search::UserSearchRequest {
-        query: params.query,
-        uuid: &access_token.uuid,
+    let request = handlers::user::search::UserPagingRequest {
+        uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
     };
@@ -133,13 +131,12 @@ pub async fn get_user_followers<'a>(
 
 #[get("/following?<params..>")]
 pub async fn get_user_following<'a>(
-    access_token: AccessToken,
-    params: UserSearchParams<'a>,
+    _access_token: AccessToken,
+    params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
-    let request = handlers::user::search::UserSearchRequest {
-        query: params.query,
-        uuid: &access_token.uuid,
+    let request = handlers::user::search::UserPagingRequest {
+        uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
     };
@@ -157,6 +154,13 @@ pub async fn get_user_following<'a>(
 #[derive(Deserialize, FromForm)]
 pub struct UserSearchParams<'a> {
     query: &'a str,
+    page: i64,
+    page_size: i64,
+}
+
+#[derive(Deserialize, FromForm)]
+pub struct UserPagingParams<'a> {
+    uuid: &'a str,
     page: i64,
     page_size: i64,
 }
