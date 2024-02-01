@@ -1,11 +1,8 @@
 use rocket::futures;
 use serde::Serialize;
 
-use crate::database::{
-    self,
-    user::{user_objects::user::User, UserDatabase},
-};
-
+use super::single_user::{map_user_info, UserResponse};
+use crate::database::{self, user::UserDatabase};
 use std::sync::Arc;
 
 pub async fn search_user<'a>(
@@ -18,41 +15,12 @@ pub async fn search_user<'a>(
         Ok(users) => Result::Ok(UserSearchResponse {
             result: futures::future::join_all(users.into_iter().map(|user| {
                 let db: Arc<database::Conn> = Arc::clone(&db);
-                async move { map_user_search_info(request.uuid, &user, db).await }
+                async move { map_user_info(request.uuid, &user, db).await }
             }))
             .await,
         }),
 
         Err(_) => Err(UserSearchError::Other),
-    }
-}
-
-async fn map_user_search_info(
-    uuid: &str,
-    user: &User,
-    db: Arc<database::Conn>,
-) -> UserSearchResponseResult {
-    UserSearchResponseResult {
-        uuid: user.id.to_string(),
-        username: user.username.clone(),
-        bio: user.bio.clone(),
-        avatar_url: user.avatar_url.clone(),
-        followers_count: db
-            .get_followers_count(&user.id.to_string())
-            .await
-            .unwrap_or(0),
-        following_count: db
-            .get_following_count(&user.id.to_string())
-            .await
-            .unwrap_or(0),
-        favourites_count: db
-            .get_favourites_count(&user.id.to_string())
-            .await
-            .unwrap_or(0),
-        is_following: match db.is_following(uuid, &user.id.to_string()).await {
-            Ok(is_following) => is_following,
-            Err(_) => false,
-        },
     }
 }
 
@@ -185,19 +153,7 @@ pub struct FavouriteResponse {
 
 #[derive(Serialize)]
 pub struct UserSearchResponse {
-    pub result: Vec<UserSearchResponseResult>,
-}
-
-#[derive(Serialize)]
-pub struct UserSearchResponseResult {
-    pub uuid: String,
-    pub username: String,
-    pub avatar_url: String,
-    pub bio: String,
-    pub followers_count: i64,
-    pub following_count: i64,
-    pub favourites_count: i64,
-    pub is_following: bool,
+    pub result: Vec<UserResponse>,
 }
 
 #[derive(Debug)]

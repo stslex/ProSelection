@@ -32,7 +32,7 @@ pub async fn get_current_user(
     access_token: AccessToken,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user(&access_token.uuid, db).await {
+    match handlers::user::single_user::get_user(&access_token.uuid, &access_token.uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -46,11 +46,11 @@ pub async fn get_current_user(
 
 #[get("/<uuid>")]
 pub async fn get_user(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     uuid: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user(&uuid, db).await {
+    match handlers::user::single_user::get_user(&access_token.uuid, &uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
@@ -167,11 +167,12 @@ pub struct UserPagingParams<'a> {
 
 #[get("/?username&<username>")]
 pub async fn get_user_by_username(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     username: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
-    match handlers::user::single_user::get_user_by_username(&username, db).await {
+    match handlers::user::single_user::get_user_by_username(&access_token.uuid, &username, db).await
+    {
         Ok(user) => ApiResponse::Ok(Json(user)),
         Err(err) => {
             eprint!("Error: {:?}", err);
