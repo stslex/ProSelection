@@ -62,7 +62,7 @@ pub async fn get_user_followers<'a>(
                         username: user.username,
                         avatar_url: user.avatar_url,
                         is_following: match db
-                            .is_following(&followed_uuid_clone, request.uuid)
+                            .is_following(&followed_uuid_clone, request.request_uuid)
                             .await
                         {
                             // Use the cloned value
@@ -97,7 +97,7 @@ pub async fn get_user_following<'a>(
                         username: user.username,
                         avatar_url: user.avatar_url,
                         is_following: match db
-                            .is_following(request.uuid, &followed_uuid_clone)
+                            .is_following(request.request_uuid, &followed_uuid_clone)
                             .await
                         {
                             // Use the cloned value
@@ -122,6 +122,7 @@ pub struct UserSearchRequest<'a> {
 }
 
 pub struct UserPagingRequest<'a> {
+    pub request_uuid: &'a str,
     pub uuid: &'a str,
     pub page: i64,
     pub page_size: i64,

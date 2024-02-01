@@ -86,12 +86,20 @@ impl UserDatabase for Conn {
                 return Err(UserSearchError::Other);
             }
         };
+        let request_uuid = match Uuid::parse_str(request.request_uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
         let limit = request.page_size;
         let offset = request.page * request.page_size;
         self.0
             .run(move |db| {
                 let users: Vec<Follower> = follow::table
                     .filter(follow::followed_uuid.eq(uuid))
+                    .filter(follow::followed_uuid.ne(request_uuid))
                     .limit(limit)
                     .offset(offset)
                     .get_results::<Follower>(db)
@@ -117,12 +125,20 @@ impl UserDatabase for Conn {
                 return Err(UserSearchError::Other);
             }
         };
+        let request_uuid = match Uuid::parse_str(request.request_uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(UserSearchError::Other);
+            }
+        };
         let limit = request.page_size;
         let offset = request.page * request.page_size;
         self.0
             .run(move |db| {
                 let users: Vec<Favourite> = favourite::table
                     .filter(favourite::uuid.eq(uuid))
+                    .filter(favourite::uuid.ne(request_uuid))
                     .limit(limit)
                     .offset(offset)
                     .get_results::<Favourite>(db)

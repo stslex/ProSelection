@@ -62,6 +62,13 @@ pub async fn map_user_info(uuid: &str, user: &User, db: Arc<database::Conn>) -> 
                 .await
                 .unwrap_or(false)
         },
+        is_followed: if uuid == user.id.to_string() {
+            false
+        } else {
+            db.is_following(&user.id.to_string(), uuid)
+                .await
+                .unwrap_or(false)
+        },
         is_current_user: uuid == user.id.to_string(),
     }
 }
@@ -76,6 +83,7 @@ pub struct UserResponse {
     pub following_count: i64,
     pub favourites_count: i64,
     pub is_following: bool,
+    pub is_followed: bool,
     pub is_current_user: bool,
 }
 

@@ -87,11 +87,12 @@ pub async fn get_user_search<'a>(
 
 #[get("/favourites?<params..>")]
 pub async fn get_user_favourites<'a>(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
     let request = handlers::user::search::UserPagingRequest {
+        request_uuid: &access_token.uuid,
         uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
@@ -109,11 +110,12 @@ pub async fn get_user_favourites<'a>(
 
 #[get("/followers?<params..>")]
 pub async fn get_user_followers<'a>(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingRequest {
+        request_uuid: &access_token.uuid,
         uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
@@ -131,11 +133,12 @@ pub async fn get_user_followers<'a>(
 
 #[get("/following?<params..>")]
 pub async fn get_user_following<'a>(
-    _access_token: AccessToken,
+    access_token: AccessToken,
     params: UserPagingParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingRequest {
+        request_uuid: &access_token.uuid,
         uuid: params.uuid,
         page: params.page,
         page_size: params.page_size,
