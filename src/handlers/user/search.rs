@@ -31,13 +31,33 @@ pub async fn get_user_favourites<'a>(
     let db = Arc::new(db);
     match db.get_user_favourites(request).await {
         Ok(favourites) => Result::Ok(UserFavouriteResponse {
-            result: favourites
-                .into_iter()
-                .map(|favourite| FavouriteResponse {
-                    uuid: favourite.favourite_uuid.to_string(),
-                    title: favourite.title,
-                })
-                .collect::<Vec<_>>(),
+            result: futures::future::join_all(
+                favourites
+                    .into_iter()
+                    .map(|favourite| {
+                        let db: Arc<database::Conn> = Arc::clone(&db);
+                        async move {
+                            FavouriteResponse {
+                                uuid: favourite.favourite_uuid.to_string(),
+                                title: favourite.title,
+                                is_favourite: if request.request_uuid
+                                    == favourite.user_uuid.to_string()
+                                {
+                                    true
+                                } else {
+                                    db.is_favourite(
+                                        request.request_uuid,
+                                        &favourite.favourite_uuid.to_string(),
+                                    )
+                                    .await
+                                    .unwrap_or(false)
+                                },
+                            }
+                        }
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .await,
         }),
 
         Err(_) => Err(UserSearchError::Other),
@@ -150,6 +170,7 @@ pub struct UserFavouriteResponse {
 pub struct FavouriteResponse {
     pub uuid: String,
     pub title: String,
+    pub is_favourite: bool,
 }
 
 #[derive(Serialize)]
