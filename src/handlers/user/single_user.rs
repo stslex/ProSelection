@@ -32,7 +32,7 @@ pub async fn get_user_by_username<'a>(
     }
 }
 
-pub async fn map_user_info(user: &User, db: Arc<database::Conn>) -> UserResponse {
+async fn map_user_info(user: &User, db: Arc<database::Conn>) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),
