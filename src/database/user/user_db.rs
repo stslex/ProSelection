@@ -4,7 +4,9 @@ use super::{
 };
 use crate::{
     database::{Conn, DatabaseResponse, OpenError},
-    handlers::user::search::{UserPagingRequest, UserSearchError, UserSearchRequest},
+    handlers::user::search::{
+        UserPagingRequest, UserPagingSearchRequest, UserSearchError, UserSearchRequest,
+    },
     schema::{favourite, follow, users},
 };
 use diesel::prelude::*;
@@ -116,7 +118,7 @@ impl UserDatabase for Conn {
 
     async fn get_user_favourites(
         &self,
-        request: &UserPagingRequest,
+        request: &UserPagingSearchRequest,
     ) -> Result<Vec<Favourite>, UserSearchError> {
         let request_uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,
@@ -125,6 +127,7 @@ impl UserDatabase for Conn {
                 return Err(UserSearchError::Other);
             }
         };
+        let query = request.query.to_owned().to_lowercase();
         let page = if request.page <= 0 {
             1
         } else {
@@ -132,10 +135,12 @@ impl UserDatabase for Conn {
         };
         let limit = request.page_size;
         let offset = page * request.page_size;
+
         self.0
             .run(move |db| {
                 let users: Vec<Favourite> = favourite::table
                     .filter(favourite::user_uuid.eq(request_uuid))
+                    .filter(favourite::title.ilike(format!("%{}%", query)))
                     .limit(limit)
                     .offset(offset)
                     .get_results::<Favourite>(db)
@@ -143,8 +148,6 @@ impl UserDatabase for Conn {
                         eprintln!("Error getting users: {}", err);
                         UserSearchError::Other
                     })?;
-                // .into_iter()
-                // .collect();
                 Ok(users)
             })
             .await

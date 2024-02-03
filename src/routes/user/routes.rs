@@ -88,12 +88,13 @@ pub async fn get_user_search<'a>(
 #[get("/favourites?<params..>")]
 pub async fn get_user_favourites<'a>(
     access_token: AccessToken,
-    params: UserPagingParams<'a>,
+    params: UserPagingSearchParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
-    let request = handlers::user::search::UserPagingRequest {
+    let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
         uuid: params.uuid,
+        query: params.query,
         page: params.page,
         page_size: params.page_size,
     };
@@ -164,6 +165,14 @@ pub struct UserSearchParams<'a> {
 #[derive(Deserialize, FromForm)]
 pub struct UserPagingParams<'a> {
     uuid: &'a str,
+    page: i64,
+    page_size: i64,
+}
+
+#[derive(Deserialize, FromForm)]
+pub struct UserPagingSearchParams<'a> {
+    uuid: &'a str,
+    query: &'a str,
     page: i64,
     page_size: i64,
 }

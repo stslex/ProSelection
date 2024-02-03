@@ -25,7 +25,7 @@ pub async fn search_user<'a>(
 }
 
 pub async fn get_user_favourites<'a>(
-    request: &'a UserPagingRequest<'a>,
+    request: &'a UserPagingSearchRequest<'a>,
     db: database::Conn,
 ) -> Result<UserFavouriteResponse, UserSearchError> {
     let db = Arc::new(db);
@@ -144,6 +144,14 @@ pub struct UserSearchRequest<'a> {
 pub struct UserPagingRequest<'a> {
     pub request_uuid: &'a str,
     pub uuid: &'a str,
+    pub page: i64,
+    pub page_size: i64,
+}
+
+pub struct UserPagingSearchRequest<'a> {
+    pub request_uuid: &'a str,
+    pub uuid: &'a str,
+    pub query: &'a str,
     pub page: i64,
     pub page_size: i64,
 }
