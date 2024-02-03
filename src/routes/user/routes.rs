@@ -247,13 +247,19 @@ pub async fn get_is_following(
     }
 }
 
-#[post("/<uuid>/favourite")]
-pub async fn post_add_favourite(
+#[derive(Deserialize)]
+pub struct FavouriteAddBody<'a> {
+    favourite_uuid: &'a str,
+    title: &'a str,
+}
+
+#[post("/favourite", format = "json", data = "<body>")]
+pub async fn post_add_favourite<'a>(
     access_token: AccessToken,
-    uuid: String,
+    body: Json<FavouriteAddBody<'a>>,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::add_favourite(&access_token.uuid, &uuid, db).await {
+    match actions::add_favourite(&access_token.uuid, body.favourite_uuid, body.title, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -267,13 +273,18 @@ pub async fn post_add_favourite(
     }
 }
 
-#[delete("/<uuid>/favourite")]
-pub async fn delete_remove_favourite(
+#[derive(Deserialize, FromForm)]
+pub struct FavouriteDeleteParams<'a> {
+    favourite_uuid: &'a str,
+}
+
+#[delete("/favourite?<params..>")]
+pub async fn delete_remove_favourite<'a>(
     access_token: AccessToken,
-    uuid: String,
+    params: FavouriteDeleteParams<'a>,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::remove_favourite(&access_token.uuid, &uuid, db).await {
+    match actions::remove_favourite(&access_token.uuid, params.favourite_uuid, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);

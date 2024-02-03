@@ -24,10 +24,10 @@ pub struct NewFollow<'a> {
 /// Represents a new favorite item to be inserted into the database.
 #[derive(Insertable, PartialEq, Debug)]
 #[diesel(table_name = favourite)]
-pub struct NewFavourite<'a> {
+pub struct NewFavourite {
     pub user_uuid: Uuid,
     pub favourite_uuid: Uuid,
-    pub title: &'a str,
+    pub title: String,
 }
 
 /// Represents a follower object retrieved from the database.

@@ -39,6 +39,7 @@ pub trait UserDatabase {
         &self,
         uuid: &str,
         favourite_uuid: &str,
+        title: &str,
     ) -> DatabaseResponse<FavouriteError>;
     async fn remove_favourite(
         &self,
