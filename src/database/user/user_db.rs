@@ -1,10 +1,12 @@
 use super::{
-    user_objects::{user::User, Favourite, Follower, NewFollow, UserCommonOutcome},
+    user_objects::{user::User, Favourite, Follower, NewFavourite, NewFollow, UserCommonOutcome},
     FavouriteError, FollowError, UserDatabase,
 };
 use crate::{
     database::{Conn, DatabaseResponse, OpenError},
-    handlers::user::search::{UserPagingRequest, UserSearchError, UserSearchRequest},
+    handlers::user::search::{
+        UserPagingRequest, UserPagingSearchRequest, UserSearchError, UserSearchRequest,
+    },
     schema::{favourite, follow, users},
 };
 use diesel::prelude::*;
@@ -116,38 +118,36 @@ impl UserDatabase for Conn {
 
     async fn get_user_favourites(
         &self,
-        request: &UserPagingRequest,
+        request: &UserPagingSearchRequest,
     ) -> Result<Vec<Favourite>, UserSearchError> {
-        let uuid = match Uuid::parse_str(request.uuid) {
+        let request_uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
                 return Err(UserSearchError::Other);
             }
         };
-        let request_uuid = match Uuid::parse_str(request.request_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(UserSearchError::Other);
-            }
+        let query = request.query.to_owned().to_lowercase();
+        let page = if request.page <= 0 {
+            1
+        } else {
+            request.page - 1
         };
         let limit = request.page_size;
-        let offset = request.page * request.page_size;
+        let offset = page * request.page_size;
+
         self.0
             .run(move |db| {
                 let users: Vec<Favourite> = favourite::table
-                    .filter(favourite::uuid.eq(uuid))
-                    .filter(favourite::uuid.ne(request_uuid))
+                    .filter(favourite::user_uuid.eq(request_uuid))
+                    .filter(favourite::title.ilike(format!("%{}%", query)))
                     .limit(limit)
                     .offset(offset)
                     .get_results::<Favourite>(db)
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
                         UserSearchError::Other
-                    })?
-                    .into_iter()
-                    .collect();
+                    })?;
                 Ok(users)
             })
             .await
@@ -213,7 +213,7 @@ impl UserDatabase for Conn {
         self.0
             .run(move |db| {
                 match favourite::table
-                    .filter(favourite::uuid.eq(uuid))
+                    .filter(favourite::user_uuid.eq(uuid))
                     .count()
                     .get_result::<i64>(db)
                 {
@@ -418,7 +418,14 @@ impl UserDatabase for Conn {
         &self,
         uuid: &str,
         favourite_uuid: &str,
+        title: &str,
     ) -> DatabaseResponse<super::FavouriteError> {
+        let is_existing = self.is_favourite(uuid, favourite_uuid).await;
+
+        if is_existing.unwrap_or(false) {
+            return DatabaseResponse::Err(super::FavouriteError::Conflict);
+        }
+
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -433,29 +440,30 @@ impl UserDatabase for Conn {
                 return DatabaseResponse::Err(super::FavouriteError::UserNotFound);
             }
         };
-        self.0
+        let favourite = NewFavourite {
+            user_uuid: uuid,
+            favourite_uuid: favourite_uuid,
+            title: title.to_owned(),
+        };
+
+        match self
+            .0
             .run(move |db| {
-                favourite::table
-                    .filter(favourite::uuid.eq(uuid))
-                    .filter(favourite::favourite_uuid.eq(favourite_uuid))
-                    .first::<Favourite>(db)
-                    .map(|_| DatabaseResponse::Err(super::FavouriteError::Conflict))
-                    .or_else(|_| {
-                        diesel::insert_into(favourite::table)
-                            .values((
-                                favourite::uuid.eq(uuid),
-                                favourite::favourite_uuid.eq(favourite_uuid),
-                            ))
-                            .execute(db)
-                            .map(|_| DatabaseResponse::Ok)
-                            .map_err(|err| {
-                                eprintln!("Error adding favourite: {}", err);
-                                DatabaseResponse::Err(super::FavouriteError::InternalError)
-                            })
-                    })
-                    .open_error()
+                diesel::insert_into(favourite::table)
+                    .values(favourite)
+                    .execute(db)
             })
             .await
+        {
+            Ok(res) => {
+                log::info!("Added favourite: {:?}", res);
+                DatabaseResponse::Ok
+            }
+            Err(err) => {
+                eprintln!("Error adding favourite: {}", err);
+                DatabaseResponse::Err(super::FavouriteError::InternalError)
+            }
+        }
     }
 
     async fn remove_favourite(
@@ -482,7 +490,7 @@ impl UserDatabase for Conn {
             .run(move |db| {
                 diesel::delete(
                     favourite::table
-                        .filter(favourite::uuid.eq(uuid))
+                        .filter(favourite::user_uuid.eq(uuid))
                         .filter(favourite::favourite_uuid.eq(favourite_uuid)),
                 )
                 .execute(db)

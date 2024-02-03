@@ -1,4 +1,6 @@
-use crate::handlers::user::search::{UserPagingRequest, UserSearchError, UserSearchRequest};
+use crate::handlers::user::search::{
+    UserPagingRequest, UserPagingSearchRequest, UserSearchError, UserSearchRequest,
+};
 
 use self::{
     user_db::GetByUuidError,
@@ -39,6 +41,7 @@ pub trait UserDatabase {
         &self,
         uuid: &str,
         favourite_uuid: &str,
+        title: &str,
     ) -> DatabaseResponse<FavouriteError>;
     async fn remove_favourite(
         &self,
@@ -52,7 +55,7 @@ pub trait UserDatabase {
     ) -> Result<Vec<Follower>, UserSearchError>;
     async fn get_user_favourites(
         &self,
-        request: &UserPagingRequest,
+        request: &UserPagingSearchRequest,
     ) -> Result<Vec<Favourite>, UserSearchError>;
     async fn get_user_following(
         &self,

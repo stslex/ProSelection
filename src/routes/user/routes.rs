@@ -6,7 +6,7 @@ use crate::handlers::user::actions::{self, FavouriteResponse, FollowResponse};
 use crate::handlers::user::search::{
     UserFavouriteResponse, UserFollowerResponse, UserSearchError, UserSearchResponse,
 };
-use crate::handlers::user::single_user::{IsFollowingResponse, UserError, UserResponse};
+use crate::handlers::user::single_user::{BooleanResponse, UserError, UserResponse};
 use crate::routes::auth::validators::AccessToken;
 use crate::routes::route_objects::error_response::{
     ERROR_FAVOURITE_CONFLICT, ERROR_FAVOURITE_USER_NOT_FOUND, ERROR_FAVOURITE_UUID_INVALID,
@@ -88,12 +88,13 @@ pub async fn get_user_search<'a>(
 #[get("/favourites?<params..>")]
 pub async fn get_user_favourites<'a>(
     access_token: AccessToken,
-    params: UserPagingParams<'a>,
+    params: UserPagingSearchParams<'a>,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
-    let request = handlers::user::search::UserPagingRequest {
+    let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
         uuid: params.uuid,
+        query: params.query,
         page: params.page,
         page_size: params.page_size,
     };
@@ -168,6 +169,14 @@ pub struct UserPagingParams<'a> {
     page_size: i64,
 }
 
+#[derive(Deserialize, FromForm)]
+pub struct UserPagingSearchParams<'a> {
+    uuid: &'a str,
+    query: &'a str,
+    page: i64,
+    page_size: i64,
+}
+
 #[get("/?username&<username>")]
 pub async fn get_user_by_username(
     access_token: AccessToken,
@@ -232,9 +241,11 @@ pub async fn get_is_following(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
-) -> ApiResponse<'static, Json<IsFollowingResponse>> {
+) -> ApiResponse<'static, Json<BooleanResponse>> {
     match actions::is_following(&access_token.uuid, &uuid, db).await {
-        Ok(is_following) => ApiResponse::Ok(Json(IsFollowingResponse { is_following })),
+        Ok(is_following) => ApiResponse::Ok(Json(BooleanResponse {
+            result: is_following,
+        })),
         Err(err) => {
             eprint!("Error: {:?}", err);
             match err {
@@ -247,13 +258,19 @@ pub async fn get_is_following(
     }
 }
 
-#[post("/<uuid>/favourite")]
-pub async fn post_add_favourite(
+#[derive(Deserialize)]
+pub struct FavouriteAddBody<'a> {
+    favourite_uuid: &'a str,
+    title: &'a str,
+}
+
+#[post("/favourite", format = "json", data = "<body>")]
+pub async fn post_add_favourite<'a>(
     access_token: AccessToken,
-    uuid: String,
+    body: Json<FavouriteAddBody<'a>>,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::add_favourite(&access_token.uuid, &uuid, db).await {
+    match actions::add_favourite(&access_token.uuid, body.favourite_uuid, body.title, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -267,13 +284,18 @@ pub async fn post_add_favourite(
     }
 }
 
-#[delete("/<uuid>/favourite")]
-pub async fn delete_remove_favourite(
+#[derive(Deserialize, FromForm)]
+pub struct FavouriteDeleteParams<'a> {
+    favourite_uuid: &'a str,
+}
+
+#[delete("/favourite?<params..>")]
+pub async fn delete_remove_favourite<'a>(
     access_token: AccessToken,
-    uuid: String,
+    params: FavouriteDeleteParams<'a>,
     db: database::Conn,
 ) -> ApiMesResponse<'static> {
-    match actions::remove_favourite(&access_token.uuid, &uuid, db).await {
+    match actions::remove_favourite(&access_token.uuid, params.favourite_uuid, db).await {
         FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
         FavouriteResponse::Error(err) => {
             eprint!("Error: {:?}", err);
@@ -287,15 +309,15 @@ pub async fn delete_remove_favourite(
     }
 }
 
-#[get("/<uuid>/is_favourite")]
+#[get("/is_favourite?<uuid>")]
 pub async fn get_is_favourite(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
-) -> ApiResponse<'static, Json<IsFollowingResponse>> {
+) -> ApiResponse<'static, Json<BooleanResponse>> {
     match actions::is_favourite(&access_token.uuid, &uuid, db).await {
-        Ok(is_favourite) => ApiResponse::Ok(Json(IsFollowingResponse {
-            is_following: is_favourite,
+        Ok(is_favourite) => ApiResponse::Ok(Json(BooleanResponse {
+            result: is_favourite,
         })),
         Err(err) => {
             eprint!("Error: {:?}", err);
