@@ -125,8 +125,13 @@ impl UserDatabase for Conn {
                 return Err(UserSearchError::Other);
             }
         };
+        let page = if request.page <= 0 {
+            1
+        } else {
+            request.page - 1
+        };
         let limit = request.page_size;
-        let offset = request.page * request.page_size;
+        let offset = page * request.page_size;
         self.0
             .run(move |db| {
                 let users: Vec<Favourite> = favourite::table
