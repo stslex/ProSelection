@@ -137,9 +137,9 @@ impl UserDatabase for Conn {
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
                         UserSearchError::Other
-                    })?
-                    .into_iter()
-                    .collect();
+                    })?;
+                // .into_iter()
+                // .collect();
                 Ok(users)
             })
             .await
@@ -412,6 +412,12 @@ impl UserDatabase for Conn {
         favourite_uuid: &str,
         title: &str,
     ) -> DatabaseResponse<super::FavouriteError> {
+        let is_existing = self.is_favourite(uuid, favourite_uuid).await;
+
+        if is_existing.unwrap_or(false) {
+            return DatabaseResponse::Err(super::FavouriteError::Conflict);
+        }
+
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -437,7 +443,7 @@ impl UserDatabase for Conn {
             .run(move |db| {
                 diesel::insert_into(favourite::table)
                     .values(favourite)
-                    .get_result::<Favourite>(db)
+                    .execute(db)
             })
             .await
         {
@@ -476,7 +482,7 @@ impl UserDatabase for Conn {
             .run(move |db| {
                 diesel::delete(
                     favourite::table
-                        .filter(favourite::uuid.eq(uuid))
+                        .filter(favourite::user_uuid.eq(uuid))
                         .filter(favourite::favourite_uuid.eq(favourite_uuid)),
                 )
                 .execute(db)
