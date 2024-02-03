@@ -88,13 +88,8 @@ pub struct UserResponse {
 }
 
 #[derive(Serialize)]
-pub struct IsFavouriteResponse {
-    pub is_favourite: bool,
-}
-
-#[derive(Serialize)]
-pub struct IsFollowingResponse {
-    pub is_following: bool,
+pub struct BooleanResponse {
+    pub result: bool,
 }
 
 pub enum UserError {

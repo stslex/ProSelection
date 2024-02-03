@@ -71,10 +71,10 @@ pub async fn remove_favourite<'a>(
 
 pub async fn is_favourite<'a>(
     uuid: &'a str,
-    title: &'a str,
+    favourite_uuid: &'a str,
     db: database::Conn,
 ) -> Result<bool, FavouriteError> {
-    match db.is_favourite(uuid, title).await {
+    match db.is_favourite(uuid, favourite_uuid).await {
         Ok(is_favourite) => Ok(is_favourite),
         Err(err) => Err(err),
     }
