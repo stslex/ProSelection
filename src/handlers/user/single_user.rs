@@ -4,6 +4,7 @@ use serde::Serialize;
 
 use crate::database::{
     self,
+    favourites::UserFavouritesDatabase,
     user::{user_db::GetByUuidError, user_objects::user::User, UserDatabase},
 };
 
@@ -85,11 +86,6 @@ pub struct UserResponse {
     pub is_following: bool,
     pub is_followed: bool,
     pub is_current_user: bool,
-}
-
-#[derive(Serialize)]
-pub struct BooleanResponse {
-    pub result: bool,
 }
 
 pub enum UserError {

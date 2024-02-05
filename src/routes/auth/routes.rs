@@ -5,13 +5,13 @@ use crate::handlers::auth;
 use crate::handlers::auth::objects::{LoginError, LoginOk};
 use crate::handlers::auth::refresh::RefreshOk;
 use crate::handlers::auth::registration::RegistrationError;
-use crate::routes::auth::validators;
-use crate::routes::route_objects::error_response::{
+use crate::handlers::objects::response::ApiResponse;
+use crate::handlers::objects::response::{
     ERROR_ALREADY_REGISTERED, ERROR_EQUAL_DATA, ERROR_INVALID_PASSWORD, ERROR_PASSWORD_TOO_LONG,
     ERROR_TOKEN_SIGNATURE, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND, ERROR_WEAK_LOGIN,
     ERROR_WEAK_PASSWORD, ERROR_WEAK_USERNAME, ERROR_WRONG_REQUEST,
 };
-use crate::routes::route_objects::ApiResponse;
+use crate::routes::auth::validators;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
@@ -26,7 +26,7 @@ pub async fn login<'a>(
         Some(r) => match auth::login::login(r.login, r.password, db).await {
             Ok(outcome) => ApiResponse::Ok(Json(outcome)),
             Err(LoginError::NotFound) => ApiResponse::Err(ERROR_USER_NOT_FOUND),
-            Err(LoginError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
+            Err(LoginError::Other) => ApiResponse::Err(&ERROR_UNKNOWN),
             Err(LoginError::InvalidPassword) => ApiResponse::Err(ERROR_INVALID_PASSWORD),
         },
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
@@ -50,7 +50,7 @@ pub async fn registration<'a>(
             Err(RegistrationError::WeakUsername) => ApiResponse::Err(ERROR_WEAK_USERNAME),
             Err(RegistrationError::PasswordTooLong) => ApiResponse::Err(ERROR_PASSWORD_TOO_LONG),
             Err(RegistrationError::EqualLoginPassword) => ApiResponse::Err(ERROR_EQUAL_DATA),
-            Err(RegistrationError::Other) => ApiResponse::Err(ERROR_UNKNOWN),
+            Err(RegistrationError::Other) => ApiResponse::Err(&ERROR_UNKNOWN),
         },
 
         None => ApiResponse::Err(ERROR_WRONG_REQUEST),
@@ -67,6 +67,6 @@ pub async fn refresh(
         Err(auth::refresh::RefreshError::InvalidRefreshToken) => {
             ApiResponse::Err(ERROR_TOKEN_SIGNATURE)
         }
-        _ => ApiResponse::Err(ERROR_UNKNOWN),
+        _ => ApiResponse::Err(&ERROR_UNKNOWN),
     }
 }

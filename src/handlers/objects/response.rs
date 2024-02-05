@@ -2,7 +2,44 @@ use rocket::http::{ContentType, Status};
 use rocket::response::{Responder, Result};
 use rocket::serde::json::Json;
 use rocket::{Request, Response};
+use serde::Serialize;
 use serde_json::json;
+
+pub enum ApiResponse<'a, T> {
+    Ok(T),
+    Err(&'a ErrorResponse<'a>),
+}
+
+impl<'r, 'o: 'r, T> Responder<'r, 'o> for ApiResponse<'r, T>
+where
+    T: Responder<'r, 'o>,
+{
+    fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
+        match self {
+            ApiResponse::Ok(t) => t.respond_to(request),
+            ApiResponse::Err(e) => e.respond_to(request),
+        }
+    }
+}
+
+pub enum ApiMessageResponse<'a> {
+    Ok(&'static str),
+    Err(&'a ErrorResponse<'a>),
+}
+
+#[derive(Serialize)]
+pub struct BooleanResponse {
+    pub result: bool,
+}
+
+impl<'r, 'o: 'r> Responder<'r, 'o> for ApiMessageResponse<'r> {
+    fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
+        match self {
+            ApiMessageResponse::Ok(t) => t.respond_to(request),
+            ApiMessageResponse::Err(e) => e.respond_to(request),
+        }
+    }
+}
 
 #[derive(Copy, Clone)]
 pub struct ErrorResponse<'a> {

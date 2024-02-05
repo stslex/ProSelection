@@ -2,7 +2,7 @@ use rocket::futures;
 use serde::Serialize;
 
 use super::single_user::{map_user_info, UserResponse};
-use crate::database::{self, user::UserDatabase};
+use crate::database::{self, favourites::UserFavouritesDatabase, user::UserDatabase};
 use std::sync::Arc;
 
 pub async fn search_user<'a>(

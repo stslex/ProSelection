@@ -19,3 +19,8 @@ impl AppHasher for str {
         hasher.finish().to_string()
     }
 }
+
+#[async_trait]
+pub trait Mapper<T> {
+    async fn map(&self) -> T;
+}
