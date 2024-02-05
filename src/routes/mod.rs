@@ -1,5 +1,4 @@
 mod auth;
-mod route_objects;
 mod routes_setup;
 mod swagger;
 mod test;

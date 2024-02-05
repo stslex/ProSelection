@@ -1,19 +1,21 @@
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
-use crate::database::user::{FavouriteError, FollowError};
-use crate::handlers::user::actions::{self, FavouriteResponse, FollowResponse};
+use crate::database::user::FollowError;
+use crate::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
+use crate::handlers::favourite::FavouriteHandler;
+use crate::handlers::objects::response::BooleanResponse;
+use crate::handlers::objects::response::{
+    ApiMessageResponse, ApiResponse, ERROR_FOLLOW_CONFLICT, ERROR_FOLLOW_USER_NOT_FOUND,
+    ERROR_FOLLOW_UUID_INVALID, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND_BY_UUID,
+    ERROR_USER_UUID_INVALID,
+};
+use crate::handlers::user::actions::{self, FollowResponse};
 use crate::handlers::user::search::{
     UserFavouriteResponse, UserFollowerResponse, UserSearchError, UserSearchResponse,
 };
-use crate::handlers::user::single_user::{BooleanResponse, UserError, UserResponse};
+use crate::handlers::user::single_user::{UserError, UserResponse};
 use crate::routes::auth::validators::AccessToken;
-use crate::routes::route_objects::error_response::{
-    ERROR_FAVOURITE_CONFLICT, ERROR_FAVOURITE_USER_NOT_FOUND, ERROR_FAVOURITE_UUID_INVALID,
-    ERROR_FOLLOW_CONFLICT, ERROR_FOLLOW_USER_NOT_FOUND, ERROR_FOLLOW_UUID_INVALID, ERROR_UNKNOWN,
-    ERROR_USER_NOT_FOUND_BY_UUID, ERROR_USER_UUID_INVALID,
-};
-use crate::routes::route_objects::{ApiMesResponse, ApiResponse};
 use crate::{database, handlers};
 
 #[get("/count")]
@@ -23,7 +25,7 @@ pub async fn get_user_count(
 ) -> ApiResponse<'static, String> {
     match handlers::user::common::count(db).await {
         Ok(count) => ApiResponse::Ok(count),
-        Err(_) => ApiResponse::Err(ERROR_UNKNOWN),
+        Err(_) => ApiResponse::Err(&ERROR_UNKNOWN),
     }
 }
 
@@ -201,16 +203,16 @@ pub async fn post_follow(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
-) -> ApiMesResponse<'static> {
+) -> ApiMessageResponse<'static> {
     match actions::follow_user(&access_token.uuid, &uuid, db).await {
-        FollowResponse::Ok => ApiMesResponse::Ok("success"),
+        FollowResponse::Ok => ApiMessageResponse::Ok("success"),
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
             match err {
-                FollowError::UuidInvalid => ApiMesResponse::Err(ERROR_FOLLOW_UUID_INVALID),
-                FollowError::UserNotFound => ApiMesResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
-                FollowError::Conflict => ApiMesResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiMesResponse::Err(ERROR_UNKNOWN),
+                FollowError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
+                FollowError::UserNotFound => ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
+                FollowError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
+                FollowError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }
@@ -221,16 +223,16 @@ pub async fn delete_follow(
     access_token: AccessToken,
     uuid: String,
     db: database::Conn,
-) -> ApiMesResponse<'static> {
+) -> ApiMessageResponse<'static> {
     match actions::un_follow_user(&access_token.uuid, &uuid, db).await {
-        FollowResponse::Ok => ApiMesResponse::Ok("success"),
+        FollowResponse::Ok => ApiMessageResponse::Ok("success"),
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
             match err {
-                FollowError::UuidInvalid => ApiMesResponse::Err(ERROR_FOLLOW_UUID_INVALID),
-                FollowError::UserNotFound => ApiMesResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
-                FollowError::Conflict => ApiMesResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiMesResponse::Err(ERROR_UNKNOWN),
+                FollowError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
+                FollowError::UserNotFound => ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
+                FollowError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
+                FollowError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }
@@ -252,16 +254,10 @@ pub async fn get_is_following(
                 FollowError::UuidInvalid => ApiResponse::Err(ERROR_FOLLOW_UUID_INVALID),
                 FollowError::UserNotFound => ApiResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
                 FollowError::Conflict => ApiResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiResponse::Err(ERROR_UNKNOWN),
+                FollowError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }
-}
-
-#[derive(Deserialize)]
-pub struct FavouriteAddBody<'a> {
-    favourite_uuid: &'a str,
-    title: &'a str,
 }
 
 #[post("/favourite", format = "json", data = "<body>")]
@@ -269,24 +265,8 @@ pub async fn post_add_favourite<'a>(
     access_token: AccessToken,
     body: Json<FavouriteAddBody<'a>>,
     db: database::Conn,
-) -> ApiMesResponse<'static> {
-    match actions::add_favourite(&access_token.uuid, body.favourite_uuid, body.title, db).await {
-        FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
-        FavouriteResponse::Error(err) => {
-            eprint!("Error: {:?}", err);
-            match err {
-                FavouriteError::UuidInvalid => ApiMesResponse::Err(ERROR_FAVOURITE_UUID_INVALID),
-                FavouriteError::UserNotFound => ApiMesResponse::Err(ERROR_FAVOURITE_USER_NOT_FOUND),
-                FavouriteError::Conflict => ApiMesResponse::Err(ERROR_FAVOURITE_CONFLICT),
-                FavouriteError::InternalError => ApiMesResponse::Err(ERROR_UNKNOWN),
-            }
-        }
-    }
-}
-
-#[derive(Deserialize, FromForm)]
-pub struct FavouriteDeleteParams<'a> {
-    favourite_uuid: &'a str,
+) -> ApiMessageResponse<'static> {
+    FavouriteHandler::add_favourite(&db, &access_token.uuid, body.favourite_uuid, body.title).await
 }
 
 #[delete("/favourite?<params..>")]
@@ -294,19 +274,8 @@ pub async fn delete_remove_favourite<'a>(
     access_token: AccessToken,
     params: FavouriteDeleteParams<'a>,
     db: database::Conn,
-) -> ApiMesResponse<'static> {
-    match actions::remove_favourite(&access_token.uuid, params.favourite_uuid, db).await {
-        FavouriteResponse::Ok => ApiMesResponse::Ok("success"),
-        FavouriteResponse::Error(err) => {
-            eprint!("Error: {:?}", err);
-            match err {
-                FavouriteError::UuidInvalid => ApiMesResponse::Err(ERROR_FAVOURITE_UUID_INVALID),
-                FavouriteError::UserNotFound => ApiMesResponse::Err(ERROR_FAVOURITE_USER_NOT_FOUND),
-                FavouriteError::Conflict => ApiMesResponse::Err(ERROR_FAVOURITE_CONFLICT),
-                FavouriteError::InternalError => ApiMesResponse::Err(ERROR_UNKNOWN),
-            }
-        }
-    }
+) -> ApiMessageResponse<'static> {
+    FavouriteHandler::remove_favourite(&db, &access_token.uuid, params.favourite_uuid).await
 }
 
 #[get("/is_favourite?<uuid>")]
@@ -315,18 +284,5 @@ pub async fn get_is_favourite(
     uuid: String,
     db: database::Conn,
 ) -> ApiResponse<'static, Json<BooleanResponse>> {
-    match actions::is_favourite(&access_token.uuid, &uuid, db).await {
-        Ok(is_favourite) => ApiResponse::Ok(Json(BooleanResponse {
-            result: is_favourite,
-        })),
-        Err(err) => {
-            eprint!("Error: {:?}", err);
-            match err {
-                FavouriteError::UuidInvalid => ApiResponse::Err(ERROR_FAVOURITE_UUID_INVALID),
-                FavouriteError::UserNotFound => ApiResponse::Err(ERROR_FAVOURITE_USER_NOT_FOUND),
-                FavouriteError::Conflict => ApiResponse::Err(ERROR_FAVOURITE_CONFLICT),
-                FavouriteError::InternalError => ApiResponse::Err(ERROR_UNKNOWN),
-            }
-        }
-    }
+    FavouriteHandler::is_favourite(&db, &access_token.uuid, &uuid).await
 }

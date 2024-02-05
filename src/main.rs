@@ -10,6 +10,7 @@ use rocket::{Build, Rocket};
 mod config;
 pub mod database;
 pub mod handlers;
+pub mod repository;
 pub mod routes;
 mod schema;
 pub mod utils;

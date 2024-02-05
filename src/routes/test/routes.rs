@@ -1,5 +1,5 @@
-use crate::routes::route_objects::ApiResponse;
-use crate::routes::route_objects::error_response::ERROR_WRONG_REQUEST;
+use crate::handlers::objects::response::ApiResponse;
+use crate::handlers::objects::response::ERROR_WRONG_REQUEST;
 
 #[get("/hello/<name>")]
 pub fn hello_username(name: String) -> &'static str {

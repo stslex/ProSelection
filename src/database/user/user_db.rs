@@ -1,6 +1,6 @@
 use super::{
-    user_objects::{user::User, Favourite, Follower, NewFavourite, NewFollow, UserCommonOutcome},
-    FavouriteError, FollowError, UserDatabase,
+    user_objects::{user::User, Favourite, Follower, NewFollow, UserCommonOutcome},
+    FollowError, UserDatabase,
 };
 use crate::{
     database::{Conn, DatabaseResponse, OpenError},
@@ -202,31 +202,6 @@ impl UserDatabase for Conn {
             .await
     }
 
-    async fn get_favourites_count(&self, uuid: &str) -> Result<i64, GetByUuidError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(GetByUuidError::UuidInvalid);
-            }
-        };
-        self.0
-            .run(move |db| {
-                match favourite::table
-                    .filter(favourite::user_uuid.eq(uuid))
-                    .count()
-                    .get_result::<i64>(db)
-                {
-                    Ok(count) => Ok(count),
-                    Err(err) => {
-                        eprintln!("Error getting user: {}", err);
-                        Err(GetByUuidError::InternalError)
-                    }
-                }
-            })
-            .await
-    }
-
     /// Get the number of followers for a user.
     ///
     /// # Arguments
@@ -408,123 +383,6 @@ impl UserDatabase for Conn {
                     .filter(follow::follower_uuid.eq(follower_uuid))
                     .filter(follow::followed_uuid.eq(followed_uuid))
                     .first::<Follower>(db)
-                    .map(|_| true)
-                    .or_else(|_| Ok(false))
-            })
-            .await
-    }
-
-    async fn add_favourite(
-        &self,
-        uuid: &str,
-        favourite_uuid: &str,
-        title: &str,
-    ) -> DatabaseResponse<super::FavouriteError> {
-        let is_existing = self.is_favourite(uuid, favourite_uuid).await;
-
-        if is_existing.unwrap_or(false) {
-            return DatabaseResponse::Err(super::FavouriteError::Conflict);
-        }
-
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return DatabaseResponse::Err(super::FavouriteError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return DatabaseResponse::Err(super::FavouriteError::UserNotFound);
-            }
-        };
-        let favourite = NewFavourite {
-            user_uuid: uuid,
-            favourite_uuid: favourite_uuid,
-            title: title.to_owned(),
-        };
-
-        match self
-            .0
-            .run(move |db| {
-                diesel::insert_into(favourite::table)
-                    .values(favourite)
-                    .execute(db)
-            })
-            .await
-        {
-            Ok(res) => {
-                log::info!("Added favourite: {:?}", res);
-                DatabaseResponse::Ok
-            }
-            Err(err) => {
-                eprintln!("Error adding favourite: {}", err);
-                DatabaseResponse::Err(super::FavouriteError::InternalError)
-            }
-        }
-    }
-
-    async fn remove_favourite(
-        &self,
-        uuid: &str,
-        favourite_uuid: &str,
-    ) -> DatabaseResponse<super::FavouriteError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return DatabaseResponse::Err(super::FavouriteError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return DatabaseResponse::Err(super::FavouriteError::UserNotFound);
-            }
-        };
-
-        self.0
-            .run(move |db| {
-                diesel::delete(
-                    favourite::table
-                        .filter(favourite::user_uuid.eq(uuid))
-                        .filter(favourite::favourite_uuid.eq(favourite_uuid)),
-                )
-                .execute(db)
-                .map(|_| DatabaseResponse::Ok)
-                .map_err(|err| {
-                    eprintln!("Error removing favourite: {}", err);
-                    DatabaseResponse::Err(super::FavouriteError::InternalError)
-                })
-                .open_error()
-            })
-            .await
-    }
-
-    async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UserNotFound);
-            }
-        };
-        self.0
-            .run(move |db| {
-                favourite::table
-                    .filter(favourite::user_uuid.eq(uuid))
-                    .filter(favourite::favourite_uuid.eq(favourite_uuid))
-                    .first::<Favourite>(db)
                     .map(|_| true)
                     .or_else(|_| Ok(false))
             })
