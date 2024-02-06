@@ -3,15 +3,14 @@ extern crate diesel;
 #[macro_use]
 extern crate rocket;
 
-use crate::routes::RoutesInitialized;
-use database::Conn;
+use crate::presenter::routes::RoutesInitialized;
+use data::database::Conn;
 use rocket::{Build, Rocket};
 
 mod config;
-pub mod database;
-pub mod handlers;
-pub mod repository;
-pub mod routes;
+pub mod data;
+pub mod domain;
+pub mod presenter;
 mod schema;
 pub mod utils;
 

@@ -1,4 +1,4 @@
-use crate::database::user::user_objects::user::User;
+use crate::data::database::user::user_objects::user::User;
 
 pub struct JwtObject {
     pub uuid: String,
