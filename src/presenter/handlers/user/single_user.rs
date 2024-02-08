@@ -5,6 +5,7 @@ use serde::Serialize;
 use crate::data::database::{
     self,
     favourite::UserFavouritesDatabase,
+    follow::FollowDatabase,
     user::{user_db::GetByUuidError, user_objects::user::User, UserDatabase},
 };
 

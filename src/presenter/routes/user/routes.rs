@@ -1,7 +1,7 @@
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
-use crate::data::database::user::FollowError;
+use crate::data::database::follow::objects::{FollowDataError, UserSearchError};
 use crate::presenter::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
 use crate::presenter::handlers::favourite::FavouriteHandler;
 use crate::presenter::handlers::objects::response::BooleanResponse;
@@ -12,7 +12,7 @@ use crate::presenter::handlers::objects::response::{
 };
 use crate::presenter::handlers::user::actions::{self, FollowResponse};
 use crate::presenter::handlers::user::search::{
-    UserFavouriteResponse, UserFollowerResponse, UserSearchError, UserSearchResponse,
+    UserFavouriteResponse, UserFollowerResponse, UserSearchResponse,
 };
 use crate::presenter::handlers::user::single_user::{UserError, UserResponse};
 use crate::presenter::routes::auth::validators::AccessToken;
@@ -81,7 +81,8 @@ pub async fn get_user_search<'a>(
         Err(err) => {
             eprint!("Error: {:?}", err);
             return match err {
-                UserSearchError::Other => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::UuidInvalid => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             };
         }
     }
@@ -105,7 +106,8 @@ pub async fn get_user_favourites<'a>(
         Err(err) => {
             eprint!("Error: {:?}", err);
             return match err {
-                UserSearchError::Other => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::UuidInvalid => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             };
         }
     }
@@ -128,7 +130,8 @@ pub async fn get_user_followers<'a>(
         Err(err) => {
             eprint!("Error: {:?}", err);
             return match err {
-                UserSearchError::Other => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::UuidInvalid => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             };
         }
     }
@@ -151,7 +154,8 @@ pub async fn get_user_following<'a>(
         Err(err) => {
             eprint!("Error: {:?}", err);
             return match err {
-                UserSearchError::Other => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::UuidInvalid => ApiResponse::Err(ERROR_USER_NOT_FOUND_BY_UUID),
+                UserSearchError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             };
         }
     }
@@ -209,10 +213,12 @@ pub async fn post_follow(
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
             match err {
-                FollowError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
-                FollowError::UserNotFound => ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
-                FollowError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
+                FollowDataError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
+                FollowDataError::UserNotFound => {
+                    ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND)
+                }
+                FollowDataError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
+                FollowDataError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }
@@ -229,10 +235,12 @@ pub async fn delete_follow(
         FollowResponse::Error(err) => {
             eprint!("Error: {:?}", err);
             match err {
-                FollowError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
-                FollowError::UserNotFound => ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
-                FollowError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
+                FollowDataError::UuidInvalid => ApiMessageResponse::Err(ERROR_FOLLOW_UUID_INVALID),
+                FollowDataError::UserNotFound => {
+                    ApiMessageResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND)
+                }
+                FollowDataError::Conflict => ApiMessageResponse::Err(ERROR_FOLLOW_CONFLICT),
+                FollowDataError::InternalError => ApiMessageResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }
@@ -251,10 +259,10 @@ pub async fn get_is_following(
         Err(err) => {
             eprint!("Error: {:?}", err);
             match err {
-                FollowError::UuidInvalid => ApiResponse::Err(ERROR_FOLLOW_UUID_INVALID),
-                FollowError::UserNotFound => ApiResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
-                FollowError::Conflict => ApiResponse::Err(ERROR_FOLLOW_CONFLICT),
-                FollowError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
+                FollowDataError::UuidInvalid => ApiResponse::Err(ERROR_FOLLOW_UUID_INVALID),
+                FollowDataError::UserNotFound => ApiResponse::Err(ERROR_FOLLOW_USER_NOT_FOUND),
+                FollowDataError::Conflict => ApiResponse::Err(ERROR_FOLLOW_CONFLICT),
+                FollowDataError::InternalError => ApiResponse::Err(&ERROR_UNKNOWN),
             }
         }
     }

@@ -1,13 +1,11 @@
-use crate::presenter::handlers::user::search::{
-    UserPagingRequest, UserSearchError, UserSearchRequest,
-};
+use crate::presenter::handlers::user::search::UserSearchRequest;
 
 use self::{
     user_db::GetByUuidError,
-    user_objects::{user::User, Follower, UserCommonOutcome},
+    user_objects::{user::User, UserCommonOutcome},
 };
 
-use super::DatabaseResponse;
+use super::follow::objects::{FollowDataError, UserSearchError};
 
 pub mod user_db;
 pub mod user_objects;
@@ -19,57 +17,15 @@ pub trait UserDatabase {
     async fn search_users(&self, request: &UserSearchRequest)
         -> Result<Vec<User>, UserSearchError>;
     async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError>;
-    async fn get_followers_count(&self, uuid: &str) -> Result<i64, GetByUuidError>;
-    async fn get_following_count(&self, uuid: &str) -> Result<i64, GetByUuidError>;
-    async fn follow_user(
-        &self,
-        follower_uuid: &str,
-        followed_uuid: &str,
-    ) -> DatabaseResponse<FollowError>;
-    async fn un_follow_user(
-        &self,
-        follower_uuid: &str,
-        followed_uuid: &str,
-    ) -> DatabaseResponse<FollowError>;
-    async fn is_following(
-        &self,
-        follower_uuid: &str,
-        followed_uuid: &str,
-    ) -> Result<bool, FollowError>;
-    async fn get_user_followers(
-        &self,
-        request: &UserPagingRequest,
-    ) -> Result<Vec<Follower>, UserSearchError>;
-    async fn get_user_following(
-        &self,
-        request: &UserPagingRequest,
-    ) -> Result<Vec<Follower>, UserSearchError>;
 }
 
-#[derive(Debug, Clone)]
-pub enum FollowError {
-    UuidInvalid,
-    UserNotFound,
-    Conflict,
-    InternalError,
-}
-
-impl std::fmt::Display for FollowError {
+impl std::fmt::Display for FollowDataError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            FollowError::UuidInvalid => write!(f, "UuidInvalid"),
-            FollowError::UserNotFound => write!(f, "UserNotFound"),
-            FollowError::Conflict => write!(f, "Conflict"),
-            FollowError::InternalError => write!(f, "InternalError"),
-        }
-    }
-}
-
-impl std::fmt::Display for DatabaseResponse<FollowError> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            DatabaseResponse::Ok => write!(f, "Ok"),
-            DatabaseResponse::Err(err) => write!(f, "Err: {}", err),
+            FollowDataError::UuidInvalid => write!(f, "UuidInvalid"),
+            FollowDataError::UserNotFound => write!(f, "UserNotFound"),
+            FollowDataError::Conflict => write!(f, "Conflict"),
+            FollowDataError::InternalError => write!(f, "InternalError"),
         }
     }
 }

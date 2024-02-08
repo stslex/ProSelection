@@ -1,11 +1,11 @@
 use crate::data::database::{
     self,
-    user::{FollowError, UserDatabase as _},
+    follow::{objects::FollowDataError, FollowDatabase},
 };
 
 pub enum FollowResponse {
     Ok,
-    Error(FollowError),
+    Error(FollowDataError),
 }
 
 pub async fn follow_user<'a>(
@@ -14,8 +14,8 @@ pub async fn follow_user<'a>(
     db: database::Conn,
 ) -> FollowResponse {
     match db.follow_user(follower_uuid, followed_uuid).await {
-        database::DatabaseResponse::Ok => FollowResponse::Ok,
-        database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
+        Result::Ok(()) => FollowResponse::Ok,
+        Result::Err(err) => FollowResponse::Error(err),
     }
 }
 
@@ -25,8 +25,8 @@ pub async fn un_follow_user<'a>(
     db: database::Conn,
 ) -> FollowResponse {
     match db.un_follow_user(follower_uuid, followed_uuid).await {
-        database::DatabaseResponse::Ok => FollowResponse::Ok,
-        database::DatabaseResponse::Err(err) => FollowResponse::Error(err),
+        Result::Ok(()) => FollowResponse::Ok,
+        Result::Err(err) => FollowResponse::Error(err),
     }
 }
 
@@ -34,7 +34,7 @@ pub async fn is_following<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
     db: database::Conn,
-) -> Result<bool, FollowError> {
+) -> Result<bool, FollowDataError> {
     match db.is_following(follower_uuid, followed_uuid).await {
         Ok(is_following) => Ok(is_following),
         Err(err) => Err(err),
