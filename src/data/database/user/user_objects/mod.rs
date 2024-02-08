@@ -1,6 +1,5 @@
 pub mod user;
 
-use crate::schema::favourite;
 use crate::schema::follow;
 use rocket_sync_db_pools::diesel::Insertable;
 use uuid::Uuid;
@@ -21,15 +20,6 @@ pub struct NewFollow<'a> {
     pub avatar_url: &'a str,
 }
 
-/// Represents a new favorite item to be inserted into the database.
-#[derive(Insertable, PartialEq, Debug)]
-#[diesel(table_name = favourite)]
-pub struct NewFavourite {
-    pub user_uuid: Uuid,
-    pub favourite_uuid: Uuid,
-    pub title: String,
-}
-
 /// Represents a follower object retrieved from the database.
 #[derive(Queryable, PartialEq, Debug, Clone)]
 pub struct Follower {
@@ -38,13 +28,4 @@ pub struct Follower {
     pub followed_uuid: Uuid,
     pub username: String,
     pub avatar_url: String,
-}
-
-// Represents a favourite object retrieved from the database.
-#[derive(Queryable, PartialEq, Debug, Clone)]
-pub struct Favourite {
-    pub uuid: Uuid,
-    pub user_uuid: Uuid,
-    pub favourite_uuid: Uuid,
-    pub title: String,
 }

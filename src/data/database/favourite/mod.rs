@@ -1,5 +1,8 @@
+use self::objects::{FavouriteDataSearchRequest, FavouriteEntityResponse};
+
 use super::DatabaseResponse;
 mod favourite_db;
+pub mod objects;
 
 #[async_trait]
 pub trait UserFavouritesDatabase {
@@ -15,7 +18,15 @@ pub trait UserFavouritesDatabase {
         uuid: &'a str,
         favourite_uuid: &'a str,
     ) -> Result<(), FavouriteError>;
-    async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError>;
+    async fn is_favourite<'a>(
+        &self,
+        uuid: &'a str,
+        favourite_uuid: &'a str,
+    ) -> Result<bool, FavouriteError>;
+    async fn get_user_favourites<'a>(
+        &self,
+        request: &FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteError>;
 }
 
 #[derive(Debug, Clone)]

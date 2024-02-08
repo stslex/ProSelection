@@ -1,13 +1,11 @@
 use super::{
-    user_objects::{user::User, Favourite, Follower, NewFollow, UserCommonOutcome},
+    user_objects::{user::User, Follower, NewFollow, UserCommonOutcome},
     FollowError, UserDatabase,
 };
 use crate::{
     data::database::{Conn, DatabaseResponse, OpenError},
-    presenter::handlers::user::search::{
-        UserPagingRequest, UserPagingSearchRequest, UserSearchError, UserSearchRequest,
-    },
-    schema::{favourite, follow, users},
+    presenter::handlers::user::search::{UserPagingRequest, UserSearchError, UserSearchRequest},
+    schema::{follow, users},
 };
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
@@ -111,43 +109,6 @@ impl UserDatabase for Conn {
                     })?
                     .into_iter()
                     .collect();
-                Ok(users)
-            })
-            .await
-    }
-
-    async fn get_user_favourites(
-        &self,
-        request: &UserPagingSearchRequest,
-    ) -> Result<Vec<Favourite>, UserSearchError> {
-        let request_uuid = match Uuid::parse_str(request.uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(UserSearchError::Other);
-            }
-        };
-        let query = request.query.to_owned().to_lowercase();
-        let page = if request.page <= 0 {
-            1
-        } else {
-            request.page - 1
-        };
-        let limit = request.page_size;
-        let offset = page * request.page_size;
-
-        self.0
-            .run(move |db| {
-                let users: Vec<Favourite> = favourite::table
-                    .filter(favourite::user_uuid.eq(request_uuid))
-                    .filter(favourite::title.ilike(format!("%{}%", query)))
-                    .limit(limit)
-                    .offset(offset)
-                    .get_results::<Favourite>(db)
-                    .map_err(|err| {
-                        eprintln!("Error getting users: {}", err);
-                        UserSearchError::Other
-                    })?;
                 Ok(users)
             })
             .await

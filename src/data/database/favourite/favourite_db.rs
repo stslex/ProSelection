@@ -1,15 +1,12 @@
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::{
-    data::database::{
-        user::user_objects::{Favourite, NewFavourite},
-        Conn,
-    },
-    schema::favourite,
-};
+use crate::{data::database::Conn, schema::favourite};
 
-use super::{FavouriteError, UserFavouritesDatabase};
+use super::{
+    objects::{FavouriteDataSearchRequest, FavouriteEntity, FavouriteEntityResponse},
+    FavouriteError, UserFavouritesDatabase,
+};
 
 #[async_trait]
 impl UserFavouritesDatabase for Conn {
@@ -64,7 +61,7 @@ impl UserFavouritesDatabase for Conn {
                 return Result::Err(super::FavouriteError::UserNotFound);
             }
         };
-        let favourite = NewFavourite {
+        let favourite = FavouriteEntity {
             user_uuid: uuid,
             favourite_uuid: favourite_uuid,
             title: title.to_owned(),
@@ -127,7 +124,11 @@ impl UserFavouritesDatabase for Conn {
             .await
     }
 
-    async fn is_favourite(&self, uuid: &str, favourite_uuid: &str) -> Result<bool, FavouriteError> {
+    async fn is_favourite<'a>(
+        &self,
+        uuid: &'a str,
+        favourite_uuid: &'a str,
+    ) -> Result<bool, FavouriteError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
@@ -147,9 +148,46 @@ impl UserFavouritesDatabase for Conn {
                 favourite::table
                     .filter(favourite::user_uuid.eq(uuid))
                     .filter(favourite::favourite_uuid.eq(favourite_uuid))
-                    .first::<Favourite>(db)
+                    .first::<FavouriteEntityResponse>(db)
                     .map(|_| true)
                     .or_else(|_| Ok(false))
+            })
+            .await
+    }
+
+    async fn get_user_favourites<'a>(
+        &self,
+        request: &FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteError> {
+        let request_uuid = match Uuid::parse_str(request.uuid) {
+            Ok(uuid) => uuid,
+            Err(err) => {
+                eprintln!("Error parsing uuid: {}", err);
+                return Err(FavouriteError::UuidInvalid);
+            }
+        };
+        let query = request.query.to_owned().to_lowercase();
+        let page = if request.page <= 0 {
+            1
+        } else {
+            request.page - 1
+        };
+        let limit = request.page_size;
+        let offset = page * request.page_size;
+
+        self.0
+            .run(move |db| {
+                let users: Vec<FavouriteEntityResponse> = favourite::table
+                    .filter(favourite::user_uuid.eq(request_uuid))
+                    .filter(favourite::title.ilike(format!("%{}%", query)))
+                    .limit(limit)
+                    .offset(offset)
+                    .get_results::<FavouriteEntityResponse>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting users: {}", err);
+                        FavouriteError::InternalError
+                    })?;
+                Ok(users)
             })
             .await
     }

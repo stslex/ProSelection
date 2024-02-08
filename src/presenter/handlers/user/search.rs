@@ -2,7 +2,11 @@ use rocket::futures;
 use serde::Serialize;
 
 use super::single_user::{map_user_info, UserResponse};
-use crate::data::database::{self, favourite::UserFavouritesDatabase, user::UserDatabase};
+use crate::data::database::{
+    self,
+    favourite::{objects::FavouriteDataSearchRequest, UserFavouritesDatabase},
+    user::UserDatabase,
+};
 use std::sync::Arc;
 
 pub async fn search_user<'a>(
@@ -29,7 +33,14 @@ pub async fn get_user_favourites<'a>(
     db: database::Conn,
 ) -> Result<UserFavouriteResponse, UserSearchError> {
     let db = Arc::new(db);
-    match db.get_user_favourites(request).await {
+    let request = FavouriteDataSearchRequest {
+        request_uuid: request.request_uuid,
+        uuid: request.uuid,
+        query: request.query,
+        page: request.page,
+        page_size: request.page_size,
+    };
+    match db.get_user_favourites(&request).await {
         Ok(favourites) => Result::Ok(UserFavouriteResponse {
             result: futures::future::join_all(
                 favourites

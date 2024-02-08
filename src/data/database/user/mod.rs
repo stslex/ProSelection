@@ -1,10 +1,10 @@
 use crate::presenter::handlers::user::search::{
-    UserPagingRequest, UserPagingSearchRequest, UserSearchError, UserSearchRequest,
+    UserPagingRequest, UserSearchError, UserSearchRequest,
 };
 
 use self::{
     user_db::GetByUuidError,
-    user_objects::{user::User, Favourite, Follower, UserCommonOutcome},
+    user_objects::{user::User, Follower, UserCommonOutcome},
 };
 
 use super::DatabaseResponse;
@@ -40,10 +40,6 @@ pub trait UserDatabase {
         &self,
         request: &UserPagingRequest,
     ) -> Result<Vec<Follower>, UserSearchError>;
-    async fn get_user_favourites(
-        &self,
-        request: &UserPagingSearchRequest,
-    ) -> Result<Vec<Favourite>, UserSearchError>;
     async fn get_user_following(
         &self,
         request: &UserPagingRequest,
