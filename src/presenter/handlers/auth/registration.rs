@@ -12,19 +12,17 @@ pub async fn registration(
     db: database::Conn,
 ) -> Result<LoginOk, RegistrationError> {
     let valid_reg_data = RegistrationData {
-        login: login.to_owned(),
-        username: username.to_owned(),
-        password: password.to_owned(),
+        login: login,
+        username: username,
+        password: password,
     }
     .validate()?;
-    match db
-        .registration(RegistrationData {
-            login: valid_reg_data.login.hash().await,
-            username: valid_reg_data.username,
-            password: valid_reg_data.password.hash().await,
-        })
-        .await
-    {
+    let hashed_data = RegistrationData {
+        login: &valid_reg_data.login.hash().await,
+        username: valid_reg_data.username,
+        password: &valid_reg_data.password.hash().await,
+    };
+    match db.registration(&hashed_data).await {
         RegistrationOutcome::Ok(res) => Ok(map_auth_ok(res)),
         RegistrationOutcome::AlreadyInUse => Err(RegistrationError::LoginInUse),
         RegistrationOutcome::Other(_) => Err(RegistrationError::Other),

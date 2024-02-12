@@ -21,9 +21,9 @@ pub struct NewUser {
 
 #[async_trait]
 pub trait AuthorizationDatabase {
-    async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome;
-    async fn registration(&self, data: RegistrationData) -> RegistrationOutcome;
-    async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome;
+    async fn login<'a>(&self, login: &'a str, password: &'a str) -> AuthorizationOutcome;
+    async fn registration<'a>(&self, data: &'a RegistrationData) -> RegistrationOutcome;
+    async fn verify_token<'a>(&self, uuid: &'a str, username: &'a str) -> VerifyTokenOutcome;
 }
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use crate::data::database::user::user_objects::user::User;
+use crate::data::database::user::objects::UserEntity;
 
 pub struct JwtObject {
     pub uuid: String,
@@ -20,7 +20,7 @@ pub trait JwtMapper {
     fn map(&self) -> JwtObject;
 }
 
-impl JwtMapper for User {
+impl JwtMapper for UserEntity {
     fn map(&self) -> JwtObject {
         JwtObject {
             uuid: self.id.to_string().clone(),

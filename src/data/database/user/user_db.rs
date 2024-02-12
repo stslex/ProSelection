@@ -1,5 +1,5 @@
 use super::{
-    user_objects::{user::User, UserCommonOutcome},
+    objects::{UserDataError, UserEntity},
     UserDatabase,
 };
 use crate::{
@@ -14,97 +14,66 @@ use uuid::Uuid;
 
 #[async_trait]
 impl UserDatabase for Conn {
-    async fn get_user_count(&self) -> UserCommonOutcome<String> {
+    async fn get_user_count(&self) -> Result<String, UserDataError> {
         self.0
-            .run(|db| match users::table.get_results::<User>(db) {
-                Ok(items) => UserCommonOutcome::Ok(items.len().to_string()),
-                Err(_) => UserCommonOutcome::Error,
+            .run(|db| match users::table.get_results::<UserEntity>(db) {
+                Ok(items) => Result::Ok(items.len().to_string()),
+                Err(_) => Result::Err(UserDataError::InternalError),
             })
             .await
     }
 
-    async fn get_user(&self, uuid: &str) -> Result<User, GetByUuidError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(GetByUuidError::UuidInvalid);
-            }
-        };
+    async fn get_user<'a>(&self, uuid: &'a str) -> Result<UserEntity, UserDataError> {
+        let uuid = Uuid::parse_str(uuid).map_err(|_| UserDataError::UuidInvalid)?;
         self.0
-            .run(
-                move |db| match users::table.filter(users::id.eq(uuid)).first::<User>(db) {
-                    Ok(user) => Ok(user),
-                    Err(err) => {
-                        eprintln!("Error getting user: {}", err);
-                        Err(GetByUuidError::InternalError)
-                    }
-                },
-            )
+            .run(move |db| {
+                users::table
+                    .filter(users::id.eq(uuid))
+                    .first::<UserEntity>(db)
+                    .map_err(|_| UserDataError::InternalError)
+            })
             .await
     }
 
-    async fn search_users(
+    async fn search_users<'a>(
         &self,
-        request: &UserSearchRequest,
-    ) -> Result<Vec<User>, UserSearchError> {
+        request: &'a UserSearchRequest<'a>,
+    ) -> Result<Vec<UserEntity>, UserSearchError> {
         let query = request.query.to_owned();
-        let uuid = match Uuid::parse_str(request.uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(UserSearchError::UuidInvalid);
-            }
-        };
+        let uuid = Uuid::parse_str(request.uuid).map_err(|_| UserSearchError::UuidInvalid)?;
         let limit = request.page_size;
         let offset = request.page * request.page_size;
         self.0
             .run(move |db| {
-                let users: Vec<User> = users::table
+                users::table
                     .filter(users::username.ilike(format!("%{}%", query)))
                     .filter(users::id.ne(uuid))
                     .limit(limit)
                     .offset(offset)
-                    .get_results::<User>(db)
+                    .get_results::<UserEntity>(db)
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
                         UserSearchError::InternalError
-                    })?;
-                Ok(users)
+                    })
             })
             .await
     }
 
-    async fn get_user_by_username(&self, username: &str) -> Result<User, GetByUuidError> {
+    async fn get_user_by_username<'a>(
+        &self,
+        username: &'a str,
+    ) -> Result<UserEntity, UserDataError> {
         let username = username.to_owned();
         self.0
             .run(move |db| {
-                match users::table
+                users::table
                     .filter(users::username.eq(username))
-                    .first::<User>(db)
-                {
-                    Ok(user) => Ok(user),
-                    Err(err) => {
+                    .first::<UserEntity>(db)
+                    .map_err(|err| {
                         eprintln!("Error getting user: {}", err);
-                        Err(GetByUuidError::InternalError)
-                    }
-                }
+                        UserDataError::InternalError
+                    })
             })
             .await
-    }
-}
-
-#[derive(Debug)]
-pub enum GetByUuidError {
-    UuidInvalid,
-    InternalError,
-}
-
-impl std::fmt::Display for GetByUuidError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GetByUuidError::UuidInvalid => write!(f, "UuidInvalid"),
-            GetByUuidError::InternalError => write!(f, "InternalError"),
-        }
     }
 }

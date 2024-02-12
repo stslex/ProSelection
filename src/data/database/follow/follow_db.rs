@@ -2,7 +2,7 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::{
-    data::database::{user::user_objects::user::User, Conn},
+    data::database::{user::objects::UserEntity, Conn},
     schema::{follow, users},
 };
 
@@ -86,7 +86,7 @@ impl FollowDatabase for Conn {
             .run(move |db| {
                 let followed_user = match users::table
                     .filter(users::id.eq(followed_uuid))
-                    .first::<User>(db)
+                    .first::<UserEntity>(db)
                 {
                     Ok(user) => user,
                     Err(err) => {

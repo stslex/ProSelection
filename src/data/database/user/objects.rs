@@ -1,7 +1,7 @@
 use uuid::Uuid;
 
 #[derive(Queryable, PartialEq, Debug, Clone)]
-pub struct User {
+pub struct UserEntity {
     pub id: Uuid,
     pub login: String,
     pub username: String,
@@ -24,4 +24,19 @@ pub struct Following {
     pub following_uuid: Uuid,
     pub username: String,
     pub avatar_url: String,
+}
+
+#[derive(Debug)]
+pub enum UserDataError {
+    UuidInvalid,
+    InternalError,
+}
+
+impl std::fmt::Display for UserDataError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UserDataError::UuidInvalid => write!(f, "UuidInvalid"),
+            UserDataError::InternalError => write!(f, "InternalError"),
+        }
+    }
 }

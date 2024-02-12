@@ -21,9 +21,9 @@ mod tests {
 
         let expected_username = "test_username";
         let data = RegistrationData {
-            login: "test_login".to_owned(),
-            username: expected_username.to_owned(),
-            password: "test_password".to_owned(),
+            login: "test_login",
+            username: expected_username,
+            password: "test_password",
         };
 
         connection
@@ -33,7 +33,7 @@ mod tests {
             })
             .await;
 
-        let outcome = connection.registration(data).await;
+        let outcome = connection.registration(&data).await;
 
         println!("result: {:?}", outcome);
         let is_valid = match outcome {
@@ -56,9 +56,9 @@ mod tests {
 
         let username = "test_username";
         let data = RegistrationData {
-            login: "test_login".to_owned(),
-            username: username.to_owned(),
-            password: "test_password".to_owned(),
+            login: "test_login",
+            username: username,
+            password: "test_password",
         };
 
         connection
@@ -68,7 +68,7 @@ mod tests {
             })
             .await;
 
-        let reg_outcome = connection.registration(data).await;
+        let reg_outcome = connection.registration(&data).await;
         let outcome = match reg_outcome {
             RegistrationOutcome::Ok(res) => Result::Ok::<VerifyTokenOutcome, Error>(
                 connection.verify_token(&res.uuid, &res.username).await,
@@ -120,9 +120,9 @@ mod tests {
         let login = "test_login";
         let password = "test_password";
         let data = RegistrationData {
-            login: login.to_owned(),
-            username: "test_username".to_owned(),
-            password: password.to_owned(),
+            login: login,
+            username: "test_username",
+            password: password,
         };
 
         connection
@@ -132,7 +132,7 @@ mod tests {
             })
             .await;
 
-        connection.registration(data).await;
+        connection.registration(&data).await;
         let outcome = connection.login(login, password).await;
 
         println!("result: {:?}", outcome);

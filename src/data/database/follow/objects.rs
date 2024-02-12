@@ -42,3 +42,14 @@ pub enum FollowDataError {
     Conflict,
     InternalError,
 }
+
+impl std::fmt::Display for FollowDataError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            FollowDataError::UuidInvalid => write!(f, "UuidInvalid"),
+            FollowDataError::UserNotFound => write!(f, "UserNotFound"),
+            FollowDataError::Conflict => write!(f, "Conflict"),
+            FollowDataError::InternalError => write!(f, "InternalError"),
+        }
+    }
+}
