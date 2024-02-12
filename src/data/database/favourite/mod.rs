@@ -3,6 +3,7 @@ use self::objects::{FavouriteDataSearchRequest, FavouriteEntityResponse};
 use super::DatabaseResponse;
 mod favourite_db;
 pub mod objects;
+mod tests;
 
 #[async_trait]
 pub trait UserFavouritesDatabase {
