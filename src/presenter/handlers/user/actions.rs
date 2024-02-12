@@ -1,6 +1,6 @@
-use crate::data::database::{
-    self,
-    follow::{objects::FollowDataError, FollowDatabase},
+use crate::data::{
+    database::{self, follow::objects::FollowDataError},
+    repository::follow::FollowRepository,
 };
 
 pub enum FollowResponse {
@@ -14,7 +14,7 @@ pub async fn follow_user<'a>(
     db: database::Conn,
 ) -> FollowResponse {
     match db.follow_user(follower_uuid, followed_uuid).await {
-        Result::Ok(()) => FollowResponse::Ok,
+        Result::Ok(_) => FollowResponse::Ok,
         Result::Err(err) => FollowResponse::Error(err),
     }
 }

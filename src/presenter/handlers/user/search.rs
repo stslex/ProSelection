@@ -2,14 +2,17 @@ use rocket::futures;
 use serde::Serialize;
 
 use super::single_user::{map_user_info, UserResponse};
-use crate::data::database::{
-    self,
-    favourite::{objects::FavouriteDataSearchRequest, FavouriteError, UserFavouritesDatabase},
-    follow::{
-        objects::{FollowDataError, FollowPagingDataRequest, UserSearchError},
-        FollowDatabase,
+use crate::data::{
+    database::{
+        self,
+        favourite::objects::FavouriteDataSearchRequest,
+        follow::{
+            objects::{FollowDataError, FollowPagingDataRequest, UserSearchError},
+            FollowDatabase,
+        },
+        user::UserDatabase,
     },
-    user::UserDatabase,
+    repository::favourite::{objects::FavouriteDataError, FavouriteRepository},
 };
 use std::sync::Arc;
 
@@ -76,7 +79,7 @@ pub async fn get_user_favourites<'a>(
         }),
 
         Err(err) => match err {
-            FavouriteError::UuidInvalid => Err(UserSearchError::UuidInvalid),
+            FavouriteDataError::UuidInvalid => Err(UserSearchError::UuidInvalid),
             _ => Err(UserSearchError::InternalError),
         },
     }

@@ -6,49 +6,49 @@ pub mod objects;
 
 #[async_trait]
 pub trait UserFavouritesDatabase {
-    async fn get_favourites_count<'a>(&self, uuid: &'a str) -> Result<i64, FavouriteError>;
+    async fn get_favourites_count<'a>(&self, uuid: &'a str) -> Result<i64, FavouriteDbError>;
     async fn add_favourite<'a>(
         &self,
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), FavouriteError>;
+    ) -> Result<(), FavouriteDbError>;
     async fn remove_favourite<'a>(
         &self,
         uuid: &'a str,
         favourite_uuid: &'a str,
-    ) -> Result<(), FavouriteError>;
+    ) -> Result<(), FavouriteDbError>;
     async fn is_favourite<'a>(
         &self,
         uuid: &'a str,
         favourite_uuid: &'a str,
-    ) -> Result<bool, FavouriteError>;
+    ) -> Result<bool, FavouriteDbError>;
     async fn get_user_favourites<'a>(
         &self,
-        request: &FavouriteDataSearchRequest<'a>,
-    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteError>;
+        request: &'a FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError>;
 }
 
 #[derive(Debug, Clone)]
-pub enum FavouriteError {
+pub enum FavouriteDbError {
     UuidInvalid,
     UserNotFound,
     Conflict,
     InternalError,
 }
 
-impl std::fmt::Display for FavouriteError {
+impl std::fmt::Display for FavouriteDbError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            FavouriteError::UuidInvalid => write!(f, "UuidInvalid"),
-            FavouriteError::UserNotFound => write!(f, "UserNotFound"),
-            FavouriteError::Conflict => write!(f, "Conflict"),
-            FavouriteError::InternalError => write!(f, "InternalError"),
+            FavouriteDbError::UuidInvalid => write!(f, "UuidInvalid"),
+            FavouriteDbError::UserNotFound => write!(f, "UserNotFound"),
+            FavouriteDbError::Conflict => write!(f, "Conflict"),
+            FavouriteDbError::InternalError => write!(f, "InternalError"),
         }
     }
 }
 
-impl std::fmt::Display for DatabaseResponse<FavouriteError> {
+impl std::fmt::Display for DatabaseResponse<FavouriteDbError> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             DatabaseResponse::Ok => write!(f, "Ok"),

@@ -5,17 +5,17 @@ use crate::{data::database::Conn, schema::favourite};
 
 use super::{
     objects::{FavouriteDataSearchRequest, FavouriteEntity, FavouriteEntityResponse},
-    FavouriteError, UserFavouritesDatabase,
+    FavouriteDbError, UserFavouritesDatabase,
 };
 
 #[async_trait]
 impl UserFavouritesDatabase for Conn {
-    async fn get_favourites_count<'a>(&self, uuid: &'a str) -> Result<i64, FavouriteError> {
+    async fn get_favourites_count<'a>(&self, uuid: &'a str) -> Result<i64, FavouriteDbError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Err(FavouriteError::UuidInvalid);
+                return Err(FavouriteDbError::UuidInvalid);
             }
         };
         self.0
@@ -28,7 +28,7 @@ impl UserFavouritesDatabase for Conn {
                     Ok(count) => Ok(count),
                     Err(err) => {
                         eprintln!("Error getting user: {}", err);
-                        Err(FavouriteError::InternalError)
+                        Err(FavouriteDbError::InternalError)
                     }
                 }
             })
@@ -40,25 +40,25 @@ impl UserFavouritesDatabase for Conn {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), super::FavouriteError> {
+    ) -> Result<(), super::FavouriteDbError> {
         let is_existing = self.is_favourite(uuid, favourite_uuid).await;
 
         if is_existing.unwrap_or(false) {
-            return Result::Err(super::FavouriteError::Conflict);
+            return Result::Err(super::FavouriteDbError::Conflict);
         }
 
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UuidInvalid);
+                return Result::Err(super::FavouriteDbError::UuidInvalid);
             }
         };
         let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UserNotFound);
+                return Result::Err(super::FavouriteDbError::UserNotFound);
             }
         };
         let favourite = FavouriteEntity {
@@ -82,7 +82,7 @@ impl UserFavouritesDatabase for Conn {
             }
             Err(err) => {
                 eprintln!("Error adding favourite: {}", err);
-                Result::Err(super::FavouriteError::InternalError)
+                Result::Err(super::FavouriteDbError::InternalError)
             }
         }
     }
@@ -91,19 +91,19 @@ impl UserFavouritesDatabase for Conn {
         &self,
         uuid: &'a str,
         favourite_uuid: &'a str,
-    ) -> Result<(), super::FavouriteError> {
+    ) -> Result<(), super::FavouriteDbError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UuidInvalid);
+                return Result::Err(super::FavouriteDbError::UuidInvalid);
             }
         };
         let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UserNotFound);
+                return Result::Err(super::FavouriteDbError::UserNotFound);
             }
         };
 
@@ -118,7 +118,7 @@ impl UserFavouritesDatabase for Conn {
                 .map(|_| ())
                 .map_err(|err| {
                     eprintln!("Error removing favourite: {}", err);
-                    super::FavouriteError::InternalError
+                    super::FavouriteDbError::InternalError
                 })
             })
             .await
@@ -128,19 +128,19 @@ impl UserFavouritesDatabase for Conn {
         &self,
         uuid: &'a str,
         favourite_uuid: &'a str,
-    ) -> Result<bool, FavouriteError> {
+    ) -> Result<bool, FavouriteDbError> {
         let uuid = match Uuid::parse_str(uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UuidInvalid);
+                return Result::Err(super::FavouriteDbError::UuidInvalid);
             }
         };
         let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteError::UserNotFound);
+                return Result::Err(super::FavouriteDbError::UserNotFound);
             }
         };
         self.0
@@ -157,13 +157,13 @@ impl UserFavouritesDatabase for Conn {
 
     async fn get_user_favourites<'a>(
         &self,
-        request: &FavouriteDataSearchRequest<'a>,
-    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteError> {
+        request: &'a FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError> {
         let request_uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
-                return Err(FavouriteError::UuidInvalid);
+                return Err(FavouriteDbError::UuidInvalid);
             }
         };
         let query = request.query.to_owned().to_lowercase();
@@ -185,7 +185,7 @@ impl UserFavouritesDatabase for Conn {
                     .get_results::<FavouriteEntityResponse>(db)
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
-                        FavouriteError::InternalError
+                        FavouriteDbError::InternalError
                     })?;
                 Ok(users)
             })

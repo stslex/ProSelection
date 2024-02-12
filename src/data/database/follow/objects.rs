@@ -9,13 +9,13 @@ pub enum UserSearchError {
 }
 
 /// Represents a new following relationship to be inserted into the database.
-#[derive(Insertable, PartialEq, Debug)]
+#[derive(Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = follow)]
-pub struct FollowEntityCreate<'a> {
+pub struct FollowEntityCreate {
     pub follower_uuid: Uuid,
     pub followed_uuid: Uuid,
-    pub username: &'a str,
-    pub avatar_url: &'a str,
+    pub username: String,
+    pub avatar_url: String,
 }
 
 /// Represents a follower object retrieved from the database.

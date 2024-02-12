@@ -1,4 +1,6 @@
-use self::objects::FavouriteDataError;
+use crate::data::database::favourite::objects::FavouriteDataSearchRequest;
+
+use self::objects::{FavouriteDataError, FavouriteDataResponse};
 
 pub mod objects;
 mod repository;
@@ -22,4 +24,8 @@ pub trait FavouriteRepository {
         uuid: &'a str,
         favourite_uuid: &'a str,
     ) -> Result<bool, FavouriteDataError>;
+    async fn get_user_favourites<'a>(
+        &self,
+        request: &'a FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteDataResponse>, FavouriteDataError>;
 }
