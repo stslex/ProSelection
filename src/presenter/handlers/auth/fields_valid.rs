@@ -17,7 +17,7 @@ impl PartialEq for RegistrationFieldValid {
     }
 }
 
-impl<'a> AuthValidation for RegistrationData {
+impl<'a> AuthValidation for RegistrationData<'a> {
     fn validate(&self) -> Result<Self, RegistrationError> {
         if self.password.len() < 8 {
             return Result::Err(RegistrationError::WeakPassword);
@@ -51,9 +51,9 @@ mod tests {
     #[test]
     fn test_validate_weak_password() {
         let data = RegistrationData {
-            password: "weak".to_owned(),
-            username: "username".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "weak",
+            username: "username",
+            login: "loginCorrect",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -64,9 +64,9 @@ mod tests {
     #[test]
     fn test_validate_weak_username() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "weak".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "password",
+            username: "weak",
+            login: "loginCorrect",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -77,9 +77,9 @@ mod tests {
     #[test]
     fn test_validate_weak_login() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "username".to_owned(),
-            login: "weak".to_owned(),
+            password: "password",
+            username: "username",
+            login: "weak",
         };
         assert_eq!(data.validate().unwrap_err(), RegistrationError::WeakLogin);
     }
@@ -87,9 +87,9 @@ mod tests {
     #[test]
     fn test_validate_password_too_long() {
         let data = RegistrationData {
-            password: "veryverylongpassword".to_owned(),
-            username: "username".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "veryverylongpassword",
+            username: "username",
+            login: "loginCorrect",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -100,9 +100,9 @@ mod tests {
     #[test]
     fn test_validate_equal_login_password() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "username".to_owned(),
-            login: "password".to_owned(),
+            password: "password",
+            username: "username",
+            login: "password",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -113,9 +113,9 @@ mod tests {
     #[test]
     fn test_validate_equal_login_username() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "loginCorrect".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "password",
+            username: "loginCorrect",
+            login: "loginCorrect",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -126,9 +126,9 @@ mod tests {
     #[test]
     fn test_validate_equal_lpassword_username() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "password".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "password",
+            username: "password",
+            login: "loginCorrect",
         };
         assert_eq!(
             data.validate().unwrap_err(),
@@ -139,9 +139,9 @@ mod tests {
     #[test]
     fn test_validate_valid_data() {
         let data = RegistrationData {
-            password: "password".to_owned(),
-            username: "username".to_owned(),
-            login: "loginCorrect".to_owned(),
+            password: "password",
+            username: "username",
+            login: "loginCorrect",
         };
         let result = data.validate().unwrap();
         assert_eq!(result.login, data.login);

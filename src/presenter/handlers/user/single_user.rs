@@ -5,7 +5,11 @@ use serde::Serialize;
 use crate::data::database::{
     self,
     favourite::UserFavouritesDatabase,
-    user::{user_db::GetByUuidError, user_objects::user::User, UserDatabase},
+    follow::FollowDatabase,
+    user::{
+        objects::{UserDataError, UserEntity},
+        UserDatabase,
+    },
 };
 
 pub async fn get_user<'a>(
@@ -15,10 +19,10 @@ pub async fn get_user<'a>(
 ) -> Result<UserResponse, UserError> {
     let db = Arc::new(db);
     match db.get_user(uuid).await {
-        Ok(user) => Ok(map_user_info(current_user_uuid, &user, db).await),
-        Err(err) => match err {
-            GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
-            GetByUuidError::InternalError => Err(UserError::Other),
+        Result::Ok(user) => Ok(map_user_info(current_user_uuid, &user, db).await),
+        Result::Err(err) => match err {
+            UserDataError::UuidInvalid => Err(UserError::UuidInvalid),
+            UserDataError::InternalError => Err(UserError::Other),
         },
     }
 }
@@ -32,13 +36,13 @@ pub async fn get_user_by_username<'a>(
     match db.get_user_by_username(username).await {
         Ok(user) => Ok(map_user_info(uuid, &user, db).await),
         Err(err) => match err {
-            GetByUuidError::UuidInvalid => Err(UserError::UuidInvalid),
-            GetByUuidError::InternalError => Err(UserError::Other),
+            UserDataError::UuidInvalid => Err(UserError::UuidInvalid),
+            UserDataError::InternalError => Err(UserError::Other),
         },
     }
 }
 
-pub async fn map_user_info(uuid: &str, user: &User, db: Arc<database::Conn>) -> UserResponse {
+pub async fn map_user_info(uuid: &str, user: &UserEntity, db: Arc<database::Conn>) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),

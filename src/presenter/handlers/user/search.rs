@@ -2,7 +2,18 @@ use rocket::futures;
 use serde::Serialize;
 
 use super::single_user::{map_user_info, UserResponse};
-use crate::data::database::{self, favourite::UserFavouritesDatabase, user::UserDatabase};
+use crate::data::{
+    database::{
+        self,
+        favourite::objects::FavouriteDataSearchRequest,
+        follow::{
+            objects::{FollowDataError, FollowPagingDataRequest, UserSearchError},
+            FollowDatabase,
+        },
+        user::UserDatabase,
+    },
+    repository::favourite::{objects::FavouriteDataError, FavouriteRepository},
+};
 use std::sync::Arc;
 
 pub async fn search_user<'a>(
@@ -20,7 +31,7 @@ pub async fn search_user<'a>(
             .await,
         }),
 
-        Err(_) => Err(UserSearchError::Other),
+        Err(err) => Err(err),
     }
 }
 
@@ -29,7 +40,14 @@ pub async fn get_user_favourites<'a>(
     db: database::Conn,
 ) -> Result<UserFavouriteResponse, UserSearchError> {
     let db = Arc::new(db);
-    match db.get_user_favourites(request).await {
+    let request = FavouriteDataSearchRequest {
+        request_uuid: request.request_uuid,
+        uuid: request.uuid,
+        query: request.query,
+        page: request.page,
+        page_size: request.page_size,
+    };
+    match db.get_user_favourites(&request).await {
         Ok(favourites) => Result::Ok(UserFavouriteResponse {
             result: futures::future::join_all(
                 favourites
@@ -60,7 +78,10 @@ pub async fn get_user_favourites<'a>(
             .await,
         }),
 
-        Err(_) => Err(UserSearchError::Other),
+        Err(err) => match err {
+            FavouriteDataError::UuidInvalid => Err(UserSearchError::UuidInvalid),
+            _ => Err(UserSearchError::InternalError),
+        },
     }
 }
 
@@ -70,7 +91,13 @@ pub async fn get_user_followers<'a>(
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
 
-    match db.get_user_followers(request).await {
+    let follow_request = FollowPagingDataRequest {
+        request_uuid: request.request_uuid,
+        uuid: request.uuid,
+        page: request.page,
+        page_size: request.page_size,
+    };
+    match db.get_user_followers(&follow_request).await {
         Ok(users) => Result::Ok(UserFollowerResponse {
             result: futures::future::join_all(users.into_iter().map(|user| {
                 let db: Arc<database::Conn> = Arc::clone(&db);
@@ -95,7 +122,10 @@ pub async fn get_user_followers<'a>(
             .await,
         }),
 
-        Err(_) => Err(UserSearchError::Other),
+        Err(err) => match err {
+            FollowDataError::UuidInvalid => Err(UserSearchError::UuidInvalid),
+            _ => Err(UserSearchError::InternalError),
+        },
     }
 }
 
@@ -104,8 +134,13 @@ pub async fn get_user_following<'a>(
     db: database::Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
-
-    match db.get_user_following(request).await {
+    let follow_request = FollowPagingDataRequest {
+        request_uuid: request.request_uuid,
+        uuid: request.uuid,
+        page: request.page,
+        page_size: request.page_size,
+    };
+    match db.get_user_following(&follow_request).await {
         Ok(users) => Result::Ok(UserFollowerResponse {
             result: futures::future::join_all(users.into_iter().map(|user| {
                 let db: Arc<database::Conn> = Arc::clone(&db);
@@ -130,7 +165,10 @@ pub async fn get_user_following<'a>(
             .await,
         }),
 
-        Err(_) => Err(UserSearchError::Other),
+        Err(err) => match err {
+            FollowDataError::UuidInvalid => Err(UserSearchError::UuidInvalid),
+            _ => Err(UserSearchError::InternalError),
+        },
     }
 }
 
@@ -184,9 +222,4 @@ pub struct FavouriteResponse {
 #[derive(Serialize)]
 pub struct UserSearchResponse {
     pub result: Vec<UserResponse>,
-}
-
-#[derive(Debug)]
-pub enum UserSearchError {
-    Other,
 }

@@ -6,7 +6,7 @@ pub use rocket_sync_db_pools::diesel::Insertable;
 use crate::data::database::auth::{
     AuthorizationDatabase, AuthorizationOutcome, NewUser, RegistrationOutcome,
 };
-use crate::data::database::user::user_objects::user::User;
+use crate::data::database::user::objects::UserEntity;
 use crate::data::database::Conn;
 use crate::schema::users;
 use crate::utils::jwt_util::objects::JwtMapper;
@@ -17,14 +17,14 @@ use super::VerifyTokenOutcome;
 
 #[async_trait]
 impl AuthorizationDatabase for Conn {
-    async fn login(&self, login: &str, password: &str) -> AuthorizationOutcome {
+    async fn login<'a>(&self, login: &'a str, password: &'a str) -> AuthorizationOutcome {
         let login = login.to_owned();
         let password = password.to_owned();
         match self
             .run(move |db| {
                 users::table
                     .filter(users::login.eq(login.to_lowercase()))
-                    .get_result::<User>(db)
+                    .get_result::<UserEntity>(db)
             })
             .await
         {
@@ -45,7 +45,7 @@ impl AuthorizationDatabase for Conn {
         }
     }
 
-    async fn registration(&self, data: RegistrationData) -> RegistrationOutcome {
+    async fn registration<'a>(&self, data: &'a RegistrationData<'a>) -> RegistrationOutcome {
         let new_user = NewUser {
             login: data.login.to_owned(),
             username: data.username.to_owned(),
@@ -59,7 +59,7 @@ impl AuthorizationDatabase for Conn {
             .run(move |db| {
                 diesel::insert_into(users::table)
                     .values(new_user)
-                    .get_result::<User>(db)
+                    .get_result::<UserEntity>(db)
             })
             .await
         {
@@ -86,7 +86,7 @@ impl AuthorizationDatabase for Conn {
         }
     }
 
-    async fn verify_token(&self, uuid: &str, username: &str) -> VerifyTokenOutcome {
+    async fn verify_token<'a>(&self, uuid: &'a str, username: &'a str) -> VerifyTokenOutcome {
         let uuid = uuid.parse::<uuid::Uuid>().unwrap();
         let username = username.to_owned();
         // User{}.map().generate_access()
@@ -96,7 +96,7 @@ impl AuthorizationDatabase for Conn {
                 users::table
                     .filter(users::id.eq(uuid))
                     .filter(users::username.eq(username))
-                    .get_result::<User>(db)
+                    .get_result::<UserEntity>(db)
             })
             .await
         {

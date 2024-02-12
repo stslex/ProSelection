@@ -1,9 +1,15 @@
 use crate::{
-    data::database::{favourite::UserFavouritesDatabase, Conn},
-    utils,
+    data::database::{
+        favourite::{objects::FavouriteDataSearchRequest, UserFavouritesDatabase},
+        Conn,
+    },
+    utils::{self, Mapper},
 };
 
-use super::{objects::FavouriteDataError, FavouriteRepository};
+use super::{
+    objects::{FavouriteDataError, FavouriteDataResponse},
+    FavouriteRepository,
+};
 
 #[async_trait]
 impl FavouriteRepository for Conn {
@@ -41,6 +47,15 @@ impl FavouriteRepository for Conn {
     ) -> Result<bool, FavouriteDataError> {
         match UserFavouritesDatabase::is_favourite(self, uuid, favourite_uuid).await {
             Ok(is_favourite) => Ok(is_favourite),
+            Err(err) => Err(utils::Mapper::map(&err).await),
+        }
+    }
+    async fn get_user_favourites<'a>(
+        &self,
+        request: &'a FavouriteDataSearchRequest<'a>,
+    ) -> Result<Vec<FavouriteDataResponse>, FavouriteDataError> {
+        match UserFavouritesDatabase::get_user_favourites(self, request).await {
+            Ok(favourites) => Ok(favourites.map().await),
             Err(err) => Err(utils::Mapper::map(&err).await),
         }
     }
