@@ -14,51 +14,27 @@ use super::{
 #[async_trait]
 impl FollowDatabase for Conn {
     async fn get_followers_count<'a>(&self, uuid: &'a str) -> Result<i64, FollowDataError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FollowDataError::UuidInvalid);
-            }
-        };
+        let uuid = Uuid::parse_str(uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let query = follow::table.filter(follow::followed_uuid.eq(uuid)).count();
         self.0
             .run(move |db| {
-                match follow::table
-                    .filter(follow::followed_uuid.eq(uuid))
-                    .count()
-                    .get_result::<i64>(db)
-                {
-                    Ok(count) => Ok(count),
-                    Err(err) => {
-                        eprintln!("Error getting user: {}", err);
-                        Err(FollowDataError::InternalError)
-                    }
-                }
+                query.get_result::<i64>(db).map_err(|err| {
+                    eprintln!("Error getting user: {}", err);
+                    FollowDataError::InternalError
+                })
             })
             .await
     }
 
     async fn get_following_count<'a>(&self, uuid: &'a str) -> Result<i64, FollowDataError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FollowDataError::UuidInvalid);
-            }
-        };
+        let uuid = Uuid::parse_str(uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let query_builder = follow::table.filter(follow::follower_uuid.eq(uuid)).count();
         self.0
             .run(move |db| {
-                match follow::table
-                    .filter(follow::follower_uuid.eq(uuid))
-                    .count()
-                    .get_result::<i64>(db)
-                {
-                    Ok(count) => Ok(count),
-                    Err(err) => {
-                        eprintln!("Error getting user: {}", err);
-                        Err(FollowDataError::InternalError)
-                    }
-                }
+                query_builder.get_result::<i64>(db).map_err(|err| {
+                    eprintln!("Error getting user: {}", err);
+                    FollowDataError::InternalError
+                })
             })
             .await
     }
@@ -90,36 +66,23 @@ impl FollowDatabase for Conn {
         follower_uuid: &'a str,
         followed_uuid: &'a str,
     ) -> Result<(), FollowDataError> {
-        let follower_uuid = match Uuid::parse_str(follower_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(FollowDataError::UuidInvalid);
-            }
-        };
-        let followed_uuid = match Uuid::parse_str(followed_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(FollowDataError::UserNotFound);
-            }
-        };
+        let follower_uuid =
+            Uuid::parse_str(follower_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let followed_uuid =
+            Uuid::parse_str(followed_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+
+        let query_builder = follow::table
+            .filter(follow::follower_uuid.eq(follower_uuid))
+            .filter(follow::followed_uuid.eq(followed_uuid));
         self.0
             .run(move |db| {
-                match diesel::delete(
-                    follow::table
-                        .filter(follow::follower_uuid.eq(follower_uuid))
-                        .filter(follow::followed_uuid.eq(followed_uuid)),
-                )
-                .execute(db)
-                .map(|_| Result::Ok(()))
-                .map_err(|err| {
-                    eprintln!("Error unfollowing user: {}", err);
-                    Result::Err(FollowDataError::InternalError)
-                }) {
-                    Ok(result) => result,
-                    Err(err) => err,
-                }
+                diesel::delete(query_builder)
+                    .execute(db)
+                    .map(|_| ())
+                    .map_err(|err| {
+                        eprintln!("Error unfollowing user: {}", err);
+                        FollowDataError::InternalError
+                    })
             })
             .await
     }
@@ -129,20 +92,10 @@ impl FollowDatabase for Conn {
         follower_uuid: &'a str,
         followed_uuid: &'a str,
     ) -> Result<bool, FollowDataError> {
-        let follower_uuid = match Uuid::parse_str(follower_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(FollowDataError::UuidInvalid);
-            }
-        };
-        let followed_uuid = match Uuid::parse_str(followed_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(FollowDataError::UserNotFound);
-            }
-        };
+        let follower_uuid =
+            Uuid::parse_str(follower_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let followed_uuid =
+            Uuid::parse_str(followed_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
         self.is_following_uuid(&follower_uuid, &followed_uuid).await
     }
 
@@ -169,13 +122,8 @@ impl FollowDatabase for Conn {
         &self,
         request: &'a FollowPagingDataRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError> {
-        let uuid = match Uuid::parse_str(request.uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FollowDataError::UuidInvalid);
-            }
-        };
+        let uuid = Uuid::parse_str(request.uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+
         let limit = request.page_size;
         let offset = request.page * request.page_size;
         self.0
@@ -200,20 +148,10 @@ impl FollowDatabase for Conn {
         &self,
         request: &'a FollowPagingDataRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError> {
-        let uuid = match Uuid::parse_str(request.uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FollowDataError::UuidInvalid);
-            }
-        };
-        let request_uuid = match Uuid::parse_str(request.request_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FollowDataError::UuidInvalid);
-            }
-        };
+        let uuid = Uuid::parse_str(request.uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let request_uuid =
+            Uuid::parse_str(request.request_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+
         let limit = request.page_size;
         let offset = request.page * request.page_size;
         self.0
