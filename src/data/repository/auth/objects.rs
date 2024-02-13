@@ -13,16 +13,6 @@ pub struct AuthDataResponse {
     pub refresh_token: String,
 }
 
-impl std::fmt::Display for AuthDataResponse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{{ uuid: {}, username: {}, access_token: {}, refresh_token: {} }}",
-            self.uuid, self.username, self.access_token, self.refresh_token
-        )
-    }
-}
-
 #[derive(Debug)]
 pub enum RegDataError {
     AlreadyInUse,

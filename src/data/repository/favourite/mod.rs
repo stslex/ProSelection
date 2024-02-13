@@ -1,6 +1,4 @@
-use crate::data::database::favourite::objects::FavouriteDataSearchRequest;
-
-use self::objects::{FavouriteDataError, FavouriteDataResponse};
+use self::objects::{FavouriteDataError, FavouriteDataResponse, FavouriteDataSearchRequest};
 
 pub mod objects;
 mod repository;

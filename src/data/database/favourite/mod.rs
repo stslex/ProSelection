@@ -1,6 +1,5 @@
-use self::objects::{FavouriteDataSearchRequest, FavouriteEntityResponse};
+use self::objects::{FavouriteDbError, FavouriteDbSearchRequest, FavouriteEntityResponse};
 
-use super::DatabaseResponse;
 mod favourite_db;
 pub mod objects;
 mod tests;
@@ -26,34 +25,6 @@ pub trait UserFavouritesDatabase {
     ) -> Result<bool, FavouriteDbError>;
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDataSearchRequest<'a>,
+        request: &'a FavouriteDbSearchRequest<'a>,
     ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError>;
-}
-
-#[derive(Debug, Clone)]
-pub enum FavouriteDbError {
-    UuidInvalid,
-    UserNotFound,
-    Conflict,
-    InternalError,
-}
-
-impl std::fmt::Display for FavouriteDbError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            FavouriteDbError::UuidInvalid => write!(f, "UuidInvalid"),
-            FavouriteDbError::UserNotFound => write!(f, "UserNotFound"),
-            FavouriteDbError::Conflict => write!(f, "Conflict"),
-            FavouriteDbError::InternalError => write!(f, "InternalError"),
-        }
-    }
-}
-
-impl std::fmt::Display for DatabaseResponse<FavouriteDbError> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            DatabaseResponse::Ok => write!(f, "Ok"),
-            DatabaseResponse::Err(err) => write!(f, "Err: {}", err),
-        }
-    }
 }

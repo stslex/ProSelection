@@ -5,14 +5,16 @@ use super::single_user::{map_user_info, UserResponse};
 use crate::data::{
     database::{
         self,
-        favourite::objects::FavouriteDataSearchRequest,
         follow::{
             objects::{FollowDataError, FollowPagingDataRequest, UserSearchError},
             FollowDatabase,
         },
         user::UserDatabase,
     },
-    repository::favourite::{objects::FavouriteDataError, FavouriteRepository},
+    repository::favourite::{
+        objects::{FavouriteDataError, FavouriteDataSearchRequest},
+        FavouriteRepository,
+    },
 };
 use std::sync::Arc;
 

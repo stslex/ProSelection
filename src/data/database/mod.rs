@@ -24,22 +24,3 @@ impl Conn {
         .map_err(|_| ())
     }
 }
-
-#[derive(Clone)]
-pub enum DatabaseResponse<ERROR> {
-    Ok,
-    Err(ERROR),
-}
-
-trait OpenError<T: Clone> {
-    fn open_error(&self) -> T;
-}
-
-impl<T: Clone> OpenError<DatabaseResponse<T>> for Result<DatabaseResponse<T>, DatabaseResponse<T>> {
-    fn open_error(&self) -> DatabaseResponse<T> {
-        match self {
-            Ok(value) => value.clone(),
-            Err(value) => value.clone(),
-        }
-    }
-}
