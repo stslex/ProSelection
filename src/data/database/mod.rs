@@ -1,10 +1,9 @@
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use rocket_sync_db_pools::{database, diesel};
 
-pub mod auth;
 pub mod favourite;
 pub mod follow;
-mod tests;
+pub mod tests;
 pub mod user;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();

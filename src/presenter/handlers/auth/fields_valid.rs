@@ -1,4 +1,4 @@
-use crate::data::database::auth::reg_objects::RegistrationData;
+use crate::data::repository::auth::objects::RegistrationData;
 
 use super::{registration::RegistrationError, AuthValidation, RegistrationFieldValid};
 
@@ -44,7 +44,7 @@ impl<'a> AuthValidation for RegistrationData<'a> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        data::database::auth::reg_objects::RegistrationData,
+        data::repository::auth::objects::RegistrationData,
         presenter::handlers::auth::fields_valid::{AuthValidation, RegistrationError},
     };
 

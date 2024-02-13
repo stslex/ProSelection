@@ -1,5 +1,6 @@
-use crate::data::database;
-use crate::data::database::auth::{AuthorizationDatabase, AuthorizationOk, AuthorizationOutcome};
+use crate::data::repository::auth::objects::{AuthDataError, AuthDataResponse};
+use crate::data::{database, repository::auth::AuthRepository};
+
 use crate::utils::AppHasher;
 
 use super::objects::{LoginError, LoginOk};
@@ -10,14 +11,14 @@ pub async fn login<'a>(
     db: database::Conn,
 ) -> Result<LoginOk, LoginError> {
     match db.login(&login.hash().await, &password.hash().await).await {
-        AuthorizationOutcome::Ok(res) => Ok(map_auth_ok(res).await),
-        AuthorizationOutcome::NotFound => Err(LoginError::NotFound),
-        AuthorizationOutcome::Other => Err(LoginError::Other),
-        AuthorizationOutcome::InvalidPassword => Err(LoginError::InvalidPassword),
+        Result::Ok(res) => Ok(map_auth_ok(res).await),
+        Result::Err(AuthDataError::NotFound) => Err(LoginError::NotFound),
+        Result::Err(AuthDataError::Other) => Err(LoginError::Other),
+        Result::Err(AuthDataError::InvalidPassword) => Err(LoginError::InvalidPassword),
     }
 }
 
-async fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
+async fn map_auth_ok<'a>(result: AuthDataResponse) -> LoginOk {
     LoginOk {
         uuid: (result.uuid.to_owned()),
         username: (result.username.to_owned()),

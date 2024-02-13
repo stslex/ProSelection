@@ -1,5 +1,5 @@
 use super::{
-    objects::{UserDataError, UserEntity},
+    objects::{UserCreateDataError, UserDataError, UserEntity, UserEntityCreate},
     UserDatabase,
 };
 use crate::{
@@ -7,9 +7,9 @@ use crate::{
     presenter::handlers::user::search::UserSearchRequest,
     schema::users,
 };
-use diesel::prelude::*;
-use diesel::ExpressionMethods;
 use diesel::RunQueryDsl;
+use diesel::{prelude::*, result};
+use diesel::{result::DatabaseErrorKind, ExpressionMethods};
 use uuid::Uuid;
 
 #[async_trait]
@@ -33,6 +33,43 @@ impl UserDatabase for Conn {
                     .map_err(|_| UserDataError::InternalError)
             })
             .await
+    }
+
+    async fn get_user_by_login<'a>(&self, login: &'a str) -> Result<UserEntity, UserDataError> {
+        let login = login.to_owned().to_lowercase();
+        self.0
+            .run(move |db| {
+                users::table
+                    .filter(users::username.eq(login))
+                    .first::<UserEntity>(db)
+                    .map_err(|err| {
+                        eprintln!("Error getting user: {}", err);
+                        UserDataError::InternalError
+                    })
+            })
+            .await
+    }
+
+    async fn insert_user<'a>(
+        &self,
+        user: UserEntityCreate,
+    ) -> Result<UserEntity, UserCreateDataError> {
+        self.0
+            .run(move |db| {
+                diesel::insert_into(users::table)
+                    .values(user)
+                    .get_result::<UserEntity>(db)
+            })
+            .await
+            .map_err(|err| {
+                eprintln!("Error inserting user: {}", err);
+                match err {
+                    result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _) => {
+                        UserCreateDataError::AlreadyInUse
+                    }
+                    _ => UserCreateDataError::InternalError,
+                }
+            })
     }
 
     async fn search_users<'a>(

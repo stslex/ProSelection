@@ -1,6 +1,6 @@
-use crate::data::database::{
-    self,
-    auth::{self, AuthorizationDatabase},
+use crate::data::{
+    database::{self},
+    repository::auth::{objects::VerifyTokenError, AuthRepository},
 };
 use serde::Serialize;
 
@@ -9,16 +9,21 @@ pub async fn refresh(
     username: &str,
     db: database::Conn,
 ) -> Result<RefreshOk, RefreshError> {
-    match db.verify_token(uuid, username).await {
-        auth::VerifyTokenOutcome::Ok(result) => Ok(RefreshOk {
+    db.verify_token(uuid, username)
+        .await
+        .map_err(|err| match err {
+            VerifyTokenError::NotFound => RefreshError::InvalidRefreshToken,
+            VerifyTokenError::Other(message) => {
+                eprintln!("refresh error: {}", message);
+                RefreshError::SomethingElse
+            }
+        })
+        .map(|result| RefreshOk {
             uuid: result.uuid,
             username: result.username,
             access_token: result.access_token,
             refresh_token: result.refresh_token,
-        }),
-        auth::VerifyTokenOutcome::NotFound => Err(RefreshError::InvalidRefreshToken),
-        auth::VerifyTokenOutcome::Other => Err(RefreshError::SomethingElse),
-    }
+        })
 }
 
 #[derive(Serialize)]

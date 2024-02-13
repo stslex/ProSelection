@@ -1,15 +1,16 @@
 use super::objects::LoginOk;
 use super::AuthValidation;
-use crate::data::database;
-use crate::data::database::auth::reg_objects::{RegistrationData, RegistrationOutcome};
-use crate::data::database::auth::{AuthorizationDatabase, AuthorizationOk};
+
+use crate::data::database::Conn;
+use crate::data::repository::auth::objects::{AuthDataResponse, RegDataError, RegistrationData};
+use crate::data::repository::auth::AuthRepository;
 use crate::utils::AppHasher;
 
 pub async fn registration(
     login: &str,
     username: &str,
     password: &str,
-    db: database::Conn,
+    db: Conn,
 ) -> Result<LoginOk, RegistrationError> {
     let valid_reg_data = RegistrationData {
         login: login,
@@ -23,13 +24,16 @@ pub async fn registration(
         password: &valid_reg_data.password.hash().await,
     };
     match db.registration(&hashed_data).await {
-        RegistrationOutcome::Ok(res) => Ok(map_auth_ok(res)),
-        RegistrationOutcome::AlreadyInUse => Err(RegistrationError::LoginInUse),
-        RegistrationOutcome::Other(_) => Err(RegistrationError::Other),
+        Result::Ok(res) => Ok(map_auth_ok(res)),
+        Result::Err(RegDataError::AlreadyInUse) => Err(RegistrationError::LoginInUse),
+        Result::Err(RegDataError::Other(message)) => {
+            eprintln!("registration error: {}", message);
+            Err(RegistrationError::Other)
+        }
     }
 }
 
-fn map_auth_ok<'a>(result: AuthorizationOk) -> LoginOk {
+fn map_auth_ok<'a>(result: AuthDataResponse) -> LoginOk {
     LoginOk {
         uuid: (result.uuid.to_owned()),
         username: (result.username.to_owned()),
