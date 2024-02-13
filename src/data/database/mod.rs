@@ -1,10 +1,9 @@
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use rocket_sync_db_pools::{database, diesel};
 
-pub mod auth;
 pub mod favourite;
 pub mod follow;
-mod tests;
+pub mod tests;
 pub mod user;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
@@ -23,24 +22,5 @@ impl Conn {
         })
         .await
         .map_err(|_| ())
-    }
-}
-
-#[derive(Clone)]
-pub enum DatabaseResponse<ERROR> {
-    Ok,
-    Err(ERROR),
-}
-
-trait OpenError<T: Clone> {
-    fn open_error(&self) -> T;
-}
-
-impl<T: Clone> OpenError<DatabaseResponse<T>> for Result<DatabaseResponse<T>, DatabaseResponse<T>> {
-    fn open_error(&self) -> DatabaseResponse<T> {
-        match self {
-            Ok(value) => value.clone(),
-            Err(value) => value.clone(),
-        }
     }
 }

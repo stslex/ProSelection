@@ -1,8 +1,20 @@
 use uuid::Uuid;
 
+use crate::schema::users;
+
 #[derive(Queryable, PartialEq, Debug, Clone)]
 pub struct UserEntity {
     pub id: Uuid,
+    pub login: String,
+    pub username: String,
+    pub secret: String,
+    pub avatar_url: String,
+    pub bio: String,
+}
+
+#[derive(Insertable, PartialEq, Debug)]
+#[diesel(table_name = users)]
+pub struct UserEntityCreate {
     pub login: String,
     pub username: String,
     pub secret: String,
@@ -29,6 +41,12 @@ pub struct Following {
 #[derive(Debug)]
 pub enum UserDataError {
     UuidInvalid,
+    InternalError,
+}
+
+#[derive(Debug)]
+pub enum UserCreateDataError {
+    AlreadyInUse,
     InternalError,
 }
 

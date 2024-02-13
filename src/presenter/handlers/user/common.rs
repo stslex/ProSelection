@@ -1,6 +1,6 @@
-use crate::data::database::{
-    self,
-    user::{objects::UserDataError, UserDatabase},
+use crate::data::{
+    database::{self, user::objects::UserDataError},
+    repository::user::UserRepository,
 };
 
 pub async fn count(db: database::Conn) -> Result<String, CommonError> {

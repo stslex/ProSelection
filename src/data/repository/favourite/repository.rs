@@ -1,13 +1,10 @@
 use crate::{
-    data::database::{
-        favourite::{objects::FavouriteDataSearchRequest, UserFavouritesDatabase},
-        Conn,
-    },
+    data::database::{favourite::UserFavouritesDatabase, Conn},
     utils::{self, Mapper},
 };
 
 use super::{
-    objects::{FavouriteDataError, FavouriteDataResponse},
+    objects::{FavouriteDataError, FavouriteDataResponse, FavouriteDataSearchRequest},
     FavouriteRepository,
 };
 
@@ -54,7 +51,8 @@ impl FavouriteRepository for Conn {
         &self,
         request: &'a FavouriteDataSearchRequest<'a>,
     ) -> Result<Vec<FavouriteDataResponse>, FavouriteDataError> {
-        match UserFavouritesDatabase::get_user_favourites(self, request).await {
+        let request = request.map().await;
+        match UserFavouritesDatabase::get_user_favourites(self, &request).await {
             Ok(favourites) => Ok(favourites.map().await),
             Err(err) => Err(utils::Mapper::map(&err).await),
         }

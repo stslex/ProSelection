@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::{data::database::Conn, schema::favourite};
 
 use super::{
-    objects::{FavouriteDataSearchRequest, FavouriteEntity, FavouriteEntityResponse},
+    objects::{FavouriteDbSearchRequest, FavouriteEntity, FavouriteEntityResponse},
     FavouriteDbError, UserFavouritesDatabase,
 };
 
@@ -157,7 +157,7 @@ impl UserFavouritesDatabase for Conn {
 
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDataSearchRequest<'a>,
+        request: &'a FavouriteDbSearchRequest<'a>,
     ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError> {
         let request_uuid = match Uuid::parse_str(request.uuid) {
             Ok(uuid) => uuid,

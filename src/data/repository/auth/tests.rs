@@ -1,15 +1,16 @@
 #[cfg(test)]
 mod tests {
 
-    use crate::data::database::auth::{
-        reg_objects::{RegistrationData, RegistrationOutcome},
-        AuthorizationDatabase, AuthorizationOutcome, VerifyTokenOutcome,
+    use crate::data::{
+        database::tests::database_test_utls::get_test_conn,
+        repository::auth::{objects::RegistrationData, AuthRepository},
     };
-    use crate::data::database::tests::database_test_utls::get_test_conn;
+
     use diesel::Connection;
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use rocket_sync_db_pools::diesel;
-    use std::{env, fmt::Error};
+    use std::env;
+    use tokio_test::assert_ok;
 
     const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -37,7 +38,7 @@ mod tests {
 
         println!("result: {:?}", outcome);
         let is_valid = match outcome {
-            RegistrationOutcome::Ok(res) => {
+            Result::Ok(res) => {
                 res.username == expected_username
                     && res.uuid != ""
                     && res.access_token != ""
@@ -68,19 +69,13 @@ mod tests {
             })
             .await;
 
-        let reg_outcome = connection.registration(&data).await;
-        let outcome = match reg_outcome {
-            RegistrationOutcome::Ok(res) => Result::Ok::<VerifyTokenOutcome, Error>(
-                connection.verify_token(&res.uuid, &res.username).await,
-            ),
-            _ => Ok(VerifyTokenOutcome::Other),
-        }
-        .unwrap();
+        let reg_outcome = connection.registration(&data).await.unwrap();
+        let outcome = connection
+            .verify_token(&reg_outcome.uuid, &reg_outcome.username)
+            .await
+            .unwrap();
 
-        let is_valid = match outcome {
-            VerifyTokenOutcome::Ok(res) => res.username == username,
-            _ => false,
-        };
+        let is_valid = outcome.username == username;
         assert!(is_valid);
     }
 
@@ -101,14 +96,9 @@ mod tests {
             .await;
 
         let outcome = connection.verify_token(&uuid, username).await;
-
         println!("result: {:?}", outcome);
-        let is_valid = match outcome {
-            VerifyTokenOutcome::NotFound => true,
-            _ => false,
-        };
 
-        assert!(is_valid)
+        assert!(outcome.is_err())
     }
 
     #[tokio::test]
@@ -132,15 +122,13 @@ mod tests {
             })
             .await;
 
-        connection.registration(&data).await;
-        let outcome = connection.login(login, password).await;
+        let res = connection.registration(&data).await;
+        assert_ok!(res);
 
+        let outcome = connection.login(login, password).await;
         println!("result: {:?}", outcome);
 
-        let is_valid = match outcome {
-            AuthorizationOutcome::Ok(_res) => true,
-            _ => false,
-        };
+        let is_valid = outcome.is_ok();
 
         assert!(is_valid);
     }
@@ -163,10 +151,7 @@ mod tests {
 
         let outcome = connection.login(login, password).await;
 
-        let is_valid = match outcome {
-            AuthorizationOutcome::Ok(_) => false,
-            _ => true,
-        };
+        let is_valid = outcome.is_err();
         assert!(is_valid);
     }
 }

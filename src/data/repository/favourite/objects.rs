@@ -1,7 +1,9 @@
 use uuid::Uuid;
 
 use crate::{
-    data::database::favourite::{objects::FavouriteEntityResponse, FavouriteDbError},
+    data::database::favourite::objects::{
+        FavouriteDbError, FavouriteDbSearchRequest, FavouriteEntityResponse,
+    },
     utils::Mapper,
 };
 use rocket::futures;
@@ -50,5 +52,25 @@ impl Mapper<FavouriteDataResponse> for FavouriteEntityResponse {
 impl Mapper<Vec<FavouriteDataResponse>> for Vec<FavouriteEntityResponse> {
     async fn map(&self) -> Vec<FavouriteDataResponse> {
         futures::future::join_all(self.into_iter().map(|favourite| favourite.map())).await
+    }
+}
+pub struct FavouriteDataSearchRequest<'a> {
+    pub request_uuid: &'a str,
+    pub uuid: &'a str,
+    pub query: &'a str,
+    pub page: i64,
+    pub page_size: i64,
+}
+
+#[async_trait]
+impl<'a> Mapper<FavouriteDbSearchRequest<'a>> for FavouriteDataSearchRequest<'a> {
+    async fn map(&self) -> FavouriteDbSearchRequest<'a> {
+        FavouriteDbSearchRequest {
+            request_uuid: self.request_uuid,
+            uuid: self.uuid,
+            query: self.query,
+            page: self.page,
+            page_size: self.page_size,
+        }
     }
 }
