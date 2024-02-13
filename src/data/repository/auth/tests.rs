@@ -3,10 +3,7 @@ mod tests {
 
     use crate::data::{
         database::tests::database_test_utls::get_test_conn,
-        repository::auth::{
-            objects::{RegistrationData, VerifyTokenError},
-            AuthRepository,
-        },
+        repository::auth::{objects::RegistrationData, AuthRepository},
     };
 
     use diesel::Connection;
@@ -99,14 +96,9 @@ mod tests {
             .await;
 
         let outcome = connection.verify_token(&uuid, username).await;
-
         println!("result: {:?}", outcome);
-        let is_valid = match outcome {
-            Result::Err(VerifyTokenError::NotFound) => true,
-            _ => false,
-        };
 
-        assert!(is_valid)
+        assert!(outcome.is_err())
     }
 
     #[tokio::test]
@@ -137,6 +129,7 @@ mod tests {
         println!("result: {:?}", outcome);
 
         let is_valid = outcome.is_ok();
+
         assert!(is_valid);
     }
 

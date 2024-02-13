@@ -40,7 +40,7 @@ impl UserDatabase for Conn {
         self.0
             .run(move |db| {
                 users::table
-                    .filter(users::username.eq(login))
+                    .filter(users::login.eq(login))
                     .first::<UserEntity>(db)
                     .map_err(|err| {
                         eprintln!("Error getting user: {}", err);
