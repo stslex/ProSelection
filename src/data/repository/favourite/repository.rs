@@ -1,6 +1,7 @@
 use crate::{
-    data::database::{favourite::UserFavouritesDatabase, Conn},
+    data::database::favourite::UserFavouritesDatabase,
     utils::{self, Mapper},
+    Conn,
 };
 
 use super::{

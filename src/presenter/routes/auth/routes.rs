@@ -1,6 +1,5 @@
 use rocket::serde::json::Json;
 
-use crate::data::database;
 use crate::presenter::handlers::auth;
 use crate::presenter::handlers::auth::objects::{LoginError, LoginOk};
 use crate::presenter::handlers::auth::refresh::RefreshOk;
@@ -12,6 +11,7 @@ use crate::presenter::handlers::objects::response::{
     ERROR_WEAK_PASSWORD, ERROR_WEAK_USERNAME, ERROR_WRONG_REQUEST,
 };
 use crate::presenter::routes::auth::validators;
+use crate::Conn;
 
 use super::auth_objects::login_request::LoginRequest;
 use super::auth_objects::registration_request::RegistrationRequest;
@@ -20,7 +20,7 @@ use super::auth_objects::registration_request::RegistrationRequest;
 pub async fn login<'a>(
     login_request: Option<Json<LoginRequest<'a>>>,
     _api_key_validator: validators::ApiKey,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
     match login_request {
         Some(r) => match auth::login::login(r.login, r.password, db).await {
@@ -37,7 +37,7 @@ pub async fn login<'a>(
 pub async fn registration<'a>(
     registration_request: Option<Json<RegistrationRequest<'a>>>,
     _api_key_validator: validators::ApiKey,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<LoginOk>> {
     match registration_request
         .map(|r| auth::registration::registration(&r.login, &r.username, &r.password, db))
@@ -60,7 +60,7 @@ pub async fn registration<'a>(
 #[get("/refresh")]
 pub async fn refresh(
     refresh_token: validators::RefreshToken,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<RefreshOk>> {
     match auth::refresh::refresh(&refresh_token.uuid, &refresh_token.username, db).await {
         Ok(outcome) => ApiResponse::Ok(Json(outcome)),

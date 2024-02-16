@@ -2,10 +2,10 @@ use crate::{
     data::database::{
         follow::objects::UserSearchError,
         user::{objects::UserDataError, UserDatabase},
-        Conn,
     },
     presenter::handlers::user::search::UserSearchRequest,
     utils::Mapper,
+    Conn,
 };
 
 use super::{objects::UserDataResponse, UserRepository};

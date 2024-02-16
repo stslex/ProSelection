@@ -1,15 +1,12 @@
 use crate::data::repository::auth::objects::{AuthDataError, AuthDataResponse};
-use crate::data::{database, repository::auth::AuthRepository};
+use crate::data::repository::auth::AuthRepository;
+use crate::Conn;
 
 use crate::utils::AppHasher;
 
 use super::objects::{LoginError, LoginOk};
 
-pub async fn login<'a>(
-    login: &'a str,
-    password: &'a str,
-    db: database::Conn,
-) -> Result<LoginOk, LoginError> {
+pub async fn login<'a>(login: &'a str, password: &'a str, db: Conn) -> Result<LoginOk, LoginError> {
     match db.login(&login.hash().await, &password.hash().await).await {
         Result::Ok(res) => Ok(map_auth_ok(res).await),
         Result::Err(AuthDataError::NotFound) => Err(LoginError::NotFound),

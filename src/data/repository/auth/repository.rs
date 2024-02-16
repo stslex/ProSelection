@@ -1,12 +1,10 @@
 use crate::{
-    data::database::{
-        user::{
-            objects::{UserCreateDataError, UserDataError, UserEntityCreate},
-            UserDatabase,
-        },
-        Conn,
+    data::database::user::{
+        objects::{UserCreateDataError, UserDataError, UserEntityCreate},
+        UserDatabase,
     },
     utils::jwt_util::{objects::JwtMapper, JwtGenerator},
+    Conn,
 };
 
 use super::{

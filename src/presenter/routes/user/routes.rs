@@ -2,6 +2,7 @@ use rocket::serde::json::Json;
 use serde::Deserialize;
 
 use crate::data::database::follow::objects::{FollowDataError, UserSearchError};
+use crate::presenter::handlers;
 use crate::presenter::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
 use crate::presenter::handlers::favourite::FavouriteHandler;
 use crate::presenter::handlers::objects::response::BooleanResponse;
@@ -16,13 +17,10 @@ use crate::presenter::handlers::user::search::{
 };
 use crate::presenter::handlers::user::single_user::{UserError, UserResponse};
 use crate::presenter::routes::auth::validators::AccessToken;
-use crate::{data::database, presenter::handlers};
+use crate::Conn;
 
 #[get("/count")]
-pub async fn get_user_count(
-    _access_token: AccessToken,
-    db: database::Conn,
-) -> ApiResponse<'static, String> {
+pub async fn get_user_count(_access_token: AccessToken, db: Conn) -> ApiResponse<'static, String> {
     match handlers::user::common::count(db).await {
         Ok(count) => ApiResponse::Ok(count),
         Err(_) => ApiResponse::Err(&ERROR_UNKNOWN),
@@ -32,7 +30,7 @@ pub async fn get_user_count(
 #[get("/")]
 pub async fn get_current_user(
     access_token: AccessToken,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
     match handlers::user::single_user::get_user(&access_token.uuid, &access_token.uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
@@ -50,7 +48,7 @@ pub async fn get_current_user(
 pub async fn get_user(
     access_token: AccessToken,
     uuid: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
     match handlers::user::single_user::get_user(&access_token.uuid, &uuid, db).await {
         Ok(user) => ApiResponse::Ok(Json(user)),
@@ -68,7 +66,7 @@ pub async fn get_user(
 pub async fn get_user_search<'a>(
     access_token: AccessToken,
     params: UserSearchParams<'a>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserSearchResponse>> {
     let request = handlers::user::search::UserSearchRequest {
         query: params.query,
@@ -92,7 +90,7 @@ pub async fn get_user_search<'a>(
 pub async fn get_user_favourites<'a>(
     access_token: AccessToken,
     params: UserPagingSearchParams<'a>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
     let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
@@ -117,7 +115,7 @@ pub async fn get_user_favourites<'a>(
 pub async fn get_user_followers<'a>(
     access_token: AccessToken,
     params: UserPagingParams<'a>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingRequest {
         request_uuid: &access_token.uuid,
@@ -141,7 +139,7 @@ pub async fn get_user_followers<'a>(
 pub async fn get_user_following<'a>(
     access_token: AccessToken,
     params: UserPagingParams<'a>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingRequest {
         request_uuid: &access_token.uuid,
@@ -187,7 +185,7 @@ pub struct UserPagingSearchParams<'a> {
 pub async fn get_user_by_username(
     access_token: AccessToken,
     username: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<UserResponse>> {
     match handlers::user::single_user::get_user_by_username(&access_token.uuid, &username, db).await
     {
@@ -206,7 +204,7 @@ pub async fn get_user_by_username(
 pub async fn post_follow(
     access_token: AccessToken,
     uuid: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiMessageResponse<'static> {
     match actions::follow_user(&access_token.uuid, &uuid, db).await {
         FollowResponse::Ok => ApiMessageResponse::Ok("success"),
@@ -228,7 +226,7 @@ pub async fn post_follow(
 pub async fn delete_follow(
     access_token: AccessToken,
     uuid: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiMessageResponse<'static> {
     match actions::un_follow_user(&access_token.uuid, &uuid, db).await {
         FollowResponse::Ok => ApiMessageResponse::Ok("success"),
@@ -250,7 +248,7 @@ pub async fn delete_follow(
 pub async fn get_is_following(
     access_token: AccessToken,
     uuid: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<BooleanResponse>> {
     match actions::is_following(&access_token.uuid, &uuid, db).await {
         Ok(is_following) => ApiResponse::Ok(Json(BooleanResponse {
@@ -272,7 +270,7 @@ pub async fn get_is_following(
 pub async fn post_add_favourite<'a>(
     access_token: AccessToken,
     body: Json<FavouriteAddBody<'a>>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiMessageResponse<'static> {
     FavouriteHandler::add_favourite(&db, &access_token.uuid, body.favourite_uuid, body.title).await
 }
@@ -281,7 +279,7 @@ pub async fn post_add_favourite<'a>(
 pub async fn delete_remove_favourite<'a>(
     access_token: AccessToken,
     params: FavouriteDeleteParams<'a>,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiMessageResponse<'static> {
     FavouriteHandler::remove_favourite(&db, &access_token.uuid, params.favourite_uuid).await
 }
@@ -290,7 +288,7 @@ pub async fn delete_remove_favourite<'a>(
 pub async fn get_is_favourite(
     access_token: AccessToken,
     uuid: String,
-    db: database::Conn,
+    db: Conn,
 ) -> ApiResponse<'static, Json<BooleanResponse>> {
     FavouriteHandler::is_favourite(&db, &access_token.uuid, &uuid).await
 }

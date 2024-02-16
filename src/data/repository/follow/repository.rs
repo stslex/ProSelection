@@ -7,9 +7,9 @@ use crate::{
             FollowDatabase,
         },
         user::UserDatabase,
-        Conn,
     },
     utils::Mapper,
+    Conn,
 };
 
 use super::{objects::FollowerDataResponse, FollowRepository};

@@ -1,10 +1,10 @@
 use rocket::serde::json::Json;
 
 use crate::{
-    data::database::Conn,
     data::repository::favourite::FavouriteRepository,
     presenter::handlers::objects::response::{ApiMessageResponse, ApiResponse, BooleanResponse},
     utils::Mapper,
+    Conn,
 };
 
 use super::FavouriteHandler;

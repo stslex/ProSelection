@@ -3,9 +3,8 @@ use super::{
     UserDatabase,
 };
 use crate::{
-    data::database::{follow::objects::UserSearchError, Conn},
-    presenter::handlers::user::search::UserSearchRequest,
-    schema::users,
+    data::database::follow::objects::UserSearchError,
+    presenter::handlers::user::search::UserSearchRequest, schema::users, Conn,
 };
 use diesel::RunQueryDsl;
 use diesel::{prelude::*, result};

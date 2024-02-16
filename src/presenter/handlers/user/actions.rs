@@ -1,6 +1,6 @@
-use crate::data::{
-    database::{self, follow::objects::FollowDataError},
-    repository::follow::FollowRepository,
+use crate::{
+    data::{database::follow::objects::FollowDataError, repository::follow::FollowRepository},
+    Conn,
 };
 
 pub enum FollowResponse {
@@ -11,7 +11,7 @@ pub enum FollowResponse {
 pub async fn follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
-    db: database::Conn,
+    db: Conn,
 ) -> FollowResponse {
     match db.follow_user(follower_uuid, followed_uuid).await {
         Result::Ok(_) => FollowResponse::Ok,
@@ -22,7 +22,7 @@ pub async fn follow_user<'a>(
 pub async fn un_follow_user<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
-    db: database::Conn,
+    db: Conn,
 ) -> FollowResponse {
     match db.un_follow_user(follower_uuid, followed_uuid).await {
         Result::Ok(()) => FollowResponse::Ok,
@@ -33,7 +33,7 @@ pub async fn un_follow_user<'a>(
 pub async fn is_following<'a>(
     follower_uuid: &'a str,
     followed_uuid: &'a str,
-    db: database::Conn,
+    db: Conn,
 ) -> Result<bool, FollowDataError> {
     match db.is_following(follower_uuid, followed_uuid).await {
         Ok(is_following) => Ok(is_following),

@@ -1,10 +1,10 @@
 use super::objects::LoginOk;
 use super::AuthValidation;
 
-use crate::data::database::Conn;
 use crate::data::repository::auth::objects::{AuthDataResponse, RegDataError, RegistrationData};
 use crate::data::repository::auth::AuthRepository;
 use crate::utils::AppHasher;
+use crate::Conn;
 
 pub async fn registration(
     login: &str,

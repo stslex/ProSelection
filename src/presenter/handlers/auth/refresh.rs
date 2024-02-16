@@ -1,14 +1,10 @@
-use crate::data::{
-    database::{self},
-    repository::auth::{objects::VerifyTokenError, AuthRepository},
+use crate::{
+    data::repository::auth::{objects::VerifyTokenError, AuthRepository},
+    Conn,
 };
 use serde::Serialize;
 
-pub async fn refresh(
-    uuid: &str,
-    username: &str,
-    db: database::Conn,
-) -> Result<RefreshOk, RefreshError> {
+pub async fn refresh(uuid: &str, username: &str, db: Conn) -> Result<RefreshOk, RefreshError> {
     db.verify_token(uuid, username)
         .await
         .map_err(|err| match err {
