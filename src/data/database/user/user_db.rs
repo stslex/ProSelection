@@ -1,10 +1,12 @@
 use super::{
-    objects::{UserCreateDataError, UserDataError, UserEntity, UserEntityCreate},
+    objects::{UserEntity, UserEntityCreate},
     UserDatabase,
 };
 use crate::{
-    data::database::follow::objects::UserSearchError,
-    presenter::handlers::user::search::UserSearchRequest, schema::users, Conn,
+    data::repository::user::objects::{UserCreateDataError, UserDataError, UserSearchError},
+    presenter::handlers::user::search::UserSearchRequest,
+    schema::users,
+    Conn,
 };
 use diesel::RunQueryDsl;
 use diesel::{prelude::*, result};

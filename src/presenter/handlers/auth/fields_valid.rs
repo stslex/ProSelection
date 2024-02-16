@@ -1,21 +1,6 @@
 use crate::data::repository::auth::objects::RegistrationData;
 
-use super::{registration::RegistrationError, AuthValidation, RegistrationFieldValid};
-
-impl PartialEq for RegistrationFieldValid {
-    fn eq(&self, other: &Self) -> bool {
-        match self {
-            RegistrationFieldValid::Ok => match other {
-                RegistrationFieldValid::Ok => true,
-                _ => false,
-            },
-            RegistrationFieldValid::Error(err) => match other {
-                RegistrationFieldValid::Error(other_err) => err == other_err,
-                _ => false,
-            },
-        }
-    }
-}
+use super::{registration::RegistrationError, AuthValidation};
 
 impl<'a> AuthValidation for RegistrationData<'a> {
     fn validate(&self) -> Result<Self, RegistrationError> {

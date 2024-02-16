@@ -1,9 +1,6 @@
-use crate::{
-    data::database::{follow::objects::UserSearchError, user::objects::UserDataError},
-    presenter::handlers::user::search::UserSearchRequest,
-};
+use crate::presenter::handlers::user::search::UserSearchRequest;
 
-use self::objects::UserDataResponse;
+use self::objects::{UserDataError, UserDataResponse, UserSearchError};
 
 pub mod objects;
 pub mod repository;

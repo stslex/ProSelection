@@ -3,12 +3,12 @@ use std::sync::Arc;
 use serde::Serialize;
 
 use crate::{
-    data::database::{
-        favourite::UserFavouritesDatabase,
-        follow::FollowDatabase,
+    data::repository::{
+        favourite::FavouriteRepository,
+        follow::FollowRepository,
         user::{
-            objects::{UserDataError, UserEntity},
-            UserDatabase,
+            objects::{UserDataError, UserDataResponse},
+            UserRepository,
         },
     },
     Conn,
@@ -44,7 +44,7 @@ pub async fn get_user_by_username<'a>(
     }
 }
 
-pub async fn map_user_info(uuid: &str, user: &UserEntity, db: Arc<Conn>) -> UserResponse {
+pub async fn map_user_info(uuid: &str, user: &UserDataResponse, db: Arc<Conn>) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),

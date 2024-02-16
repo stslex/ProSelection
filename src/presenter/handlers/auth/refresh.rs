@@ -40,6 +40,5 @@ pub enum RefreshError {
 #[derive(Debug)]
 pub enum AccessTokenError {
     InvalidToken,
-    SomethingElse,
     InvalidApiKey,
 }

@@ -7,10 +7,10 @@ use crate::presenter::routes::RoutesInitialized;
 
 use rocket::{Build, Rocket};
 mod config;
-pub mod data;
-pub mod presenter;
+mod data;
+mod presenter;
 mod schema;
-pub mod utils;
+mod utils;
 
 #[rocket::launch]
 fn launch() -> Rocket<Build> {

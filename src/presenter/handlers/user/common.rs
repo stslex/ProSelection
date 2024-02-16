@@ -1,5 +1,5 @@
 use crate::{
-    data::{database::user::objects::UserDataError, repository::user::UserRepository},
+    data::repository::user::{objects::UserDataError, UserRepository},
     Conn,
 };
 

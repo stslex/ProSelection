@@ -1,7 +1,8 @@
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
-use crate::data::database::follow::objects::{FollowDataError, UserSearchError};
+use crate::data::repository::follow::objects::FollowDataError;
+use crate::data::repository::user::objects::UserSearchError;
 use crate::presenter::handlers;
 use crate::presenter::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
 use crate::presenter::handlers::favourite::FavouriteHandler;

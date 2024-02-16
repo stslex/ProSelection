@@ -11,9 +11,3 @@ trait AuthValidation {
     where
         Self: Sized;
 }
-
-#[derive(Debug)]
-pub enum RegistrationFieldValid {
-    Ok,
-    Error(RegistrationError),
-}

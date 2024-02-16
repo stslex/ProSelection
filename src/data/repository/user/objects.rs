@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use rocket::futures;
 use uuid::Uuid;
 
@@ -31,4 +33,31 @@ impl Mapper<Vec<UserDataResponse>> for Vec<UserEntity> {
     async fn map(&self) -> Vec<UserDataResponse> {
         futures::future::join_all(self.into_iter().map(|user| user.map())).await
     }
+}
+
+#[derive(Debug)]
+pub enum UserDataError {
+    UuidInvalid,
+    InternalError,
+}
+
+impl Display for UserDataError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UserDataError::UuidInvalid => write!(f, "Uuid is invalid"),
+            UserDataError::InternalError => write!(f, "Internal error"),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum UserCreateDataError {
+    AlreadyInUse,
+    InternalError,
+}
+
+#[derive(Debug)]
+pub enum UserSearchError {
+    UuidInvalid,
+    InternalError,
 }

@@ -1,7 +1,7 @@
 use crate::{
-    data::database::user::{
-        objects::{UserCreateDataError, UserDataError, UserEntityCreate},
-        UserDatabase,
+    data::{
+        database::user::{objects::UserEntityCreate, UserDatabase},
+        repository::user::objects::{UserCreateDataError, UserDataError},
     },
     utils::{
         jwt_util::{objects::JwtMapper, JwtGenerator},
@@ -60,7 +60,9 @@ impl AuthRepository for Conn {
             .await
             .map_err(|err| match err {
                 UserCreateDataError::AlreadyInUse => RegDataError::AlreadyInUse,
-                UserCreateDataError::InternalError => RegDataError::AlreadyInUse,
+                UserCreateDataError::InternalError => {
+                    RegDataError::Other("Internal error".to_owned())
+                }
             })?
             .map()
             .await;

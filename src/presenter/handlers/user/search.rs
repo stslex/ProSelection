@@ -3,18 +3,16 @@ use serde::Serialize;
 
 use super::single_user::{map_user_info, UserResponse};
 use crate::{
-    data::{
-        database::{
-            follow::{
-                objects::{FollowDataError, FollowPagingDataRequest, UserSearchError},
-                FollowDatabase,
-            },
-            user::UserDatabase,
-        },
-        repository::favourite::{
+    data::repository::{
+        favourite::{
             objects::{FavouriteDataError, FavouriteDataSearchRequest},
             FavouriteRepository,
         },
+        follow::{
+            objects::{FollowDataError, FollowPagingDataRequest},
+            FollowRepository,
+        },
+        user::{objects::UserSearchError, UserRepository},
     },
     Conn,
 };

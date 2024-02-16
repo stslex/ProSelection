@@ -1,5 +1,5 @@
 use crate::{
-    data::{database::follow::objects::FollowDataError, repository::follow::FollowRepository},
+    data::repository::follow::{objects::FollowDataError, FollowRepository},
     Conn,
 };
 
