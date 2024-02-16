@@ -1,7 +1,7 @@
 use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::{data::database::Conn, schema::favourite};
+use crate::{schema::favourite, Conn};
 
 use super::{
     objects::{FavouriteDbSearchRequest, FavouriteEntity, FavouriteEntityResponse},

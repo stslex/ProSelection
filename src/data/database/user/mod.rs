@@ -1,7 +1,9 @@
-use crate::presenter::handlers::user::search::UserSearchRequest;
+use crate::{
+    data::repository::user::objects::{UserCreateDataError, UserDataError, UserSearchError},
+    presenter::handlers::user::search::UserSearchRequest,
+};
 
-use self::objects::{UserCreateDataError, UserDataError, UserEntity, UserEntityCreate};
-use super::follow::objects::UserSearchError;
+use self::objects::{UserEntity, UserEntityCreate};
 
 pub mod objects;
 pub mod user_db;

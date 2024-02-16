@@ -1,14 +1,12 @@
 use crate::{
-    data::database::{
-        follow::objects::UserSearchError,
-        user::{objects::UserDataError, UserDatabase},
-        Conn,
-    },
-    presenter::handlers::user::search::UserSearchRequest,
-    utils::Mapper,
+    data::database::user::UserDatabase, presenter::handlers::user::search::UserSearchRequest,
+    utils::Mapper, Conn,
 };
 
-use super::{objects::UserDataResponse, UserRepository};
+use super::{
+    objects::{UserDataError, UserDataResponse, UserSearchError},
+    UserRepository,
+};
 
 #[async_trait]
 impl UserRepository for Conn {

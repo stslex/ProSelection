@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod database_test_utls {
 
-    use crate::data::database::Conn;
+    use crate::Conn;
     use diesel::{Connection, ConnectionError, PgConnection};
     use log::error;
 

@@ -2,12 +2,13 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::{
-    data::database::Conn,
-    schema::follow::{self},
+    data::repository::follow::objects::{FollowDataError, FollowPagingDataRequest},
+    schema::follow,
+    Conn,
 };
 
 use super::{
-    objects::{FollowDataError, FollowEntityCreate, FollowPagingDataRequest, FollowerEntity},
+    objects::{FollowEntityCreate, FollowerEntity},
     FollowDatabase,
 };
 

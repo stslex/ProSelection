@@ -37,24 +37,3 @@ pub struct Following {
     pub username: String,
     pub avatar_url: String,
 }
-
-#[derive(Debug)]
-pub enum UserDataError {
-    UuidInvalid,
-    InternalError,
-}
-
-#[derive(Debug)]
-pub enum UserCreateDataError {
-    AlreadyInUse,
-    InternalError,
-}
-
-impl std::fmt::Display for UserDataError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            UserDataError::UuidInvalid => write!(f, "UuidInvalid"),
-            UserDataError::InternalError => write!(f, "InternalError"),
-        }
-    }
-}

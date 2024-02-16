@@ -1,6 +1,4 @@
-use crate::data::database::follow::objects::{FollowDataError, FollowPagingDataRequest};
-
-use self::objects::FollowerDataResponse;
+use self::objects::{FollowDataError, FollowPagingDataRequest, FollowerDataResponse};
 
 pub mod objects;
 mod repository;

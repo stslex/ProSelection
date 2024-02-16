@@ -2,20 +2,22 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
-use crate::data::database::{
-    self,
-    favourite::UserFavouritesDatabase,
-    follow::FollowDatabase,
-    user::{
-        objects::{UserDataError, UserEntity},
-        UserDatabase,
+use crate::{
+    data::repository::{
+        favourite::FavouriteRepository,
+        follow::FollowRepository,
+        user::{
+            objects::{UserDataError, UserDataResponse},
+            UserRepository,
+        },
     },
+    Conn,
 };
 
 pub async fn get_user<'a>(
     current_user_uuid: &'a str,
     uuid: &'a str,
-    db: database::Conn,
+    db: Conn,
 ) -> Result<UserResponse, UserError> {
     let db = Arc::new(db);
     match db.get_user(uuid).await {
@@ -30,7 +32,7 @@ pub async fn get_user<'a>(
 pub async fn get_user_by_username<'a>(
     uuid: &'a str,
     username: &'a str,
-    db: database::Conn,
+    db: Conn,
 ) -> Result<UserResponse, UserError> {
     let db = Arc::new(db);
     match db.get_user_by_username(username).await {
@@ -42,7 +44,7 @@ pub async fn get_user_by_username<'a>(
     }
 }
 
-pub async fn map_user_info(uuid: &str, user: &UserEntity, db: Arc<database::Conn>) -> UserResponse {
+pub async fn map_user_info(uuid: &str, user: &UserDataResponse, db: Arc<Conn>) -> UserResponse {
     UserResponse {
         uuid: user.id.to_string(),
         username: user.username.clone(),

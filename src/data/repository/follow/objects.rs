@@ -32,3 +32,29 @@ impl Mapper<Vec<FollowerDataResponse>> for Vec<FollowerEntity> {
         futures::future::join_all(self.into_iter().map(|follower| follower.map())).await
     }
 }
+
+pub struct FollowPagingDataRequest<'a> {
+    pub request_uuid: &'a str,
+    pub uuid: &'a str,
+    pub page: i64,
+    pub page_size: i64,
+}
+
+#[derive(Debug, Clone)]
+pub enum FollowDataError {
+    UuidInvalid,
+    UserNotFound,
+    Conflict,
+    InternalError,
+}
+
+impl std::fmt::Display for FollowDataError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            FollowDataError::UuidInvalid => write!(f, "UuidInvalid"),
+            FollowDataError::UserNotFound => write!(f, "UserNotFound"),
+            FollowDataError::Conflict => write!(f, "Conflict"),
+            FollowDataError::InternalError => write!(f, "InternalError"),
+        }
+    }
+}

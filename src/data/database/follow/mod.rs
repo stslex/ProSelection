@@ -1,6 +1,8 @@
 use uuid::Uuid;
 
-use self::objects::{FollowDataError, FollowEntityCreate, FollowPagingDataRequest, FollowerEntity};
+use crate::data::repository::follow::objects::{FollowDataError, FollowPagingDataRequest};
+
+use self::objects::{FollowEntityCreate, FollowerEntity};
 
 mod follow_db;
 pub mod objects;

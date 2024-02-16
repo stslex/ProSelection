@@ -2,17 +2,17 @@ use uuid::Uuid;
 
 use crate::{
     data::database::{
-        follow::{
-            objects::{FollowDataError, FollowEntityCreate, FollowPagingDataRequest},
-            FollowDatabase,
-        },
+        follow::{objects::FollowEntityCreate, FollowDatabase},
         user::UserDatabase,
-        Conn,
     },
     utils::Mapper,
+    Conn,
 };
 
-use super::{objects::FollowerDataResponse, FollowRepository};
+use super::{
+    objects::{FollowDataError, FollowPagingDataRequest, FollowerDataResponse},
+    FollowRepository,
+};
 
 #[async_trait]
 impl FollowRepository for Conn {
@@ -31,15 +31,11 @@ impl FollowRepository for Conn {
             .await
             .map_err(|err| {
                 eprintln!("Error getting user: {}", err);
-                FollowDataError::UuidInvalid
+                FollowDataError::UserNotFound
             })?;
-        let follower_uuid: Uuid = match Uuid::parse_str(follower_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(FollowDataError::UuidInvalid);
-            }
-        };
+        let follower_uuid =
+            Uuid::parse_str(follower_uuid).map_err(|_| FollowDataError::UuidInvalid)?;
+
         let record = FollowEntityCreate {
             follower_uuid: follower_uuid.to_owned(),
             followed_uuid: followed_user.id.to_owned(),
