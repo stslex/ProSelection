@@ -1,2 +1,2 @@
-pub mod database;
+mod database;
 pub mod repository;

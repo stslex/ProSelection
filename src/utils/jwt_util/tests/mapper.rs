@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        data::database::user::objects::UserEntity,
+        data::repository::user::objects::UserDataResponse,
         utils::jwt_util::objects::{JwtDecoderResult, JwtMapper},
     };
     use uuid::Uuid;
 
     #[test]
     fn test_jwt_mapper_for_user() {
-        let user = UserEntity {
+        let user = UserDataResponse {
             id: Uuid::new_v4(),
             username: "john_doe".to_owned(),
             login: "login".to_owned(),

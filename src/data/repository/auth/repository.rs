@@ -3,7 +3,10 @@ use crate::{
         objects::{UserCreateDataError, UserDataError, UserEntityCreate},
         UserDatabase,
     },
-    utils::jwt_util::{objects::JwtMapper, JwtGenerator},
+    utils::{
+        jwt_util::{objects::JwtMapper, JwtGenerator},
+        Mapper,
+    },
     Conn,
 };
 
@@ -24,11 +27,14 @@ impl AuthRepository for Conn {
             .map_err(|err| match err {
                 UserDataError::UuidInvalid => AuthDataError::NotFound,
                 _ => AuthDataError::Other,
-            })?;
+            })?
+            .map()
+            .await;
         if user.secret != password {
             return Result::Err(AuthDataError::InvalidPassword);
         }
-        let token_res = user.map().generate().await.map_err(|err| {
+
+        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             AuthDataError::Other
         })?;
@@ -55,8 +61,10 @@ impl AuthRepository for Conn {
             .map_err(|err| match err {
                 UserCreateDataError::AlreadyInUse => RegDataError::AlreadyInUse,
                 UserCreateDataError::InternalError => RegDataError::AlreadyInUse,
-            })?;
-        let token_res = user.map().generate().await.map_err(|err| {
+            })?
+            .map()
+            .await;
+        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             RegDataError::Other("Error generating token".to_owned())
         })?;
@@ -78,11 +86,13 @@ impl AuthRepository for Conn {
             .map_err(|err| match err {
                 UserDataError::UuidInvalid => VerifyTokenError::NotFound,
                 _ => VerifyTokenError::Other("Error getting user".to_owned()),
-            })?;
+            })?
+            .map()
+            .await;
         if user.username != username {
             return Result::Err(VerifyTokenError::NotFound);
         }
-        let token_res = user.map().generate().await.map_err(|err| {
+        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             VerifyTokenError::Other("Error generating token".to_owned())
         })?;
