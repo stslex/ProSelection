@@ -10,7 +10,7 @@ mod config;
 mod data;
 mod presenter;
 mod schema;
-mod utils;
+pub mod utils;
 
 #[rocket::launch]
 fn launch() -> Rocket<Build> {

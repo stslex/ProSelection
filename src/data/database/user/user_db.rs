@@ -3,8 +3,9 @@ use super::{
     UserDatabase,
 };
 use crate::{
-    data::repository::user::objects::{UserCreateDataError, UserDataError, UserSearchError},
-    presenter::handlers::user::search::UserSearchRequest,
+    data::repository::user::objects::{
+        UserCreateDataError, UserDataError, UserSearchDataRequest, UserSearchError,
+    },
     schema::users,
     Conn,
 };
@@ -75,7 +76,7 @@ impl UserDatabase for Conn {
 
     async fn search_users<'a>(
         &self,
-        request: &'a UserSearchRequest<'a>,
+        request: &'a UserSearchDataRequest<'a>,
     ) -> Result<Vec<UserEntity>, UserSearchError> {
         let query = request.query.to_owned();
         let uuid = Uuid::parse_str(request.uuid).map_err(|_| UserSearchError::UuidInvalid)?;

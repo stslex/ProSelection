@@ -61,3 +61,10 @@ pub enum UserSearchError {
     UuidInvalid,
     InternalError,
 }
+
+pub struct UserSearchDataRequest<'a> {
+    pub query: &'a str,
+    pub uuid: &'a str,
+    pub page: i64,
+    pub page_size: i64,
+}
