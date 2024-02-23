@@ -149,4 +149,20 @@ mod test_generator {
             username: EXPECTED_USERNAME.to_string(),
         }
     }
+
+    #[tokio::test]
+    async fn test_jwt_mapper_for_user() {
+        let user = UserDataResponse {
+            id: Uuid::new_v4(),
+            username: "john_doe".to_owned(),
+            login: "login".to_owned(),
+            secret: "smth_secret".to_owned(),
+            avatar_url: "avatar_url".to_owned(),
+            bio: "bio".to_owned(),
+        };
+
+        let jwt_mapper = user.map().await;
+        assert_eq!(jwt_mapper.uuid, user.id.to_string());
+        assert_eq!(jwt_mapper.username, user.username);
+    }
 }

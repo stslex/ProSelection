@@ -1,8 +1,8 @@
-use self::decoder::{JwtDecoderError, JwtDecoderResult};
+use self::objects::{JwtDecoderError, JwtDecoderResult};
 
-pub mod decoder;
-
-mod tests;
+mod decoder;
+pub mod objects;
+mod test;
 
 pub trait JwtDecoder {
     fn decode_refresh(&self) -> Result<JwtDecoderResult, JwtDecoderError>;

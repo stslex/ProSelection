@@ -4,9 +4,9 @@ use rocket::{
     Request,
 };
 
-use crate::{presenter::handlers::auth::refresh::AccessTokenError, utils::jwt_util::JwtDecoder};
+use crate::presenter::handlers::auth::refresh::AccessTokenError;
 
-use super::{AccessToken, ApiKeyParcer, TokenParser};
+use super::{jwt_decoder::JwtDecoder, AccessToken, ApiKeyParcer, TokenParser};
 
 #[async_trait]
 impl<'r> FromRequest<'r> for AccessToken {
