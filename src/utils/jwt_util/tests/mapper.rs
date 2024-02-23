@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        data::repository::user::objects::UserDataResponse,
-        utils::jwt_util::objects::{JwtDecoderResult, JwtMapper},
+        data::repository::user::objects::UserDataResponse, utils::jwt_util::objects::JwtMapper,
     };
     use uuid::Uuid;
 

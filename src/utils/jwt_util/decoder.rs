@@ -8,7 +8,7 @@ use hmac::{
 use jwt::{Header, Token, VerifyWithKey};
 use sha2::Sha256;
 
-use super::{objects::JwtDecoderResult, JwtDecoder};
+use super::JwtDecoder;
 
 impl JwtDecoder for &str {
     fn decode_access(&self) -> Result<JwtDecoderResult, JwtDecoderError> {
@@ -84,6 +84,11 @@ impl JwtDecoder for &str {
             username: claims.get("username").unwrap().to_string(),
         })
     }
+}
+
+pub struct JwtDecoderResult {
+    pub uuid: String,
+    pub username: String,
 }
 
 #[derive(Debug)]

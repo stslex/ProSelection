@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use crate::{data::database::user::objects::UserEntity, utils::Mapper};
 
+#[derive(Debug, Clone)]
 pub struct UserDataResponse {
     pub id: Uuid,
     pub login: String,
