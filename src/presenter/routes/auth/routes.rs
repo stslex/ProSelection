@@ -13,8 +13,8 @@ use crate::presenter::handlers::objects::response::{
 use crate::presenter::routes::auth::validators;
 use crate::Conn;
 
-use super::auth_objects::login_request::LoginRequest;
-use super::auth_objects::registration_request::RegistrationRequest;
+use super::objects::LoginRequest;
+use super::objects::RegistrationRequest;
 
 #[post("/login", format = "json", data = "<login_request>")]
 pub async fn login<'a>(
