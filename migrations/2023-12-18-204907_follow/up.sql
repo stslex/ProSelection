@@ -11,5 +11,7 @@ CREATE TABLE IF NOT EXISTS follow
 CREATE UNIQUE INDEX IF NOT EXISTS follow_uuid_uindex ON follow (uuid);
 CREATE INDEX IF NOT EXISTS follow_follower_uuid_uindex ON follow (follower_uuid);
 CREATE INDEX IF NOT EXISTS follow_followed_uuid_uindex ON follow (followed_uuid);
-CREATE INDEX IF NOT EXISTS follow_username_uindex ON follow (username);
-CREATE INDEX IF NOT EXISTS follow_avatar_url_uindex ON follow (avatar_url);
+CREATE INDEX IF NOT EXISTS follow_followed_username_uindex ON follow (follower_username);
+CREATE INDEX IF NOT EXISTS follow_follower_username_uindex ON follow (followed_username);
+CREATE INDEX IF NOT EXISTS follow_followed_avatar_url_uindex ON follow (followed_avatar_url);
+CREATE INDEX IF NOT EXISTS follow_follower_avatar_url_uindex ON follow (follower_avatar_url);

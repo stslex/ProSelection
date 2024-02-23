@@ -14,8 +14,10 @@ diesel::table! {
         uuid -> Uuid,
         follower_uuid -> Uuid,
         followed_uuid -> Uuid,
-        username -> Varchar,
-        avatar_url -> Text,
+        followed_username -> Varchar,
+        follower_username -> Varchar,
+        followed_avatar_url -> Text,
+        follower_avatar_url -> Text,
     }
 }
 

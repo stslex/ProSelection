@@ -1,4 +1,4 @@
-use self::objects::{FavouriteDataError, FavouriteDataResponse, FavouriteDataSearchRequest};
+use self::objects::{FavouriteDataError, FavouriteDataResponse, UserDataSearchRequest};
 
 pub mod objects;
 mod repository;
@@ -24,6 +24,6 @@ pub trait FavouriteRepository {
     ) -> Result<bool, FavouriteDataError>;
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDataSearchRequest<'a>,
+        request: &'a UserDataSearchRequest<'a>,
     ) -> Result<Vec<FavouriteDataResponse>, FavouriteDataError>;
 }

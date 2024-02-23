@@ -9,8 +9,10 @@ pub struct FollowerDataResponse {
     pub uuid: Uuid,
     pub follower_uuid: Uuid,
     pub followed_uuid: Uuid,
-    pub username: String,
-    pub avatar_url: String,
+    pub followed_username: String,
+    pub follower_username: String,
+    pub followed_avatar_url: String,
+    pub follower_avatar_url: String,
 }
 
 #[async_trait]
@@ -20,8 +22,10 @@ impl Mapper<FollowerDataResponse> for FollowerEntity {
             uuid: self.uuid,
             follower_uuid: self.follower_uuid,
             followed_uuid: self.followed_uuid,
-            username: self.username.to_owned(),
-            avatar_url: self.avatar_url.to_owned(),
+            followed_username: self.followed_username.to_owned(),
+            follower_username: self.follower_username.to_owned(),
+            followed_avatar_url: self.followed_avatar_url.to_owned(),
+            follower_avatar_url: self.follower_avatar_url.to_owned(),
         }
     }
 }
@@ -31,13 +35,6 @@ impl Mapper<Vec<FollowerDataResponse>> for Vec<FollowerEntity> {
     async fn map(&self) -> Vec<FollowerDataResponse> {
         futures::future::join_all(self.into_iter().map(|follower| follower.map())).await
     }
-}
-
-pub struct FollowPagingDataRequest<'a> {
-    pub request_uuid: &'a str,
-    pub uuid: &'a str,
-    pub page: i64,
-    pub page_size: i64,
 }
 
 #[derive(Debug, Clone)]
