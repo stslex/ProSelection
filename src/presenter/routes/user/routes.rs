@@ -115,12 +115,13 @@ pub async fn get_user_favourites<'a>(
 #[get("/followers?<params..>")]
 pub async fn get_user_followers<'a>(
     access_token: AccessToken,
-    params: UserPagingParams<'a>,
+    params: UserPagingSearchParams<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
-    let request = handlers::user::search::UserPagingRequest {
+    let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
         uuid: params.uuid,
+        query: params.query,
         page: params.page,
         page_size: params.page_size,
     };
@@ -139,12 +140,13 @@ pub async fn get_user_followers<'a>(
 #[get("/following?<params..>")]
 pub async fn get_user_following<'a>(
     access_token: AccessToken,
-    params: UserPagingParams<'a>,
+    params: UserPagingSearchParams<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
-    let request = handlers::user::search::UserPagingRequest {
+    let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
         uuid: params.uuid,
+        query: params.query,
         page: params.page,
         page_size: params.page_size,
     };
@@ -163,13 +165,6 @@ pub async fn get_user_following<'a>(
 #[derive(Deserialize, FromForm)]
 pub struct UserSearchParams<'a> {
     query: &'a str,
-    page: i64,
-    page_size: i64,
-}
-
-#[derive(Deserialize, FromForm)]
-pub struct UserPagingParams<'a> {
-    uuid: &'a str,
     page: i64,
     page_size: i64,
 }

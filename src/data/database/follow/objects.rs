@@ -8,8 +8,10 @@ use crate::schema::follow;
 pub struct FollowEntityCreate {
     pub follower_uuid: Uuid,
     pub followed_uuid: Uuid,
-    pub username: String,
-    pub avatar_url: String,
+    pub followed_username: String,
+    pub follower_username: String,
+    pub followed_avatar_url: String,
+    pub follower_avatar_url: String,
 }
 
 /// Represents a follower object retrieved from the database.
@@ -18,6 +20,8 @@ pub struct FollowerEntity {
     pub uuid: Uuid,
     pub follower_uuid: Uuid,
     pub followed_uuid: Uuid,
-    pub username: String,
-    pub avatar_url: String,
+    pub followed_username: String,
+    pub follower_username: String,
+    pub followed_avatar_url: String,
+    pub follower_avatar_url: String,
 }

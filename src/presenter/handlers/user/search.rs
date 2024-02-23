@@ -5,13 +5,10 @@ use super::single_user::{map_user_info, UserResponse};
 use crate::{
     data::repository::{
         favourite::{
-            objects::{FavouriteDataError, FavouriteDataSearchRequest},
+            objects::{FavouriteDataError, UserDataSearchRequest},
             FavouriteRepository,
         },
-        follow::{
-            objects::{FollowDataError, FollowPagingDataRequest},
-            FollowRepository,
-        },
+        follow::{objects::FollowDataError, FollowRepository},
         user::{
             objects::{UserSearchDataRequest, UserSearchError},
             UserRepository,
@@ -45,7 +42,7 @@ pub async fn get_user_favourites<'a>(
     db: Conn,
 ) -> Result<UserFavouriteResponse, UserSearchError> {
     let db = Arc::new(db);
-    let request = FavouriteDataSearchRequest {
+    let request = UserDataSearchRequest {
         request_uuid: request.request_uuid,
         uuid: request.uuid,
         query: request.query,
@@ -91,14 +88,15 @@ pub async fn get_user_favourites<'a>(
 }
 
 pub async fn get_user_followers<'a>(
-    request: &'a UserPagingRequest<'a>,
+    request: &'a UserPagingSearchRequest<'a>,
     db: Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
 
-    let follow_request = FollowPagingDataRequest {
+    let follow_request = UserDataSearchRequest {
         request_uuid: request.request_uuid,
         uuid: request.uuid,
+        query: request.query,
         page: request.page,
         page_size: request.page_size,
     };
@@ -111,8 +109,8 @@ pub async fn get_user_followers<'a>(
                     let followed_uuid_clone = followed_uuid.clone(); // Clone the followed_uuid value
                     FollowerResponse {
                         uuid: followed_uuid,
-                        username: user.username,
-                        avatar_url: user.avatar_url,
+                        username: user.followed_username,
+                        avatar_url: user.followed_avatar_url,
                         is_following: match db
                             .is_following(&followed_uuid_clone, request.request_uuid)
                             .await
@@ -135,13 +133,14 @@ pub async fn get_user_followers<'a>(
 }
 
 pub async fn get_user_following<'a>(
-    request: &'a UserPagingRequest<'a>,
+    request: &'a UserPagingSearchRequest<'a>,
     db: Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
-    let follow_request = FollowPagingDataRequest {
+    let follow_request = UserDataSearchRequest {
         request_uuid: request.request_uuid,
         uuid: request.uuid,
+        query: request.query,
         page: request.page,
         page_size: request.page_size,
     };
@@ -154,8 +153,8 @@ pub async fn get_user_following<'a>(
                     let followed_uuid_clone = followed_uuid.clone(); // Clone the followed_uuid value
                     FollowerResponse {
                         uuid: followed_uuid,
-                        username: user.username,
-                        avatar_url: user.avatar_url,
+                        username: user.followed_username,
+                        avatar_url: user.followed_avatar_url,
                         is_following: match db
                             .is_following(request.request_uuid, &followed_uuid_clone)
                             .await
@@ -175,13 +174,6 @@ pub async fn get_user_following<'a>(
             _ => Err(UserSearchError::InternalError),
         },
     }
-}
-
-pub struct UserPagingRequest<'a> {
-    pub request_uuid: &'a str,
-    pub uuid: &'a str,
-    pub page: i64,
-    pub page_size: i64,
 }
 
 pub struct UserPagingSearchRequest<'a> {

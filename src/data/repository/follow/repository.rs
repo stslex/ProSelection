@@ -1,16 +1,17 @@
-use uuid::Uuid;
-
 use crate::{
-    data::database::{
-        follow::{objects::FollowEntityCreate, FollowDatabase},
-        user::UserDatabase,
+    data::{
+        database::{
+            follow::{objects::FollowEntityCreate, FollowDatabase},
+            user::UserDatabase,
+        },
+        repository::favourite::objects::UserDataSearchRequest,
     },
     utils::Mapper,
     Conn,
 };
 
 use super::{
-    objects::{FollowDataError, FollowPagingDataRequest, FollowerDataResponse},
+    objects::{FollowDataError, FollowerDataResponse},
     FollowRepository,
 };
 
@@ -33,14 +34,20 @@ impl FollowRepository for Conn {
                 eprintln!("Error getting user: {}", err);
                 FollowDataError::UserNotFound
             })?;
-        let follower_uuid =
-            Uuid::parse_str(follower_uuid).map_err(|_| FollowDataError::UuidInvalid)?;
+        let user = UserDatabase::get_user(self, follower_uuid)
+            .await
+            .map_err(|err| {
+                eprintln!("Error getting user: {}", err);
+                FollowDataError::UserNotFound
+            })?;
 
         let record = FollowEntityCreate {
-            follower_uuid: follower_uuid.to_owned(),
+            follower_uuid: user.id.to_owned(),
             followed_uuid: followed_user.id.to_owned(),
-            username: followed_user.username,
-            avatar_url: followed_user.avatar_url,
+            followed_username: followed_user.username,
+            follower_username: user.username,
+            followed_avatar_url: followed_user.avatar_url,
+            follower_avatar_url: user.avatar_url,
         };
         FollowDatabase::follow_user(self, &record).await
     }
@@ -60,7 +67,7 @@ impl FollowRepository for Conn {
     }
     async fn get_user_followers<'a>(
         &self,
-        request: &'a FollowPagingDataRequest<'a>,
+        request: &'a UserDataSearchRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_followers(self, request).await {
             Ok(followers) => Ok(followers.map().await),
@@ -69,7 +76,7 @@ impl FollowRepository for Conn {
     }
     async fn get_user_following<'a>(
         &self,
-        request: &'a FollowPagingDataRequest<'a>,
+        request: &'a UserDataSearchRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_following(self, request).await {
             Ok(following) => Ok(following.map().await),

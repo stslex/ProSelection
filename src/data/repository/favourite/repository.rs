@@ -5,7 +5,7 @@ use crate::{
 };
 
 use super::{
-    objects::{FavouriteDataError, FavouriteDataResponse, FavouriteDataSearchRequest},
+    objects::{FavouriteDataError, FavouriteDataResponse, UserDataSearchRequest},
     FavouriteRepository,
 };
 
@@ -50,7 +50,7 @@ impl FavouriteRepository for Conn {
     }
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDataSearchRequest<'a>,
+        request: &'a UserDataSearchRequest<'a>,
     ) -> Result<Vec<FavouriteDataResponse>, FavouriteDataError> {
         let request = request.map().await;
         match UserFavouritesDatabase::get_user_favourites(self, &request).await {

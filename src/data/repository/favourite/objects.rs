@@ -54,7 +54,7 @@ impl Mapper<Vec<FavouriteDataResponse>> for Vec<FavouriteEntityResponse> {
         futures::future::join_all(self.into_iter().map(|favourite| favourite.map())).await
     }
 }
-pub struct FavouriteDataSearchRequest<'a> {
+pub struct UserDataSearchRequest<'a> {
     pub request_uuid: &'a str,
     pub uuid: &'a str,
     pub query: &'a str,
@@ -63,7 +63,7 @@ pub struct FavouriteDataSearchRequest<'a> {
 }
 
 #[async_trait]
-impl<'a> Mapper<FavouriteDbSearchRequest<'a>> for FavouriteDataSearchRequest<'a> {
+impl<'a> Mapper<FavouriteDbSearchRequest<'a>> for UserDataSearchRequest<'a> {
     async fn map(&self) -> FavouriteDbSearchRequest<'a> {
         FavouriteDbSearchRequest {
             request_uuid: self.request_uuid,
