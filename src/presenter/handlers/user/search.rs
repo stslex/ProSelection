@@ -12,14 +12,17 @@ use crate::{
             objects::{FollowDataError, FollowPagingDataRequest},
             FollowRepository,
         },
-        user::{objects::UserSearchError, UserRepository},
+        user::{
+            objects::{UserSearchDataRequest, UserSearchError},
+            UserRepository,
+        },
     },
     Conn,
 };
 use std::sync::Arc;
 
 pub async fn search_user<'a>(
-    request: &'a UserSearchRequest<'a>,
+    request: &'a UserSearchDataRequest<'a>,
     db: Conn,
 ) -> Result<UserSearchResponse, UserSearchError> {
     let db = Arc::new(db);
@@ -172,13 +175,6 @@ pub async fn get_user_following<'a>(
             _ => Err(UserSearchError::InternalError),
         },
     }
-}
-
-pub struct UserSearchRequest<'a> {
-    pub query: &'a str,
-    pub uuid: &'a str,
-    pub page: i64,
-    pub page_size: i64,
 }
 
 pub struct UserPagingRequest<'a> {

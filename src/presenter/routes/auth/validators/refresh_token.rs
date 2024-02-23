@@ -4,9 +4,9 @@ use rocket::{
     Request,
 };
 
-use crate::{presenter::handlers::auth::refresh::RefreshError, utils::jwt_util::JwtDecoder};
+use crate::presenter::handlers::auth::refresh::RefreshError;
 
-use super::{ApiKeyParcer, RefreshToken, TokenParser};
+use super::{jwt_decoder::JwtDecoder, ApiKeyParcer, RefreshToken, TokenParser};
 
 #[async_trait]
 impl<'r> FromRequest<'r> for RefreshToken {

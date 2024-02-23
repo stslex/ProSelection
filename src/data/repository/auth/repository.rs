@@ -1,16 +1,15 @@
 use crate::{
     data::{
         database::user::{objects::UserEntityCreate, UserDatabase},
+        repository::auth::jwt::objects::JwtObject,
         repository::user::objects::{UserCreateDataError, UserDataError},
     },
-    utils::{
-        jwt_util::{objects::JwtMapper, JwtGenerator},
-        Mapper,
-    },
+    utils::Mapper,
     Conn,
 };
 
 use super::{
+    jwt::JwtGenerator,
     objects::{AuthDataError, AuthDataResponse, RegDataError, RegistrationData, VerifyTokenError},
     AuthRepository,
 };
@@ -34,7 +33,8 @@ impl AuthRepository for Conn {
             return Result::Err(AuthDataError::InvalidPassword);
         }
 
-        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
+        let jwt_obj: JwtObject = user.map().await;
+        let token_res = jwt_obj.generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             AuthDataError::Other
         })?;
@@ -66,10 +66,12 @@ impl AuthRepository for Conn {
             })?
             .map()
             .await;
-        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
+        let jwt_obj: JwtObject = user.map().await;
+        let token_res = jwt_obj.generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             RegDataError::Other("Error generating token".to_owned())
         })?;
+        let user = user.to_owned();
         Result::Ok(AuthDataResponse {
             uuid: (user.id.to_string()),
             username: (user.username.clone()),
@@ -82,7 +84,11 @@ impl AuthRepository for Conn {
         uuid: &'a str,
         username: &'a str,
     ) -> Result<AuthDataResponse, VerifyTokenError> {
-        let username = username.to_owned();
+        let var_name = username.to_owned();
+        let var_name = var_name;
+        let var_name = var_name;
+        let var_name = var_name;
+        let username = var_name;
         let user = UserDatabase::get_user(self, &uuid)
             .await
             .map_err(|err| match err {
@@ -94,13 +100,15 @@ impl AuthRepository for Conn {
         if user.username != username {
             return Result::Err(VerifyTokenError::NotFound);
         }
-        let token_res = JwtMapper::map(&user).generate().await.map_err(|err| {
+        let jwt_obj: JwtObject = user.map().await;
+        let token_res = jwt_obj.generate().await.map_err(|err| {
             eprintln!("Error generating token: {}", err);
             VerifyTokenError::Other("Error generating token".to_owned())
         })?;
+
         Result::Ok(AuthDataResponse {
             uuid: (user.id.to_string()),
-            username: (user.username.clone()),
+            username: (user.username.to_owned()),
             access_token: token_res.access_token.to_owned(),
             refresh_token: token_res.refresh_token.to_owned(),
         })

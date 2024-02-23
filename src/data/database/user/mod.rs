@@ -1,6 +1,5 @@
-use crate::{
-    data::repository::user::objects::{UserCreateDataError, UserDataError, UserSearchError},
-    presenter::handlers::user::search::UserSearchRequest,
+use crate::data::repository::user::objects::{
+    UserCreateDataError, UserDataError, UserSearchDataRequest, UserSearchError,
 };
 
 use self::objects::{UserEntity, UserEntityCreate};
@@ -19,7 +18,7 @@ pub trait UserDatabase {
     ) -> Result<UserEntity, UserCreateDataError>;
     async fn search_users<'a>(
         &self,
-        request: &'a UserSearchRequest<'a>,
+        request: &'a UserSearchDataRequest<'a>,
     ) -> Result<Vec<UserEntity>, UserSearchError>;
     async fn get_user_by_username<'a>(
         &self,

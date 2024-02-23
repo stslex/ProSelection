@@ -2,6 +2,7 @@ use self::objects::{
     AuthDataError, AuthDataResponse, RegDataError, RegistrationData, VerifyTokenError,
 };
 
+mod jwt;
 pub mod objects;
 pub mod repository;
 mod tests;

@@ -2,7 +2,7 @@ use rocket::serde::json::Json;
 use serde::Deserialize;
 
 use crate::data::repository::follow::objects::FollowDataError;
-use crate::data::repository::user::objects::UserSearchError;
+use crate::data::repository::user::objects::{UserSearchDataRequest, UserSearchError};
 use crate::presenter::handlers;
 use crate::presenter::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
 use crate::presenter::handlers::favourite::FavouriteHandler;
@@ -69,7 +69,7 @@ pub async fn get_user_search<'a>(
     params: UserSearchParams<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserSearchResponse>> {
-    let request = handlers::user::search::UserSearchRequest {
+    let request = UserSearchDataRequest {
         query: params.query,
         uuid: &access_token.uuid,
         page: params.page,

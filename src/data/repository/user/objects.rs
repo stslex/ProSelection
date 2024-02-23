@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use crate::{data::database::user::objects::UserEntity, utils::Mapper};
 
+#[derive(Debug, Clone)]
 pub struct UserDataResponse {
     pub id: Uuid,
     pub login: String,
@@ -60,4 +61,11 @@ pub enum UserCreateDataError {
 pub enum UserSearchError {
     UuidInvalid,
     InternalError,
+}
+
+pub struct UserSearchDataRequest<'a> {
+    pub query: &'a str,
+    pub uuid: &'a str,
+    pub page: i64,
+    pub page_size: i64,
 }

@@ -2,6 +2,7 @@ use self::api_key::ApiKeyError;
 
 pub mod access_token;
 mod api_key;
+mod jwt_decoder;
 pub mod refresh_token;
 mod token_parser;
 

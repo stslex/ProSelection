@@ -1,4 +1,4 @@
-mod auth_objects;
+mod objects;
 mod routes;
 mod routes_setup;
 pub mod validators;

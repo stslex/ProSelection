@@ -1,10 +1,7 @@
-use crate::{
-    data::database::user::UserDatabase, presenter::handlers::user::search::UserSearchRequest,
-    utils::Mapper, Conn,
-};
+use crate::{data::database::user::UserDatabase, utils::Mapper, Conn};
 
 use super::{
-    objects::{UserDataError, UserDataResponse, UserSearchError},
+    objects::{UserDataError, UserDataResponse, UserSearchDataRequest, UserSearchError},
     UserRepository,
 };
 
@@ -21,7 +18,7 @@ impl UserRepository for Conn {
     }
     async fn search_users<'a>(
         &self,
-        request: &'a UserSearchRequest<'a>,
+        request: &'a UserSearchDataRequest<'a>,
     ) -> Result<Vec<UserDataResponse>, UserSearchError> {
         match UserDatabase::search_users(self, request).await {
             Ok(users) => Ok(users.map().await),

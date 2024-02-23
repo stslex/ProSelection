@@ -3,10 +3,13 @@ mod test_decoder {
 
     use std::{collections::BTreeMap, env};
 
-    use crate::utils::jwt_util::{decoder::JwtDecoderError, JwtDecoder};
     use hmac::{digest::KeyInit, Hmac};
     use jwt::SignWithKey;
     use sha2::Sha256;
+
+    use crate::presenter::routes::auth::validators::jwt_decoder::{
+        objects::JwtDecoderError, JwtDecoder,
+    };
 
     const EXPECTED_UUID: &str = "expected_uuid";
     const EXPECTED_USERNAME: &str = "expected_username";

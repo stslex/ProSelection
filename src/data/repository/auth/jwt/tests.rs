@@ -6,7 +6,9 @@ mod test_generator {
     use jwt::{Error, Header, Token, VerifyWithKey};
     use sha2::Sha256;
 
-    use crate::utils::jwt_util::{generator::JwtGeneratorError, objects::JwtObject, JwtGenerator};
+    use crate::data::repository::jwt::{
+        generator::JwtGeneratorError, objects::JwtObject, JwtGenerator,
+    };
 
     const EXPECTED_UUID: &str = "expected_uuid";
     const EXPECTED_USERNAME: &str = "expected_username";
@@ -146,5 +148,21 @@ mod test_generator {
             uuid: EXPECTED_UUID.to_string(),
             username: EXPECTED_USERNAME.to_string(),
         }
+    }
+
+    #[tokio::test]
+    async fn test_jwt_mapper_for_user() {
+        let user = UserDataResponse {
+            id: Uuid::new_v4(),
+            username: "john_doe".to_owned(),
+            login: "login".to_owned(),
+            secret: "smth_secret".to_owned(),
+            avatar_url: "avatar_url".to_owned(),
+            bio: "bio".to_owned(),
+        };
+
+        let jwt_mapper = user.map().await;
+        assert_eq!(jwt_mapper.uuid, user.id.to_string());
+        assert_eq!(jwt_mapper.username, user.username);
     }
 }

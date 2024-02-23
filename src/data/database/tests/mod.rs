@@ -49,14 +49,6 @@ mod test_db_transition {
 
     use crate::data::database::tests::database_test_utls::{establish_connection, get_test_conn};
 
-    // #[test]
-    // fn test_db_transition() {
-    //     let mut connection = establish_connection().unwrap();
-    //     let result = connection.test_transaction::<Result<_, Error>, Error, _>(|_| Ok(Ok("test")));
-    //     assert!(result.is_ok());
-    //     assert_eq!(result.unwrap(), "test");
-    // }
-
     #[tokio::test]
     async fn test_db_conn() {
         let connection = get_test_conn().await;
