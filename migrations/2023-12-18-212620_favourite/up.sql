@@ -1,7 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE IF NOT EXISTS favourite
 (
-    uuid uuid DEFAULT uuid_generate_v4() NOT NULL CONSTRAINT table_user_pk PRIMARY KEY,
+    uuid uuid DEFAULT uuid_generate_v4() NOT NULL CONSTRAINT table_favourite_pk PRIMARY KEY,
     user_uuid uuid NOT NULL,
     favourite_uuid uuid NOT NULL,
     title varchar(128) NOT NULL

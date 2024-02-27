@@ -1,11 +1,11 @@
 -- Your SQL goes here
 CREATE TABLE IF NOT EXISTS follow
 (
-    uuid  UUID DEFAULT uuid_generate_v4() NOT NULL CONSTRAINT table_follow_pk PRIMARY KEY,
+    uuid UUID DEFAULT uuid_generate_v4() NOT NULL CONSTRAINT table_follow_pk PRIMARY KEY,
     follower_uuid  UUID NOT NULL,
     followed_uuid UUID NOT NULL,
     follower_username VARCHAR(123) NOT NULL,
-    followed_username VARCHAR(123) NOT NULL,   
+    followed_username VARCHAR(123) NOT NULL,
     follower_avatar_url TEXT NOT NULL,
     followed_avatar_url TEXT NOT NULL
 );
