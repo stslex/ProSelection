@@ -2,6 +2,7 @@ use self::objects::{MatchesDbError, MatchesEntity, MatchesEntityCreate};
 
 mod database;
 pub mod objects;
+mod tests;
 
 #[async_trait]
 pub trait MatchesDatabase {

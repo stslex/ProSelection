@@ -12,7 +12,7 @@ pub struct MatchesEntity {
     pub description: String,
 }
 
-#[derive(Insertable, PartialEq, Debug)]
+#[derive(Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = matches)]
 pub struct MatchesEntityCreate {
     pub creator_uuid: Uuid,
@@ -22,6 +22,7 @@ pub struct MatchesEntityCreate {
     pub description: String,
 }
 
+#[derive(Debug)]
 pub enum MatchesDbError {
     MatchesNotFound,
     MatchesNotCreated,
