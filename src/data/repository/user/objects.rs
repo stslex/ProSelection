@@ -13,6 +13,7 @@ pub struct UserDataResponse {
     pub secret: String,
     pub avatar_url: String,
     pub bio: String,
+    pub matches: Vec<Uuid>,
 }
 
 #[async_trait]
@@ -25,6 +26,7 @@ impl Mapper<UserDataResponse> for UserEntity {
             secret: self.secret.clone(),
             avatar_url: self.avatar_url.clone(),
             bio: self.bio.clone(),
+            matches: self.matches.clone(),
         }
     }
 }

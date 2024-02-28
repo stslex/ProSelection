@@ -29,5 +29,17 @@ diesel::table! {
         secret -> Text,
         bio -> Varchar,
         avatar_url -> Varchar,
+        matches -> Array<Uuid>,
+    }
+}
+
+diesel::table! {
+    matches (id) {
+        id -> Uuid,
+        creator_uuid -> Uuid,
+        user_uuid -> Array<Uuid>,
+        title -> Varchar,
+        url -> Varchar,
+        description -> Varchar,
     }
 }

@@ -55,6 +55,7 @@ impl AuthRepository for Conn {
             secret: data.password.to_owned(),
             avatar_url: "".to_string(),
             bio: "".to_string(),
+            matches: vec![],
         };
         let user = UserDatabase::insert_user(self, new_user)
             .await

@@ -10,6 +10,7 @@ pub struct UserEntity {
     pub secret: String,
     pub avatar_url: String,
     pub bio: String,
+    pub matches: Vec<Uuid>,
 }
 
 #[derive(Insertable, PartialEq, Debug)]
@@ -20,6 +21,7 @@ pub struct UserEntityCreate {
     pub secret: String,
     pub avatar_url: String,
     pub bio: String,
+    pub matches: Vec<Uuid>,
 }
 
 #[derive(Queryable, PartialEq, Debug, Clone)]

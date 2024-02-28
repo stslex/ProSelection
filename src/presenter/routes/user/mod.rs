@@ -1,3 +1,7 @@
+mod favourite;
+mod follower;
+mod matches;
+mod objects;
 mod routes;
 mod routes_setup;
 
