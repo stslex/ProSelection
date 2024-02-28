@@ -72,6 +72,10 @@ pub const ERROR_WRONG_REQUEST: &'static ErrorResponse<'static> = &ErrorResponse 
     cause: "wrong_request",
     status: Status::BadRequest,
 };
+pub const ERROR_NO_PERMISSION: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "no_permission",
+    status: Status::Forbidden,
+};
 
 // login error
 pub const ERROR_USER_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse {
@@ -151,5 +155,22 @@ pub const ERROR_FAVOURITE_USER_NOT_FOUND: &'static ErrorResponse<'static> = &Err
 };
 pub const ERROR_FAVOURITE_CONFLICT: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "favourite_conflict",
+    status: Status::Conflict,
+};
+
+// matches
+
+pub const ERROR_MATCHES_UUID_INVALID: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "matches_uuid_invalid",
+    status: Status::BadRequest,
+};
+
+pub const ERROR_MATCHES_NOT_FOUND: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "matches_not_found",
+    status: Status::BadRequest,
+};
+
+pub const ERROR_MATCHES_CONFLICT: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "matches_conflict",
     status: Status::Conflict,
 };

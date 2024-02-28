@@ -1,6 +1,6 @@
 use self::objects::{MatchesData, MatchesDataCreate, MatchesDataError, MatchesDataRequest};
 
-mod objects;
+pub mod objects;
 mod repository;
 
 #[async_trait]
