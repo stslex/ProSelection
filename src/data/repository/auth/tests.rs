@@ -55,10 +55,10 @@ mod tests {
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let connection = get_test_conn().await;
 
-        let username = "test_username";
+        let expected_username = "test_username";
         let data = RegistrationData {
             login: "test_login",
-            username: username,
+            username: expected_username,
             password: "test_password",
         };
 
@@ -75,7 +75,7 @@ mod tests {
             .await
             .unwrap();
 
-        let is_valid = outcome.username == username;
+        let is_valid = outcome.username == expected_username;
         assert!(is_valid);
     }
 
@@ -107,12 +107,12 @@ mod tests {
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
         let connection = get_test_conn().await;
 
-        let login = "test_login";
-        let password = "test_password";
+        let expected_login = "test_login";
+        let expected_password = "test_password";
         let data = RegistrationData {
-            login: login,
+            login: expected_login,
             username: "test_username",
-            password: password,
+            password: expected_password,
         };
 
         connection
@@ -125,7 +125,7 @@ mod tests {
         let res = connection.registration(&data).await;
         assert_ok!(res);
 
-        let outcome = connection.login(login, password).await;
+        let outcome = connection.login(expected_login, expected_password).await;
         println!("result: {:?}", outcome);
 
         let is_valid = outcome.is_ok();

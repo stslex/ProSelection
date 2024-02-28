@@ -9,12 +9,12 @@ create table IF NOT EXISTS users
     secret text not null,
     bio text  not null,
     avatar_url text not null,
-    matches_id UUID[] not null
+    matches UUID[] not null
 );
 
 alter table users add column if not exists bio text not null;
 alter table users add column if not exists avatar_url text not null;
-alter table users add column if not exists matches_id UUID[] not null;
+alter table users add column if not exists matches UUID[];
 
 create unique index IF NOT EXISTS users_id_uindex on users (id);
 create unique index IF NOT EXISTS users_username_uindex on users (username);
@@ -22,4 +22,4 @@ create unique index IF NOT EXISTS users_login_uindex on users (login);
 create index IF NOT EXISTS users_secret_uindex on users (secret);
 create index IF NOT EXISTS users_bio_uindex on users (bio);
 create index IF NOT EXISTS users_avatar_url_uindex on users (avatar_url);
-create index IF NOT EXISTS users_matches_id_uindex on users (matches_id);
+create index IF NOT EXISTS users_matches_id_uindex on users (matches);

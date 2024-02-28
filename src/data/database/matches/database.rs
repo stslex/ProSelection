@@ -36,14 +36,14 @@ impl MatchesDatabase for Conn {
                 diesel::insert_into(matches::table)
                     .values(&match_entity)
                     .get_result::<MatchesEntity>(db)
-                    .map_err(|err| {
-                        println!("{:?}", err);
-                        match err {
-                            diesel::result::Error::NotFound => MatchesDbError::MatchesNotCreated,
-                            _ => MatchesDbError::InternalError,
-                        }
-                    })
             })
             .await
+            .map_err(|err| {
+                println!("Database add_match error: {:?}", err);
+                match err {
+                    diesel::result::Error::NotFound => MatchesDbError::MatchesNotCreated,
+                    _ => MatchesDbError::InternalError,
+                }
+            })
     }
 }
