@@ -13,11 +13,8 @@ impl<'r> FromRequest<'r> for AccessToken {
     type Error = AccessTokenError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        match ApiKeyParcer::parce(request) {
-            Ok(_api_key) => {}
-            Err(_error) => {
-                return Outcome::Error((Status::Unauthorized, AccessTokenError::InvalidApiKey))
-            }
+        if request.parce().is_err() {
+            return Outcome::Error((Status::Unauthorized, AccessTokenError::InvalidApiKey));
         }
         let token = match TokenParser::get_token(request) {
             Some(token) => token,

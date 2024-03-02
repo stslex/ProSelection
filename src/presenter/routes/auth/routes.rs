@@ -67,6 +67,6 @@ pub async fn refresh(
         Err(auth::refresh::RefreshError::InvalidRefreshToken) => {
             ApiResponse::Err(ERROR_TOKEN_SIGNATURE)
         }
-        _ => ApiResponse::Err(&ERROR_UNKNOWN),
+        _ => ApiResponse::Err(ERROR_UNKNOWN),
     }
 }
