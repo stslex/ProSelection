@@ -62,6 +62,12 @@ pub async fn map_user_info(uuid: &str, user: &UserDataResponse, db: Arc<Conn>) -
             .get_favourites_count(&user.id.to_string())
             .await
             .unwrap_or(0),
+        matches: user
+            .matches
+            .to_owned()
+            .into_iter()
+            .map(|v| v.to_string())
+            .collect(),
         is_following: if uuid == user.id.to_string() {
             false
         } else {
@@ -89,6 +95,7 @@ pub struct UserResponse {
     pub followers_count: i64,
     pub following_count: i64,
     pub favourites_count: i64,
+    pub matches: Vec<String>,
     pub is_following: bool,
     pub is_followed: bool,
     pub is_current_user: bool,
