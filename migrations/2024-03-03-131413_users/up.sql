@@ -22,4 +22,4 @@ create unique index IF NOT EXISTS users_login_uindex on users (login);
 create index IF NOT EXISTS users_secret_uindex on users (secret);
 create index IF NOT EXISTS users_bio_uindex on users (bio);
 create index IF NOT EXISTS users_avatar_url_uindex on users (avatar_url);
-create index IF NOT EXISTS users_matches_id_uindex on users (matches);
+create index IF NOT EXISTS users_matches_uindex on users (matches);

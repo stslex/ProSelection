@@ -92,9 +92,9 @@ impl AuthRepository for Conn {
         let username = var_name;
         let user = UserDatabase::get_user(self, &uuid)
             .await
-            .map_err(|err| match err {
-                UserDataError::UuidInvalid => VerifyTokenError::NotFound,
-                _ => VerifyTokenError::Other("Error getting user".to_owned()),
+            .map_err(|err| {
+                log::error!("Error verifying token: {}", err);
+                VerifyTokenError::NotFound
             })?
             .map()
             .await;

@@ -4,8 +4,10 @@ extern crate diesel;
 extern crate rocket;
 
 use crate::presenter::routes::RoutesInitialized;
+use config::run_db_migrations;
+use rocket_sync_db_pools::database;
 
-use rocket::{Build, Rocket};
+use rocket::{fairing::AdHoc, Build, Rocket};
 mod config;
 mod data;
 mod presenter;
@@ -16,27 +18,9 @@ pub mod utils;
 fn launch() -> Rocket<Build> {
     rocket::custom(config::from_env())
         .attach(Conn::fairing())
+        .attach(AdHoc::on_ignite("Database Migrations", run_db_migrations))
         .mount_routes()
 }
 
 #[database("diesel_postgres_pool")]
 pub struct Conn(pub diesel::PgConnection);
-
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use rocket_sync_db_pools::database;
-
-const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-
-impl Conn {
-    pub async fn on_ignite(&self) -> Result<(), ()> {
-        self.run(|conn| {
-            if let Err(e) = conn.run_pending_migrations(MIGRATIONS) {
-                eprint!("Failed to run database migrations: {:?}", e);
-                return Err(e);
-            }
-            return Ok(());
-        })
-        .await
-        .map_err(|_| ())
-    }
-}

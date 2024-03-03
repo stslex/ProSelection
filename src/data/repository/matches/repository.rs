@@ -1,10 +1,10 @@
 use crate::{
-    data::{
-        database::matches::{
+    data::database::{
+        matches::{
             objects::{MatchesDbError, MatchesEntity},
             MatchesDatabase,
         },
-        repository::user::UserRepository,
+        user::UserDatabase,
     },
     utils::Mapper,
     Conn,
@@ -23,10 +23,14 @@ impl MatchesRepository for Conn {
         request: MatchesDataCreate<'a>,
     ) -> Result<MatchesData, MatchesDataError> {
         let match_entity = request.map().await?;
-        self.add_match(match_entity)
+        let created_match = self
+            .add_match(match_entity)
             .await
-            .map_err(|value| value.into())
-            .map(|value| value.into())
+            .map_err(|value| value.into())?;
+        self.add_match_to_user(&created_match.id.to_string(), request.creator_uuid)
+            .await
+            .map_err(|_| MatchesDataError::MatchesNotCreated)?;
+        Result::Ok(created_match.into())
     }
     async fn get_matches<'a>(
         &self,
