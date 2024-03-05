@@ -1,10 +1,14 @@
 use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::{schema::favourite, Conn};
+use crate::{
+    data::repository::objects::{PagingDomainRequest, PagingDomainResponse},
+    schema::favourite,
+    Conn,
+};
 
 use super::{
-    objects::{FavouriteDbSearchRequest, FavouriteEntity, FavouriteEntityResponse},
+    objects::{FavouriteEntity, FavouriteEntityResponse},
     FavouriteDbError, UserFavouritesDatabase,
 };
 
@@ -157,37 +161,51 @@ impl UserFavouritesDatabase for Conn {
 
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDbSearchRequest<'a>,
-    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError> {
-        let request_uuid = match Uuid::parse_str(request.uuid) {
+        request: PagingDomainRequest<'a>,
+    ) -> Result<PagingDomainResponse<FavouriteEntityResponse>, FavouriteDbError> {
+        let query = request.query.to_owned();
+        let request_uuid = match Uuid::parse_str(request.user_uuid) {
             Ok(uuid) => uuid,
             Err(err) => {
                 eprintln!("Error parsing uuid: {}", err);
                 return Err(FavouriteDbError::UuidInvalid);
             }
         };
-        let query = request.query.to_owned().to_lowercase();
-        let page = if request.page <= 0 {
+        let page_number = if request.page <= 0 {
             1
         } else {
             request.page - 1
         };
         let limit = request.page_size;
-        let offset = page * request.page_size;
+        let offset = page_number * request.page_size;
 
         self.0
             .run(move |db| {
-                let users: Vec<FavouriteEntityResponse> = favourite::table
+                let query_request = favourite::table
                     .filter(favourite::user_uuid.eq(request_uuid))
-                    .filter(favourite::title.ilike(format!("%{}%", query)))
-                    .limit(limit)
-                    .offset(offset)
+                    .filter(favourite::title.ilike(format!("%{}%", query)));
+
+                let result_request = query_request.to_owned().limit(limit).offset(offset);
+                let results = result_request
                     .get_results::<FavouriteEntityResponse>(db)
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
                         FavouriteDbError::InternalError
                     })?;
-                Ok(users)
+
+                let total_request = query_request.to_owned();
+                let total_result = total_request.count().get_result(db).map_err(|err| {
+                    println!("Error getting total count: {}", err);
+                    FavouriteDbError::InternalError
+                })?;
+
+                Ok(PagingDomainResponse {
+                    total: total_result,
+                    result: results,
+                    page: page_number,
+                    page_size: request.page_size,
+                    has_more: offset < total_result,
+                })
             })
             .await
     }

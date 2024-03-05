@@ -1,7 +1,7 @@
 use crate::{
     data::repository::matches::MatchesRepository,
     presenter::handlers::objects::{
-        request::{map_paging, PagingRequest},
+        request::{map_paging_uuid, PagingUuidRequest},
         response::PagingResponse,
     },
     Conn,
@@ -48,9 +48,9 @@ impl MatchesHandler for Conn {
     async fn get_matches<'a>(
         &self,
         uuid: &'a str,
-        params: PagingRequest<'a>,
+        params: PagingUuidRequest<'a>,
     ) -> Result<PagingResponse<UserMatchResponse>, UserMatchError> {
-        let request = map_paging(uuid, params).await;
+        let request = map_paging_uuid(uuid, params).await;
         MatchesRepository::get_matches(self, request)
             .await
             .map(|response| PagingResponse {

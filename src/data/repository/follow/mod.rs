@@ -1,6 +1,6 @@
 use self::objects::{FollowDataError, FollowerDataResponse};
 
-use super::favourite::objects::UserDataSearchRequest;
+use super::objects::PagingDomainRequest;
 
 pub mod objects;
 mod repository;
@@ -26,10 +26,10 @@ pub trait FollowRepository {
     ) -> Result<bool, FollowDataError>;
     async fn get_user_followers<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError>;
     async fn get_user_following<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError>;
 }

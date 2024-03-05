@@ -1,25 +1,26 @@
 use crate::presenter::handlers::favourite::FavouriteHandler;
+use crate::presenter::handlers::objects::request::PagingUuidRequest;
+use crate::presenter::handlers::user::search::FavouriteResponse;
 use rocket::serde::json::Json;
 
 use crate::data::repository::user::objects::UserSearchError;
 use crate::presenter::handlers;
 use crate::presenter::handlers::favourite::request::{FavouriteAddBody, FavouriteDeleteParams};
 
-use crate::presenter::handlers::objects::response::BooleanResponse;
 use crate::presenter::handlers::objects::response::{
     ApiMessageResponse, ApiResponse, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND_BY_UUID,
 };
-use crate::presenter::handlers::user::search::UserFavouriteResponse;
+use crate::presenter::handlers::objects::response::{BooleanResponse, PagingResponse};
+
 use crate::presenter::routes::auth::validators::AccessToken;
-use crate::presenter::routes::user::objects::UserPagingSearchParams;
 use crate::Conn;
 
 #[get("/?<params..>")]
 pub async fn get_user_favourites<'a>(
     access_token: AccessToken,
-    params: UserPagingSearchParams<'a>,
+    params: PagingUuidRequest<'a>,
     db: Conn,
-) -> ApiResponse<'static, Json<UserFavouriteResponse>> {
+) -> ApiResponse<'static, Json<PagingResponse<FavouriteResponse>>> {
     let request = handlers::user::search::UserPagingSearchRequest {
         request_uuid: &access_token.uuid,
         uuid: params.uuid,

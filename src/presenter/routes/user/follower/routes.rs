@@ -4,6 +4,7 @@ use crate::data::repository::follow::objects::FollowDataError;
 use crate::data::repository::user::objects::UserSearchError;
 use crate::presenter::handlers;
 
+use crate::presenter::handlers::objects::request::PagingUuidRequest;
 use crate::presenter::handlers::objects::response::BooleanResponse;
 use crate::presenter::handlers::objects::response::{
     ApiMessageResponse, ApiResponse, ERROR_FOLLOW_CONFLICT, ERROR_FOLLOW_USER_NOT_FOUND,
@@ -13,13 +14,12 @@ use crate::presenter::handlers::user::actions::{self, FollowResponse};
 use crate::presenter::handlers::user::search::UserFollowerResponse;
 
 use crate::presenter::routes::auth::validators::AccessToken;
-use crate::presenter::routes::user::objects::UserPagingSearchParams;
 use crate::Conn;
 
 #[get("/followers?<params..>")]
 pub async fn get_user_followers<'a>(
     access_token: AccessToken,
-    params: UserPagingSearchParams<'a>,
+    params: PagingUuidRequest<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingSearchRequest {
@@ -44,7 +44,7 @@ pub async fn get_user_followers<'a>(
 #[get("/following?<params..>")]
 pub async fn get_user_following<'a>(
     access_token: AccessToken,
-    params: UserPagingSearchParams<'a>,
+    params: PagingUuidRequest<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserFollowerResponse>> {
     let request = handlers::user::search::UserPagingSearchRequest {

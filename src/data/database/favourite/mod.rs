@@ -1,4 +1,6 @@
-use self::objects::{FavouriteDbError, FavouriteDbSearchRequest, FavouriteEntityResponse};
+use crate::data::repository::objects::{PagingDomainRequest, PagingDomainResponse};
+
+use self::objects::{FavouriteDbError, FavouriteEntityResponse};
 
 mod favourite_db;
 pub mod objects;
@@ -25,6 +27,6 @@ pub trait UserFavouritesDatabase {
     ) -> Result<bool, FavouriteDbError>;
     async fn get_user_favourites<'a>(
         &self,
-        request: &'a FavouriteDbSearchRequest<'a>,
-    ) -> Result<Vec<FavouriteEntityResponse>, FavouriteDbError>;
+        request: PagingDomainRequest<'a>,
+    ) -> Result<PagingDomainResponse<FavouriteEntityResponse>, FavouriteDbError>;
 }

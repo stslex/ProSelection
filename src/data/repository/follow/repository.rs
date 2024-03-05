@@ -4,7 +4,7 @@ use crate::{
             follow::{objects::FollowEntityCreate, FollowDatabase},
             user::UserDatabase,
         },
-        repository::favourite::objects::UserDataSearchRequest,
+        repository::objects::PagingDomainRequest,
     },
     utils::Mapper,
     Conn,
@@ -67,7 +67,7 @@ impl FollowRepository for Conn {
     }
     async fn get_user_followers<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_followers(self, request).await {
             Ok(followers) => Ok(followers.map().await),
@@ -76,7 +76,7 @@ impl FollowRepository for Conn {
     }
     async fn get_user_following<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_following(self, request).await {
             Ok(following) => Ok(following.map().await),

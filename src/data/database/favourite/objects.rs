@@ -29,14 +29,6 @@ pub struct FavouriteDataResponse {
     pub title: String,
 }
 
-pub struct FavouriteDbSearchRequest<'a> {
-    pub request_uuid: &'a str,
-    pub uuid: &'a str,
-    pub query: &'a str,
-    pub page: i64,
-    pub page_size: i64,
-}
-
 #[derive(Debug, Clone)]
 pub enum FavouriteDbError {
     UuidInvalid,

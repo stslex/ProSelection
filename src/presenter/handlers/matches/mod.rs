@@ -1,6 +1,6 @@
 use self::objects::{UserCreateMatchRequest, UserMatchError, UserMatchResponse};
 
-use super::objects::{request::PagingRequest, response::PagingResponse};
+use super::objects::{request::PagingUuidRequest, response::PagingResponse};
 
 mod handler;
 pub mod objects;
@@ -22,6 +22,6 @@ pub trait MatchesHandler {
     async fn get_matches<'a>(
         &self,
         uuid: &'a str,
-        params: PagingRequest<'a>,
+        params: PagingUuidRequest<'a>,
     ) -> Result<PagingResponse<UserMatchResponse>, UserMatchError>;
 }

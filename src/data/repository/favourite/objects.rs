@@ -1,12 +1,9 @@
 use uuid::Uuid;
 
-use crate::{
-    data::database::favourite::objects::{
-        FavouriteDbError, FavouriteDbSearchRequest, FavouriteEntityResponse,
-    },
-    utils::Mapper,
+use crate::data::{
+    database::favourite::objects::{FavouriteDbError, FavouriteEntityResponse},
+    repository::objects::PagingDomainResponse,
 };
-use rocket::futures;
 
 #[derive(Debug, Clone)]
 pub enum FavouriteDataError {
@@ -16,9 +13,8 @@ pub enum FavouriteDataError {
     InternalError,
 }
 
-#[async_trait]
-impl Mapper<FavouriteDataError> for FavouriteDbError {
-    async fn map(&self) -> FavouriteDataError {
+impl Into<FavouriteDataError> for FavouriteDbError {
+    fn into(self) -> FavouriteDataError {
         match self {
             FavouriteDbError::UuidInvalid => FavouriteDataError::UuidInvalid,
             FavouriteDbError::UserNotFound => FavouriteDataError::UserNotFound,
@@ -36,9 +32,8 @@ pub struct FavouriteDataResponse {
     pub title: String,
 }
 
-#[async_trait]
-impl Mapper<FavouriteDataResponse> for FavouriteEntityResponse {
-    async fn map(&self) -> FavouriteDataResponse {
+impl Into<FavouriteDataResponse> for FavouriteEntityResponse {
+    fn into(self) -> FavouriteDataResponse {
         FavouriteDataResponse {
             uuid: self.uuid,
             user_uuid: self.user_uuid,
@@ -48,29 +43,16 @@ impl Mapper<FavouriteDataResponse> for FavouriteEntityResponse {
     }
 }
 
-#[async_trait]
-impl Mapper<Vec<FavouriteDataResponse>> for Vec<FavouriteEntityResponse> {
-    async fn map(&self) -> Vec<FavouriteDataResponse> {
-        futures::future::join_all(self.into_iter().map(|favourite| favourite.map())).await
-    }
-}
-pub struct UserDataSearchRequest<'a> {
-    pub request_uuid: &'a str,
-    pub uuid: &'a str,
-    pub query: &'a str,
-    pub page: i64,
-    pub page_size: i64,
-}
-
-#[async_trait]
-impl<'a> Mapper<FavouriteDbSearchRequest<'a>> for UserDataSearchRequest<'a> {
-    async fn map(&self) -> FavouriteDbSearchRequest<'a> {
-        FavouriteDbSearchRequest {
-            request_uuid: self.request_uuid,
-            uuid: self.uuid,
-            query: self.query,
+impl Into<PagingDomainResponse<FavouriteDataResponse>>
+    for PagingDomainResponse<FavouriteEntityResponse>
+{
+    fn into(self) -> PagingDomainResponse<FavouriteDataResponse> {
+        PagingDomainResponse {
             page: self.page,
             page_size: self.page_size,
+            total: self.total,
+            has_more: self.has_more,
+            result: self.result.into_iter().map(|v| v.into()).collect(),
         }
     }
 }
