@@ -1,4 +1,6 @@
-use self::objects::{MatchesData, MatchesDataCreate, MatchesDataError, MatchesDataRequest};
+use self::objects::{MatchesData, MatchesDataCreate, MatchesDataError};
+
+use super::objects::{PagingDomainRequest, PagingDomainResponse};
 
 pub mod objects;
 mod repository;
@@ -9,8 +11,18 @@ pub trait MatchesRepository {
         &self,
         request: MatchesDataCreate<'a>,
     ) -> Result<MatchesData, MatchesDataError>;
+    async fn get_current_match<'a>(
+        &self,
+        request_uuid: &'a str,
+        match_uuid: &'a str,
+    ) -> Result<MatchesData, MatchesDataError>;
     async fn get_matches<'a>(
         &self,
-        request: MatchesDataRequest<'a>,
-    ) -> Result<Vec<MatchesData>, MatchesDataError>;
+        request: PagingDomainRequest<'a>,
+    ) -> Result<PagingDomainResponse<MatchesData>, MatchesDataError>;
+    async fn get_match_count<'a>(
+        &self,
+        user_uuid: &'a str,
+        request_uuid: &'a str,
+    ) -> Result<i64, MatchesDataError>;
 }

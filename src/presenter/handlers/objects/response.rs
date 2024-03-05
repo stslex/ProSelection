@@ -32,6 +32,15 @@ pub struct BooleanResponse {
     pub result: bool,
 }
 
+#[derive(Serialize)]
+pub struct PagingResponse<T> {
+    pub page: i64,
+    pub page_size: i64,
+    pub total: i64,
+    pub has_more: bool,
+    pub result: Vec<T>,
+}
+
 impl<'r, 'o: 'r> Responder<'r, 'o> for ApiMessageResponse<'r> {
     fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         match self {

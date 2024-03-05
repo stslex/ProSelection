@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use super::{
     objects::{UserEntity, UserEntityCreate},
     UserDatabase,
@@ -116,40 +114,5 @@ impl UserDatabase for Conn {
                     })
             })
             .await
-    }
-
-    async fn add_match_to_user<'a>(
-        &self,
-        user_uuid: &'a str,
-        match_uuid: &'a str,
-    ) -> Result<(), UserDataError> {
-        let match_uuid = Uuid::parse_str(match_uuid).map_err(|_| UserDataError::UuidInvalid)?;
-        let user = self.get_user(user_uuid).await.map_err(|e| {
-            eprint!("Error adding match: {}", e);
-            UserDataError::InternalError
-        })?;
-        self.0
-            .run(move |db| {
-                let mut matches = user.matches.to_owned();
-                matches.push(match_uuid);
-
-                // Remove duplicates
-                let mut set = HashSet::new();
-                matches.retain(|e| set.insert(*e));
-
-                diesel::update(users::table.filter(users::id.eq(user.id)))
-                    .set(users::matches.eq(matches))
-                    .execute(db)
-                    .map_err(|err| {
-                        eprintln!("Error adding match: {}", err);
-                        UserDataError::InternalError
-                    })
-            })
-            .await
-            .map_err(|err| {
-                eprintln!("Error adding match: {}", err);
-                UserDataError::InternalError
-            })?;
-        Ok(())
     }
 }

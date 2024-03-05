@@ -29,7 +29,6 @@ diesel::table! {
         secret -> Text,
         bio -> Varchar,
         avatar_url -> Varchar,
-        matches -> Array<Uuid>,
     }
 }
 
