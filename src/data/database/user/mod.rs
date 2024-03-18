@@ -24,9 +24,4 @@ pub trait UserDatabase {
         &self,
         username: &'a str,
     ) -> Result<UserEntity, UserDataError>;
-    async fn add_match_to_user<'a>(
-        &self,
-        user_uuid: &'a str,
-        match_uuid: &'a str,
-    ) -> Result<(), UserDataError>;
 }

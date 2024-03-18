@@ -77,16 +77,10 @@ impl Mapper<Result<Vec<Uuid>, MatchesDataError>> for Vec<&str> {
     }
 }
 
-pub struct MatchesDataRequest<'a> {
-    pub user_uuid: &'a str,
-    pub query: &'a str,
-    pub page: i64,
-    pub page_size: i64,
-}
-
 pub enum MatchesDataError {
     UuidInvalid,
     MatchesNotFound,
     InternalError,
     MatchesNotCreated,
+    NoPermission,
 }

@@ -1,3 +1,4 @@
+mod objects;
 mod route_mount;
 mod routes;
 

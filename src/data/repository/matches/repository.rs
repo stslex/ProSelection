@@ -1,18 +1,16 @@
+use std::ops::Not;
+
 use crate::{
-    data::database::{
-        matches::{
-            objects::{MatchesDbError, MatchesEntity},
-            MatchesDatabase,
-        },
-        user::UserDatabase,
+    data::{
+        database::{follow::FollowDatabase, matches::MatchesDatabase, user::UserDatabase},
+        repository::objects::{PagingDomainRequest, PagingDomainResponse},
     },
     utils::Mapper,
     Conn,
 };
-use rocket::futures;
 
 use super::{
-    objects::{MatchesData, MatchesDataCreate, MatchesDataError, MatchesDataRequest},
+    objects::{MatchesData, MatchesDataCreate, MatchesDataError},
     MatchesRepository,
 };
 
@@ -23,35 +21,82 @@ impl MatchesRepository for Conn {
         request: MatchesDataCreate<'a>,
     ) -> Result<MatchesData, MatchesDataError> {
         let match_entity = request.map().await?;
-        let created_match = self
-            .add_match(match_entity)
+        self.add_match(match_entity)
             .await
-            .map_err(|value| value.into())?;
-        self.add_match_to_user(&created_match.id.to_string(), request.creator_uuid)
-            .await
-            .map_err(|_| MatchesDataError::MatchesNotCreated)?;
-        Result::Ok(created_match.into())
+            .map_err(|value| value.into())
+            .map(|value| value.into())
     }
-    async fn get_matches<'a>(
+    async fn get_current_match<'a>(
         &self,
-        request: MatchesDataRequest<'a>,
-    ) -> Result<Vec<MatchesData>, MatchesDataError> {
+        request_uuid: &'a str,
+        match_uuid: &'a str,
+    ) -> Result<MatchesData, MatchesDataError> {
         let user = self
-            .get_user(request.user_uuid)
+            .get_user(request_uuid)
             .await
             .map_err(|_| MatchesDataError::MatchesNotFound)?;
+        let match_entity = self
+            .get_match(match_uuid.to_string())
+            .await
+            .map_err(|_| MatchesDataError::MatchesNotFound)?;
+        if match_entity.user_id.contains(&user.id).not() {
+            println!("User not found in match");
+            Result::Err(MatchesDataError::NoPermission)
+        } else {
+            Result::Ok(match_entity.into())
+        }
+    }
 
-        futures::future::join_all(
-            user.matches
-                .into_iter()
-                .map(|match_uuid| self.get_match(match_uuid.to_string())),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<Vec<MatchesEntity>, MatchesDbError>>()
-        .map_err(|err| err.into())?
-        .into_iter()
-        .map(|value| Result::Ok(value.into()))
-        .collect::<Result<Vec<MatchesData>, MatchesDataError>>()
+    async fn get_matches<'a>(
+        &self,
+        request: PagingDomainRequest<'a>,
+    ) -> Result<PagingDomainResponse<MatchesData>, MatchesDataError> {
+        let is_permitted = if request.user_uuid == request.request_uuid {
+            true
+        } else {
+            self.is_following(request.user_uuid, request.request_uuid)
+                .await
+                .map(|value| value)
+                .map_err(|_| MatchesDataError::MatchesNotFound)?
+        };
+
+        if is_permitted.not() {
+            return Result::Err(MatchesDataError::NoPermission);
+        }
+
+        MatchesDatabase::get_matches(self, request)
+            .await
+            .map(|response| PagingDomainResponse {
+                page: response.page,
+                page_size: response.page_size,
+                total: response.total,
+                has_more: response.has_more,
+                result: response.result.into_iter().map(|v| v.into()).collect(),
+            })
+            .map_err(|value| value.into())
+    }
+
+    async fn get_match_count<'a>(
+        &self,
+        user_uuid: &'a str,
+        request_uuid: &'a str,
+    ) -> Result<i64, MatchesDataError> {
+        let is_permitted = if request_uuid == user_uuid {
+            true
+        } else {
+            self.is_following(user_uuid, request_uuid)
+                .await
+                .map(|value| value)
+                .map_err(|_| MatchesDataError::MatchesNotFound)?
+        };
+
+        if is_permitted.not() {
+            return Result::Err(MatchesDataError::NoPermission);
+        }
+
+        MatchesDatabase::get_match_count(self, user_uuid)
+            .await
+            .map(|value| value)
+            .map_err(|value| value.into())
     }
 }

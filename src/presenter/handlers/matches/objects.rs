@@ -49,6 +49,7 @@ impl Into<UserMatchError> for MatchesDataError {
             MatchesDataError::MatchesNotFound => UserMatchError::MatchesNotFound,
             MatchesDataError::MatchesNotCreated => UserMatchError::MatchesNotCreated,
             MatchesDataError::InternalError => UserMatchError::InternalError,
+            MatchesDataError::NoPermission => UserMatchError::NoPermission,
         }
     }
 }
