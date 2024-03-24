@@ -8,12 +8,12 @@ create table IF NOT EXISTS users
     username varchar(128) not null,
     secret text not null,
     bio text  not null,
-    avatar_url text not null,
+    avatar_url text not null
 );
 
 alter table users add column if not exists bio text not null;
 alter table users add column if not exists avatar_url text not null;
-ALTER TABLE users DROP COLUMN matches;
+ALTER TABLE users DROP COLUMN if exists matches;
 
 create unique index IF NOT EXISTS users_id_uindex on users (id);
 create unique index IF NOT EXISTS users_username_uindex on users (username);
