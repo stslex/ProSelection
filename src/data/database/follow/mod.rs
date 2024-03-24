@@ -1,8 +1,6 @@
 use uuid::Uuid;
 
-use crate::data::repository::{
-    favourite::objects::UserDataSearchRequest, follow::objects::FollowDataError,
-};
+use crate::data::repository::{follow::objects::FollowDataError, objects::PagingDomainRequest};
 
 use self::objects::{FollowEntityCreate, FollowerEntity};
 
@@ -31,10 +29,10 @@ pub trait FollowDatabase {
     ) -> Result<bool, FollowDataError>;
     async fn get_user_followers<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError>;
     async fn get_user_following<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError>;
 }

@@ -2,9 +2,7 @@ use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::{
-    data::repository::{
-        favourite::objects::UserDataSearchRequest, follow::objects::FollowDataError,
-    },
+    data::repository::{follow::objects::FollowDataError, objects::PagingDomainRequest},
     schema::follow,
     Conn,
 };
@@ -123,9 +121,10 @@ impl FollowDatabase for Conn {
 
     async fn get_user_following<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError> {
-        let uuid = Uuid::parse_str(request.uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let uuid =
+            Uuid::parse_str(request.user_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
 
         let query = request.query.to_owned().to_lowercase();
         let page = if request.page <= 0 {
@@ -157,9 +156,10 @@ impl FollowDatabase for Conn {
 
     async fn get_user_followers<'a>(
         &self,
-        request: &'a UserDataSearchRequest<'a>,
+        request: &'a PagingDomainRequest<'a>,
     ) -> Result<Vec<FollowerEntity>, FollowDataError> {
-        let uuid = Uuid::parse_str(request.uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
+        let uuid =
+            Uuid::parse_str(request.user_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
         let request_uuid =
             Uuid::parse_str(request.request_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
 

@@ -3,6 +3,7 @@ use rocket::serde::json::Json;
 use crate::data::repository::user::objects::{UserSearchDataRequest, UserSearchError};
 use crate::presenter::handlers;
 
+use crate::presenter::handlers::objects::request::PagingRequest;
 use crate::presenter::handlers::objects::response::{
     ApiResponse, ERROR_UNKNOWN, ERROR_USER_NOT_FOUND_BY_UUID, ERROR_USER_UUID_INVALID,
 };
@@ -10,7 +11,6 @@ use crate::presenter::handlers::objects::response::{
 use crate::presenter::handlers::user::search::UserSearchResponse;
 use crate::presenter::handlers::user::single_user::{UserError, UserResponse};
 use crate::presenter::routes::auth::validators::AccessToken;
-use crate::presenter::routes::user::objects::UserSearchParams;
 use crate::Conn;
 
 #[get("/count")]
@@ -59,7 +59,7 @@ pub async fn get_user(
 #[get("/search?<params..>")]
 pub async fn get_user_search<'a>(
     access_token: AccessToken,
-    params: UserSearchParams<'a>,
+    params: PagingRequest<'a>,
     db: Conn,
 ) -> ApiResponse<'static, Json<UserSearchResponse>> {
     let request = UserSearchDataRequest {

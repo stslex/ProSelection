@@ -4,16 +4,15 @@ use serde::Serialize;
 use super::single_user::{map_user_info, UserResponse};
 use crate::{
     data::repository::{
-        favourite::{
-            objects::{FavouriteDataError, UserDataSearchRequest},
-            FavouriteRepository,
-        },
+        favourite::{objects::FavouriteDataError, FavouriteRepository},
         follow::{objects::FollowDataError, FollowRepository},
+        objects::PagingDomainRequest,
         user::{
             objects::{UserSearchDataRequest, UserSearchError},
             UserRepository,
         },
     },
+    presenter::handlers::objects::response::PagingResponse,
     Conn,
 };
 use std::sync::Arc;
@@ -40,19 +39,24 @@ pub async fn search_user<'a>(
 pub async fn get_user_favourites<'a>(
     request: &'a UserPagingSearchRequest<'a>,
     db: Conn,
-) -> Result<UserFavouriteResponse, UserSearchError> {
+) -> Result<PagingResponse<FavouriteResponse>, UserSearchError> {
     let db = Arc::new(db);
-    let request = UserDataSearchRequest {
+    let request = PagingDomainRequest {
         request_uuid: request.request_uuid,
-        uuid: request.uuid,
+        user_uuid: request.uuid,
         query: request.query,
         page: request.page,
         page_size: request.page_size,
     };
     match db.get_user_favourites(&request).await {
-        Ok(favourites) => Result::Ok(UserFavouriteResponse {
+        Ok(response) => Result::Ok(PagingResponse {
+            page: response.page,
+            page_size: response.page_size,
+            total: response.total,
+            has_more: response.has_more,
             result: futures::future::join_all(
-                favourites
+                response
+                    .result
                     .into_iter()
                     .map(|favourite| {
                         let db: Arc<Conn> = Arc::clone(&db);
@@ -93,9 +97,9 @@ pub async fn get_user_followers<'a>(
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
 
-    let follow_request = UserDataSearchRequest {
+    let follow_request = PagingDomainRequest {
         request_uuid: request.request_uuid,
-        uuid: request.uuid,
+        user_uuid: request.uuid,
         query: request.query,
         page: request.page,
         page_size: request.page_size,
@@ -137,9 +141,9 @@ pub async fn get_user_following<'a>(
     db: Conn,
 ) -> Result<UserFollowerResponse, UserSearchError> {
     let db = Arc::new(db);
-    let follow_request = UserDataSearchRequest {
+    let follow_request = PagingDomainRequest {
         request_uuid: request.request_uuid,
-        uuid: request.uuid,
+        user_uuid: request.uuid,
         query: request.query,
         page: request.page,
         page_size: request.page_size,
@@ -195,11 +199,6 @@ pub struct FollowerResponse {
     pub username: String,
     pub avatar_url: String,
     pub is_following: bool,
-}
-
-#[derive(Serialize)]
-pub struct UserFavouriteResponse {
-    pub result: Vec<FavouriteResponse>,
 }
 
 #[derive(Serialize)]
