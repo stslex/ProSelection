@@ -6,6 +6,7 @@ use self::objects::{FollowEntityCreate, FollowerEntity};
 
 mod follow_db;
 pub mod objects;
+mod tests;
 
 #[async_trait]
 pub trait FollowDatabase {

@@ -53,13 +53,13 @@ impl FollowDatabase for Conn {
                 diesel::insert_into(follow::table)
                     .values(record)
                     .execute(db)
-                    .map(|_| ())
-                    .map_err(|err| {
-                        eprintln!("Error following user: {}", err);
-                        FollowDataError::InternalError
-                    })
             })
             .await
+            .map(|_| ())
+            .map_err(|err| {
+                eprintln!("Error following user: {}", err);
+                FollowDataError::InternalError
+            })
     }
 
     async fn un_follow_user<'a>(
