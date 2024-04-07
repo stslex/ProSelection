@@ -5,6 +5,7 @@ extern crate rocket;
 
 use crate::presenter::routes::RoutesInitialized;
 use config::run_db_migrations;
+use presenter::catcher::AppCatcher;
 use rocket_sync_db_pools::database;
 
 use rocket::{fairing::AdHoc, Build, Rocket};
@@ -19,6 +20,7 @@ fn launch() -> Rocket<Build> {
     rocket::custom(config::from_env())
         .attach(Conn::fairing())
         .attach(AdHoc::on_ignite("Database Migrations", run_db_migrations))
+        .mount_catcher()
         .mount_routes()
 }
 

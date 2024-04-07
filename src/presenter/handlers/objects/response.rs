@@ -73,6 +73,10 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for ErrorResponse<'r> {
 }
 
 // common errors
+pub const ERROR_UNAUTHORIZED: &'static ErrorResponse<'static> = &ErrorResponse {
+    cause: "unauthorized",
+    status: Status::Unauthorized,
+};
 pub const ERROR_UNKNOWN: &'static ErrorResponse<'static> = &ErrorResponse {
     cause: "unknown",
     status: Status::InternalServerError,
