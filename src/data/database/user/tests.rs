@@ -25,11 +25,11 @@ mod tests {
             })
             .await;
 
-        let check_login = "login";
-        let check_username = "username";
-        let check_secret = "secret";
-        let check_avatar_url = "avatar_url";
-        let check_bio = "bio";
+        let check_login = "login_check";
+        let check_username = "username_check";
+        let check_secret = "secret_check";
+        let check_avatar_url = "avatar_url_check";
+        let check_bio = "bio_check";
         let check_user = UserEntityCreate {
             login: check_login.to_owned(),
             username: check_username.to_owned(),
@@ -37,15 +37,11 @@ mod tests {
             avatar_url: check_avatar_url.to_owned(),
             bio: check_bio.to_owned(),
         };
-        println!("checked_user: {:?}", check_user);
 
         let insert_user_result = connection.insert_user(check_user).await;
-
         assert!(insert_user_result.is_ok());
 
         let inserted_user = insert_user_result.unwrap();
-        println!("inserted_user: {:?}", inserted_user);
-
         assert_eq!(inserted_user.login, check_login.to_owned());
         assert_eq!(inserted_user.username, check_username.to_owned());
         assert_eq!(inserted_user.secret, check_secret.to_owned());
@@ -191,6 +187,7 @@ mod tests {
             avatar_url: check_avatar_url.to_owned(),
             bio: check_bio.to_owned(),
         };
+        println!("checked_user: {:?}", check_user);
 
         let insert_user_result = connection.insert_user(check_user).await;
         assert!(insert_user_result.is_ok());
@@ -210,6 +207,7 @@ mod tests {
         assert_eq!(get_user_search.len(), 1);
 
         let searched_user = get_user_search.get(0).unwrap();
+        println!("searched_user: {:?}", searched_user);
         assert_eq!(searched_user.login, check_login.to_owned());
         assert_eq!(searched_user.username, check_username.to_owned());
         assert_eq!(searched_user.secret, check_secret.to_owned());
