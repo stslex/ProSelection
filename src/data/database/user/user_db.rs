@@ -16,15 +16,6 @@ use uuid::Uuid;
 
 #[async_trait]
 impl UserDatabase for Conn {
-    async fn get_user_count(&self) -> Result<String, UserDataError> {
-        self.0
-            .run(|db| match users::table.get_results::<UserEntity>(db) {
-                Ok(items) => Result::Ok(items.len().to_string()),
-                Err(_) => Result::Err(UserDataError::InternalError),
-            })
-            .await
-    }
-
     async fn get_user<'a>(&self, uuid: &'a str) -> Result<UserEntity, UserDataError> {
         let uuid = Uuid::parse_str(uuid).map_err(|_| UserDataError::UuidInvalid)?;
         self.0

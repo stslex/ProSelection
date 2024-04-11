@@ -13,14 +13,6 @@ use crate::presenter::handlers::user::single_user::{UserError, UserResponse};
 use crate::presenter::routes::auth::validators::AccessToken;
 use crate::Conn;
 
-#[get("/count")]
-pub async fn get_user_count(_access_token: AccessToken, db: Conn) -> ApiResponse<'static, String> {
-    match handlers::user::common::count(db).await {
-        Ok(count) => ApiResponse::Ok(count),
-        Err(_) => ApiResponse::Err(&ERROR_UNKNOWN),
-    }
-}
-
 #[get("/")]
 pub async fn get_current_user(
     access_token: AccessToken,

@@ -5,7 +5,6 @@ pub mod repository;
 
 #[async_trait]
 pub trait UserRepository {
-    async fn get_user_count(&self) -> Result<String, UserDataError>;
     async fn get_user<'a>(&self, uuid: &'a str) -> Result<UserDataResponse, UserDataError>;
     async fn search_users<'a>(
         &self,
