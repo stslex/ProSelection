@@ -7,9 +7,6 @@ use super::{
 
 #[async_trait]
 impl UserRepository for Conn {
-    async fn get_user_count(&self) -> Result<String, UserDataError> {
-        UserDatabase::get_user_count(self).await
-    }
     async fn get_user<'a>(&self, uuid: &'a str) -> Result<UserDataResponse, UserDataError> {
         match UserDatabase::get_user(self, uuid).await {
             Ok(user) => Ok(user.map().await),

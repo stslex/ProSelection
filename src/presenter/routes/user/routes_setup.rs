@@ -19,7 +19,6 @@ impl RoutesUserInitialized for Rocket<Build> {
             .mount(
                 base_url,
                 routes![
-                    routes::get_user_count,
                     routes::get_current_user,
                     routes::get_user,
                     routes::get_user_by_username,
