@@ -14,7 +14,7 @@ pub trait FavouriteRepository {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), FavouriteDataError>;
+    ) -> Result<FavouriteDataResponse, FavouriteDataError>;
     async fn remove_favourite<'a>(
         &self,
         uuid: &'a str,

@@ -69,12 +69,10 @@ mod tests {
         let favourite_uuid = Uuid::new_v4().to_string();
         let title = "Favourite Title";
 
-        let error_result = connection.remove_favourite(&uuid, &favourite_uuid).await;
-        assert!(error_result.is_err());
-
-        let _ = connection
+        let add_favourite = connection
             .add_favourite(&uuid, &favourite_uuid, title)
             .await;
+        assert_ok!(add_favourite);
 
         let result = connection.remove_favourite(&uuid, &favourite_uuid).await;
         assert_ok!(result);

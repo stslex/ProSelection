@@ -12,7 +12,10 @@ mod tests;
 pub trait FollowDatabase {
     async fn get_followers_count<'a>(&self, uuid: &'a str) -> Result<i64, FollowDataError>;
     async fn get_following_count<'a>(&self, uuid: &'a str) -> Result<i64, FollowDataError>;
-    async fn follow_user<'a>(&self, record: &'a FollowEntityCreate) -> Result<(), FollowDataError>;
+    async fn follow_user<'a>(
+        &self,
+        record: &'a FollowEntityCreate,
+    ) -> Result<FollowerEntity, FollowDataError>;
     async fn un_follow_user<'a>(
         &self,
         follower_uuid: &'a str,

@@ -1,8 +1,10 @@
 use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
-use uuid::Uuid;
 
 use crate::{
-    data::repository::objects::{PagingDomainRequest, PagingDomainResponse},
+    data::{
+        database::utils::paging::{correct_page_number, parce_uuid},
+        repository::objects::{PagingDomainRequest, PagingDomainResponse},
+    },
     schema::favourite,
     Conn,
 };
@@ -15,13 +17,7 @@ use super::{
 #[async_trait]
 impl UserFavouritesDatabase for Conn {
     async fn get_favourites_count<'a>(&self, uuid: &'a str) -> Result<i64, FavouriteDbError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FavouriteDbError::UuidInvalid);
-            }
-        };
+        let uuid = parce_uuid(uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
         self.0
             .run(move |db| {
                 match favourite::table
@@ -44,30 +40,20 @@ impl UserFavouritesDatabase for Conn {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), super::FavouriteDbError> {
+    ) -> Result<FavouriteEntityResponse, super::FavouriteDbError> {
         let is_existing = self.is_favourite(uuid, favourite_uuid).await;
 
         if is_existing.unwrap_or(false) {
             return Result::Err(super::FavouriteDbError::Conflict);
         }
 
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UserNotFound);
-            }
-        };
+        let uuid = parce_uuid(uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
+        let favourite_uuid_property =
+            parce_uuid(favourite_uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
+
         let favourite = FavouriteEntity {
             user_uuid: uuid,
-            favourite_uuid: favourite_uuid,
+            favourite_uuid: favourite_uuid_property,
             title: title.to_owned(),
         };
 
@@ -76,13 +62,13 @@ impl UserFavouritesDatabase for Conn {
             .run(move |db| {
                 diesel::insert_into(favourite::table)
                     .values(favourite)
-                    .execute(db)
+                    .get_result(db)
             })
             .await
         {
-            Ok(res) => {
-                log::info!("Added favourite: {:?}", res);
-                Result::Ok(())
+            Ok(favourite) => {
+                log::info!("Added favourite: {:?}", favourite);
+                Result::Ok(favourite)
             }
             Err(err) => {
                 eprintln!("Error adding favourite: {}", err);
@@ -96,20 +82,9 @@ impl UserFavouritesDatabase for Conn {
         uuid: &'a str,
         favourite_uuid: &'a str,
     ) -> Result<(), super::FavouriteDbError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UserNotFound);
-            }
-        };
+        let uuid = parce_uuid(uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
+        let favourite_uuid =
+            parce_uuid(favourite_uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
 
         self.0
             .run(move |db| {
@@ -133,20 +108,9 @@ impl UserFavouritesDatabase for Conn {
         uuid: &'a str,
         favourite_uuid: &'a str,
     ) -> Result<bool, FavouriteDbError> {
-        let uuid = match Uuid::parse_str(uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UuidInvalid);
-            }
-        };
-        let favourite_uuid = match Uuid::parse_str(favourite_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Result::Err(super::FavouriteDbError::UserNotFound);
-            }
-        };
+        let uuid = parce_uuid(uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
+        let favourite_uuid =
+            parce_uuid(favourite_uuid).map_err(|_| FavouriteDbError::UserNotFound)?;
         self.0
             .run(move |db| {
                 favourite::table
@@ -164,18 +128,9 @@ impl UserFavouritesDatabase for Conn {
         request: PagingDomainRequest<'a>,
     ) -> Result<PagingDomainResponse<FavouriteEntityResponse>, FavouriteDbError> {
         let query = request.query.to_owned();
-        let request_uuid = match Uuid::parse_str(request.user_uuid) {
-            Ok(uuid) => uuid,
-            Err(err) => {
-                eprintln!("Error parsing uuid: {}", err);
-                return Err(FavouriteDbError::UuidInvalid);
-            }
-        };
-        let page_number = if request.page <= 0 {
-            1
-        } else {
-            request.page - 1
-        };
+        let request_uuid =
+            parce_uuid(request.user_uuid).map_err(|_| FavouriteDbError::UuidInvalid)?;
+        let page_number = correct_page_number(request.page);
         let limit = request.page_size;
         let offset = page_number * request.page_size;
 
@@ -186,7 +141,7 @@ impl UserFavouritesDatabase for Conn {
                     .filter(favourite::title.ilike(format!("%{}%", query)));
 
                 let result_request = query_request.to_owned().limit(limit).offset(offset);
-                let results = result_request
+                let results: Vec<FavouriteEntityResponse> = result_request
                     .get_results::<FavouriteEntityResponse>(db)
                     .map_err(|err| {
                         eprintln!("Error getting users: {}", err);
@@ -199,12 +154,17 @@ impl UserFavouritesDatabase for Conn {
                     FavouriteDbError::InternalError
                 })?;
 
+                let result_count = i64::try_from(results.len()).map_err(|err| {
+                    eprintln!("Error converting result count: {}", err);
+                    FavouriteDbError::InternalError
+                })?;
+
                 Ok(PagingDomainResponse {
                     total: total_result,
                     result: results,
-                    page: page_number,
+                    page: page_number + 1,
                     page_size: request.page_size,
-                    has_more: offset < total_result,
+                    has_more: offset + result_count < total_result,
                 })
             })
             .await

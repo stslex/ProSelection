@@ -40,7 +40,10 @@ impl FollowDatabase for Conn {
             .await
     }
 
-    async fn follow_user<'a>(&self, record: &'a FollowEntityCreate) -> Result<(), FollowDataError> {
+    async fn follow_user<'a>(
+        &self,
+        record: &'a FollowEntityCreate,
+    ) -> Result<FollowerEntity, FollowDataError> {
         let record = record.to_owned();
         if self
             .is_following_uuid(&record.follower_uuid, &record.followed_uuid)
@@ -52,10 +55,9 @@ impl FollowDatabase for Conn {
             .run(move |db| {
                 diesel::insert_into(follow::table)
                     .values(record)
-                    .execute(db)
+                    .get_result(db)
             })
             .await
-            .map(|_| ())
             .map_err(|err| {
                 eprintln!("Error following user: {}", err);
                 FollowDataError::InternalError
