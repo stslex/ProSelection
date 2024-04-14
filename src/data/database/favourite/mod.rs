@@ -14,7 +14,7 @@ pub trait UserFavouritesDatabase {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), FavouriteDbError>;
+    ) -> Result<FavouriteEntityResponse, FavouriteDbError>;
     async fn remove_favourite<'a>(
         &self,
         uuid: &'a str,

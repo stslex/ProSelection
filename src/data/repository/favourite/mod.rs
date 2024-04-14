@@ -4,6 +4,7 @@ use super::objects::{PagingDomainRequest, PagingDomainResponse};
 
 pub mod objects;
 mod repository;
+mod tests;
 
 #[async_trait]
 pub trait FavouriteRepository {
@@ -13,7 +14,7 @@ pub trait FavouriteRepository {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), FavouriteDataError>;
+    ) -> Result<FavouriteDataResponse, FavouriteDataError>;
     async fn remove_favourite<'a>(
         &self,
         uuid: &'a str,

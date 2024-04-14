@@ -27,7 +27,7 @@ impl FollowRepository for Conn {
         &self,
         follower_uuid: &'a str,
         followed_uuid: &'a str,
-    ) -> Result<(), FollowDataError> {
+    ) -> Result<FollowerDataResponse, FollowDataError> {
         let followed_user = UserDatabase::get_user(self, followed_uuid)
             .await
             .map_err(|err| {
@@ -49,7 +49,10 @@ impl FollowRepository for Conn {
             followed_avatar_url: followed_user.avatar_url,
             follower_avatar_url: user.avatar_url,
         };
-        FollowDatabase::follow_user(self, &record).await
+        match FollowDatabase::follow_user(self, &record).await {
+            Ok(follow) => Ok(follow.map().await),
+            Err(err) => Err(err),
+        }
     }
     async fn un_follow_user<'a>(
         &self,

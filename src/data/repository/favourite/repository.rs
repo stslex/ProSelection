@@ -24,9 +24,9 @@ impl FavouriteRepository for Conn {
         uuid: &'a str,
         favourite_uuid: &'a str,
         title: &'a str,
-    ) -> Result<(), FavouriteDataError> {
+    ) -> Result<FavouriteDataResponse, FavouriteDataError> {
         match UserFavouritesDatabase::add_favourite(self, uuid, favourite_uuid, title).await {
-            Ok(_) => Ok(()),
+            Ok(favourite) => Ok(favourite.into()),
             Err(err) => Err(err.into()),
         }
     }

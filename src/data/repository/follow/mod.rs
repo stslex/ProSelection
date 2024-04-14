@@ -13,7 +13,7 @@ pub trait FollowRepository {
         &self,
         follower_uuid: &'a str,
         followed_uuid: &'a str,
-    ) -> Result<(), FollowDataError>;
+    ) -> Result<FollowerDataResponse, FollowDataError>;
     async fn un_follow_user<'a>(
         &self,
         follower_uuid: &'a str,
