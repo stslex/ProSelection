@@ -1,13 +1,17 @@
 #[cfg(test)]
 mod tests {
 
+    use crate::data::{
+        database::tests::database_test_utls::get_test_conn,
+        repository::{
+            auth::{objects::RegistrationData, AuthRepository},
+            follow::FollowRepository,
+        },
+    };
     use diesel::Connection;
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use uuid::Uuid;
+    use std::env;
 
-    use crate::data::{
-        database::tests::database_test_utls::get_test_conn, repository::follow::FollowRepository,
-    };
     const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
     #[tokio::test]
@@ -21,8 +25,33 @@ mod tests {
             })
             .await;
 
-        let follower_uuid = Uuid::new_v4().to_string();
-        let followed_uuid = Uuid::new_v4().to_string();
+        // create follower and followed users
+        // set tokens
+        env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
+        env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
+
+        let first_user_data = RegistrationData {
+            login: "test_login_first",
+            username: "username_first",
+            password: "test_passwd_first",
+        };
+
+        let second_user_data = RegistrationData {
+            login: "test_login_second",
+            username: "username_second",
+            password: "test_passwd_second",
+        };
+
+        let outcome_first = connection.registration(&first_user_data).await;
+        assert!(outcome_first.is_ok());
+
+        let outcome_second = connection.registration(&second_user_data).await;
+        assert!(outcome_second.is_ok());
+
+        let follower_uuid = outcome_first.unwrap().uuid;
+        let followed_uuid = outcome_second.unwrap().uuid;
+
+        // check if follower has no followers
         let count_empty_result = connection.get_followers_count(&follower_uuid).await;
         assert!(count_empty_result.is_ok());
 
@@ -32,7 +61,7 @@ mod tests {
         let follow_result = connection.follow_user(&follower_uuid, &followed_uuid).await;
         assert!(follow_result.is_ok());
 
-        let count_result = connection.get_followers_count(&follower_uuid).await;
+        let count_result = connection.get_followers_count(&followed_uuid).await;
         assert!(count_result.is_ok());
         let count = count_result.unwrap();
         assert_eq!(count, 1);
@@ -49,8 +78,33 @@ mod tests {
             })
             .await;
 
-        let follower_uuid = Uuid::new_v4().to_string();
-        let followed_uuid = Uuid::new_v4().to_string();
+        // create follower and followed users
+        // set tokens
+        env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
+        env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
+
+        let first_user_data = RegistrationData {
+            login: "test_login_first",
+            username: "username_first",
+            password: "test_passwd_first",
+        };
+
+        let second_user_data = RegistrationData {
+            login: "test_login_second",
+            username: "username_second",
+            password: "test_passwd_second",
+        };
+
+        let outcome_first = connection.registration(&first_user_data).await;
+        assert!(outcome_first.is_ok());
+
+        let outcome_second = connection.registration(&second_user_data).await;
+        assert!(outcome_second.is_ok());
+
+        let follower_uuid = outcome_first.unwrap().uuid;
+        let followed_uuid = outcome_second.unwrap().uuid;
+
+        // check if follower has no followers
         let count_empty_result = connection.get_following_count(&follower_uuid).await;
         assert!(count_empty_result.is_ok());
 
@@ -60,7 +114,7 @@ mod tests {
         let follow_result = connection.follow_user(&follower_uuid, &followed_uuid).await;
         assert!(follow_result.is_ok());
 
-        let count_result = connection.get_following_count(&followed_uuid).await;
+        let count_result = connection.get_following_count(&follower_uuid).await;
         assert!(count_result.is_ok());
         let count = count_result.unwrap();
         assert_eq!(count, 1);
@@ -77,13 +131,36 @@ mod tests {
             })
             .await;
 
-        let follower_uuid = Uuid::new_v4().to_string();
-        let followed_uuid = Uuid::new_v4().to_string();
+        // create follower and followed users
+        // set tokens
+        env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
+        env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
+
+        let first_user_data = RegistrationData {
+            login: "test_login_first",
+            username: "username_first",
+            password: "test_passwd_first",
+        };
+
+        let second_user_data = RegistrationData {
+            login: "test_login_second",
+            username: "username_second",
+            password: "test_passwd_second",
+        };
+
+        let outcome_first = connection.registration(&first_user_data).await;
+        assert!(outcome_first.is_ok());
+
+        let outcome_second = connection.registration(&second_user_data).await;
+        assert!(outcome_second.is_ok());
+
+        let follower_uuid = outcome_first.unwrap().uuid;
+        let followed_uuid = outcome_second.unwrap().uuid;
 
         let follow_result = connection.follow_user(&follower_uuid, &followed_uuid).await;
         assert!(follow_result.is_ok());
 
-        let count_result = connection.get_following_count(&followed_uuid).await;
+        let count_result = connection.get_following_count(&follower_uuid).await;
         assert!(count_result.is_ok());
         let count = count_result.unwrap();
         assert_eq!(count, 1);
@@ -99,7 +176,7 @@ mod tests {
             .await;
         assert!(unfollow_result.is_ok());
 
-        let count_result = connection.get_following_count(&followed_uuid).await;
+        let count_result = connection.get_following_count(&follower_uuid).await;
         assert!(count_result.is_ok());
         let count = count_result.unwrap();
         assert_eq!(count, 0);
