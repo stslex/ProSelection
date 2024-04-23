@@ -4,6 +4,7 @@ use super::objects::PagingDomainRequest;
 
 pub mod objects;
 mod repository;
+mod tests;
 
 #[async_trait]
 pub trait FollowRepository {

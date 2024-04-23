@@ -23,7 +23,10 @@ impl UserDatabase for Conn {
                 users::table
                     .filter(users::id.eq(uuid))
                     .first::<UserEntity>(db)
-                    .map_err(|_| UserDataError::InternalError)
+                    .map_err(|err| {
+                        eprintln!("Error getting user: {}", err);
+                        UserDataError::InternalError
+                    })
             })
             .await
     }
