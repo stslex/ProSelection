@@ -4,21 +4,25 @@ use crate::data::repository::matches::objects::{MatchesData, MatchesDataError};
 
 #[derive(Deserialize, FromForm)]
 pub struct UserCreateMatchRequest<'a> {
-    pub creator_uuid: &'a str,
-    pub user_uuid: Vec<&'a str>,
     pub title: &'a str,
-    pub url: &'a str,
     pub description: &'a str,
+    pub expires_at: u128,
+    pub participants_uuid: Vec<&'a str>,
+    pub cover_url: &'a str,
 }
 
 #[derive(Serialize)]
-pub struct UserMatchResponse {
-    pub id: String,
-    pub creator_uuid: String,
-    pub user_uuid: Vec<String>,
+pub struct UserMatchDetailResponse {
+    pub uuid: String,
     pub title: String,
-    pub url: String,
     pub description: String,
+    pub status: String,
+    pub creator_uuid: String,
+    pub participants_uuid: Vec<String>,
+    pub cover_url: String,
+    pub expires_at: u128,
+    pub created_at: u128,
+    pub updated_at: u128,
 }
 
 pub enum UserMatchError {
@@ -29,9 +33,9 @@ pub enum UserMatchError {
     InternalError,
 }
 
-impl Into<UserMatchResponse> for MatchesData {
-    fn into(self) -> UserMatchResponse {
-        UserMatchResponse {
+impl Into<UserMatchDetailResponse> for MatchesData {
+    fn into(self) -> UserMatchDetailResponse {
+        UserMatchDetailResponse {
             id: self.id.to_string(),
             creator_uuid: self.creator_uuid.to_string(),
             user_uuid: self.user_id.iter().map(|id| id.to_string()).collect(),

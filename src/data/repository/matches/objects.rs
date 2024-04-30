@@ -7,12 +7,24 @@ use crate::{
 };
 
 pub struct MatchesData {
-    pub id: Uuid,
+    pub match_uuid: Uuid,
     pub creator_uuid: Uuid,
-    pub user_id: Vec<Uuid>,
+    pub participants_uuid: Vec<Uuid>,
     pub title: String,
-    pub url: String,
     pub description: String,
+    pub status: MatchStatus,
+    pub cover_url: String,
+    pub expires_at: u128,
+    pub updated_at: u128,
+    pub created_at: u128,
+}
+
+pub enum MatchStatus {
+    Pending,
+    Active,
+    Expired,
+    Completed,
+    Cancelled,
 }
 
 pub struct MatchesDataCreate<'a> {

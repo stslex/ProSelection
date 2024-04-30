@@ -33,12 +33,16 @@ diesel::table! {
 }
 
 diesel::table! {
-    matches (id) {
-        id -> Uuid,
+    matches (uuid) {
+        uuid -> Uuid,
         creator_uuid -> Uuid,
-        user_uuid -> Array<Uuid>,
+        participants_uuid -> Array<Uuid>,
         title -> Varchar,
-        url -> Varchar,
         description -> Varchar,
+        cover_url -> Varchar,
+        status -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
+        expires_at -> Varchar,
     }
 }
