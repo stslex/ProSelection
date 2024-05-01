@@ -26,6 +26,7 @@ mod tests {
             user_generated_uuid.push(Uuid::new_v4());
         }
 
+        let current_time_ms = chrono::Utc::now().timestamp_millis();
         let match_create = MatchesEntityCreate {
             creator_uuid: Uuid::new_v4(),
             participants_uuid: Vec::new(),
@@ -33,9 +34,9 @@ mod tests {
             description: "description".to_string(),
             cover_url: "url".to_string(),
             status: "status".to_string(),
-            created_at: chrono::Utc::now().to_string(),
-            updated_at: chrono::Utc::now().to_string(),
-            expires_at: chrono::Utc::now().to_string(),
+            created_at: current_time_ms,
+            updated_at: current_time_ms,
+            expires_at: current_time_ms,
         };
         let match_create_send = match_create.to_owned();
 
@@ -43,7 +44,14 @@ mod tests {
         connection
             .run(move |db| {
                 let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
+                match db.run_pending_migrations(MIGRATIONS) {
+                    Ok(m_version) => {
+                        println!("Database migrations ran successfully: {:?}", m_version);
+                    }
+                    Err(e) => {
+                        println!("Failed to run database migrations: {:?}", e);
+                    }
+                }
             })
             .await;
 
@@ -58,7 +66,7 @@ mod tests {
         println!("expected: {:?}", expected);
 
         let is_valid = actual.creator_uuid == expected.creator_uuid
-            && actual.user_id == expected.user_uuid
+            && actual.participants_uuid == expected.participants_uuid
             && actual.title == expected.title
             && actual.description == expected.description;
 

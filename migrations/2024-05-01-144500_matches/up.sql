@@ -9,9 +9,10 @@ CREATE TABLE IF NOT EXISTS matches
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     cover_url VARCHAR NOT NULL,
-    created_at LONG NOT NULL,
-    updated_at LONG NOT NULL,
-    expires_at LONG NOT NULL
+    status VARCHAR NOT NULL,
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL,
+    expires_at BIGINT NOT NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS matches_uuid_uindex ON matches (uuid);
