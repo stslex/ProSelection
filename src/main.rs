@@ -3,8 +3,6 @@ extern crate diesel;
 #[macro_use]
 extern crate rocket;
 
-use std::time::SystemTime;
-
 use crate::presenter::routes::RoutesInitialized;
 use config::run_db_migrations;
 use presenter::catcher::AppCatcher;
@@ -19,10 +17,6 @@ pub mod utils;
 
 #[rocket::launch]
 fn launch() -> Rocket<Build> {
-    let time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
     rocket::custom(config::from_env())
         .attach(Conn::fairing())
         .attach(AdHoc::on_ignite("Database Migrations", run_db_migrations))

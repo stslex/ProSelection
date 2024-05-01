@@ -2,21 +2,21 @@ use rocket::futures;
 use uuid::Uuid;
 
 use crate::{
-    data::database::matches::objects::{MatchesDbError, MatchesEntity, MatchesEntityCreate},
+    data::database::matches::objects::{MatchesDbError, MatchesEntity},
     utils::Mapper,
 };
 
 pub struct MatchesData {
-    pub match_uuid: Uuid,
+    pub uuid: Uuid,
     pub creator_uuid: Uuid,
     pub participants_uuid: Vec<Uuid>,
     pub title: String,
     pub description: String,
     pub status: MatchStatus,
     pub cover_url: String,
-    pub expires_at: u128,
-    pub updated_at: u128,
-    pub created_at: u128,
+    pub expires_at: i64,
+    pub updated_at: i64,
+    pub created_at: i64,
 }
 
 pub enum MatchStatus {
@@ -27,12 +27,40 @@ pub enum MatchStatus {
     Cancelled,
 }
 
+impl Into<String> for MatchStatus {
+    fn into(self) -> String {
+        match self {
+            MatchStatus::Pending => "pending".to_string(),
+            MatchStatus::Active => "active".to_string(),
+            MatchStatus::Expired => "expired".to_string(),
+            MatchStatus::Completed => "completed".to_string(),
+            MatchStatus::Cancelled => "cancelled".to_string(),
+        }
+    }
+}
+
+impl Into<MatchStatus> for String {
+    fn into(self) -> MatchStatus {
+        match self.as_str() {
+            "pending" => MatchStatus::Pending,
+            "active" => MatchStatus::Active,
+            "expired" => MatchStatus::Expired,
+            "completed" => MatchStatus::Completed,
+            "cancelled" => MatchStatus::Cancelled,
+            _ => MatchStatus::Pending,
+        }
+    }
+}
+
 pub struct MatchesDataCreate<'a> {
     pub creator_uuid: &'a str,
-    pub user_uuid: Vec<&'a str>,
+    pub participants_uuid: Vec<&'a str>,
     pub title: &'a str,
-    pub url: &'a str,
     pub description: &'a str,
+    pub cover_url: &'a str,
+    pub created_at: i64,
+    pub expires_at: i64,
+    pub updated_at: i64,
 }
 
 impl Into<MatchesDataError> for MatchesDbError {
@@ -49,26 +77,17 @@ impl Into<MatchesDataError> for MatchesDbError {
 impl Into<MatchesData> for MatchesEntity {
     fn into(self) -> MatchesData {
         MatchesData {
-            id: self.id,
+            uuid: self.uuid,
             creator_uuid: self.creator_uuid,
-            user_id: self.user_id,
+            participants_uuid: self.participants_uuid,
             title: self.title,
-            url: self.url,
             description: self.description,
+            cover_url: self.cover_url,
+            status: self.status.into(),
+            expires_at: self.expires_at,
+            updated_at: self.updated_at,
+            created_at: self.created_at,
         }
-    }
-}
-
-#[async_trait]
-impl<'a> Mapper<Result<MatchesEntityCreate, MatchesDataError>> for MatchesDataCreate<'a> {
-    async fn map(&self) -> Result<MatchesEntityCreate, MatchesDataError> {
-        Ok(MatchesEntityCreate {
-            creator_uuid: self.creator_uuid.map().await?,
-            user_uuid: self.user_uuid.map().await?,
-            title: self.title.to_owned(),
-            url: self.url.to_owned(),
-            description: self.description.to_owned(),
-        })
     }
 }
 

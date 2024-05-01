@@ -28,10 +28,14 @@ mod tests {
 
         let match_create = MatchesEntityCreate {
             creator_uuid: Uuid::new_v4(),
-            user_uuid: Vec::new(),
+            participants_uuid: Vec::new(),
             title: "title".to_string(),
             description: "description".to_string(),
-            url: "url".to_string(),
+            cover_url: "url".to_string(),
+            status: "status".to_string(),
+            created_at: chrono::Utc::now().to_string(),
+            updated_at: chrono::Utc::now().to_string(),
+            expires_at: chrono::Utc::now().to_string(),
         };
         let match_create_send = match_create.to_owned();
 

@@ -11,9 +11,9 @@ pub struct MatchesEntity {
     pub description: String,
     pub status: String,
     pub cover_url: String,
-    pub expires_at: u128,
-    pub created_at: u128,
-    pub updated_at: u128,
+    pub expires_at: i64,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 #[derive(Insertable, PartialEq, Debug, Clone)]
@@ -25,9 +25,9 @@ pub struct MatchesEntityCreate {
     pub description: String,
     pub cover_url: String,
     pub status: String,
-    pub created_at: String,
-    pub updated_at: String,
-    pub expires_at: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub expires_at: i64,
 }
 
 #[derive(Debug)]

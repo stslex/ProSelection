@@ -41,8 +41,8 @@ diesel::table! {
         description -> Varchar,
         cover_url -> Varchar,
         status -> Varchar,
-        created_at -> Varchar,
-        updated_at -> Varchar,
-        expires_at -> Varchar,
+        created_at -> Int8,
+        updated_at -> Int8,
+        expires_at -> Int8,
     }
 }

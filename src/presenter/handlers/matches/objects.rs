@@ -20,9 +20,9 @@ pub struct UserMatchDetailResponse {
     pub creator_uuid: String,
     pub participants_uuid: Vec<String>,
     pub cover_url: String,
-    pub expires_at: u128,
-    pub created_at: u128,
-    pub updated_at: u128,
+    pub expires_at: i64,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 pub enum UserMatchError {
@@ -36,12 +36,20 @@ pub enum UserMatchError {
 impl Into<UserMatchDetailResponse> for MatchesData {
     fn into(self) -> UserMatchDetailResponse {
         UserMatchDetailResponse {
-            id: self.id.to_string(),
+            uuid: self.uuid.to_string(),
             creator_uuid: self.creator_uuid.to_string(),
-            user_uuid: self.user_id.iter().map(|id| id.to_string()).collect(),
+            participants_uuid: self
+                .participants_uuid
+                .iter()
+                .map(|id| id.to_string())
+                .collect(),
             title: self.title.to_owned(),
-            url: self.url.to_owned(),
             description: self.description.to_owned(),
+            cover_url: self.cover_url.to_owned(),
+            created_at: self.created_at,
+            expires_at: self.expires_at,
+            updated_at: self.updated_at,
+            status: self.status.into(),
         }
     }
 }

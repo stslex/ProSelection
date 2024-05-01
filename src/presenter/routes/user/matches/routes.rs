@@ -1,7 +1,7 @@
 use rocket::serde::json::Json;
 
 use crate::presenter::handlers::matches::objects::{
-    UserCreateMatchRequest, UserMatchDetailResponse, UserMatchResponse,
+    UserCreateMatchRequest, UserMatchDetailResponse,
 };
 use crate::presenter::handlers::matches::MatchesHandler;
 use crate::presenter::handlers::objects::request::PagingUuidRequest;
@@ -16,7 +16,7 @@ pub async fn create_match<'a>(
     access_token: AccessToken,
     params: UserCreateMatchRequest<'a>,
     db: Conn,
-) -> ApiResponse<'static, Json<UserMatchResponse>> {
+) -> ApiResponse<'static, Json<UserMatchDetailResponse>> {
     let uuid = access_token.uuid;
     match db.create_match(&uuid, params).await {
         Result::Ok(response) => ApiResponse::Ok(Json(response)),
