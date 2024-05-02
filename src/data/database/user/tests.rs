@@ -1,29 +1,18 @@
 #[cfg(test)]
 mod tests {
 
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use uuid::Uuid;
-
     use crate::data::{
         database::{
-            tests::database_test_utls::get_test_conn,
+            tests::database_test_utls::run_migration_get_conn,
             user::{objects::UserEntityCreate, UserDatabase},
         },
         repository::user::objects::UserSearchDataRequest,
     };
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn test_user_insert() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let check_login = "login_check";
         let check_username = "username_check";
@@ -51,14 +40,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_user_get() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let check_login = "login";
         let check_username = "username";
@@ -90,14 +72,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_user_get_login() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let check_login = "login";
         let check_username = "username";
@@ -128,14 +103,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_user_get_username() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let check_login = "login";
         let check_username = "username";
@@ -166,14 +134,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_user_get_search() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let check_login = "login";
         let check_username = "username";

@@ -3,24 +3,13 @@ mod tests {
 
     use crate::data::database::{
         follow::{objects::FollowEntityCreate, FollowDatabase},
-        tests::database_test_utls::get_test_conn,
+        tests::database_test_utls::run_migration_get_conn,
     };
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use uuid::Uuid;
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
     #[tokio::test]
     async fn test_get_follow() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let current_uuid = Uuid::new_v4();
 
@@ -33,14 +22,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_follow() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let current_uuid = Uuid::new_v4();
         let followed_uuid = Uuid::new_v4();
@@ -79,14 +61,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_followers() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let current_uuid = Uuid::new_v4();
         let followed_uuid = Uuid::new_v4();

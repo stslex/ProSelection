@@ -2,28 +2,17 @@
 mod tests {
 
     use crate::data::{
-        database::tests::database_test_utls::get_test_conn,
+        database::tests::database_test_utls::run_migration_get_conn,
         repository::{
             auth::{objects::RegistrationData, AuthRepository},
             follow::FollowRepository,
         },
     };
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use std::env;
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
     #[tokio::test]
     async fn test_get_follower_count() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // create follower and followed users
         // set tokens
@@ -69,14 +58,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_following_count() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // create follower and followed users
         // set tokens
@@ -122,14 +104,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_combine_state() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // create follower and followed users
         // set tokens

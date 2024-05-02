@@ -2,21 +2,7 @@
 pub mod database_test_utls {
 
     use crate::Conn;
-    use diesel::{Connection, ConnectionError, PgConnection};
-    use log::error;
-
-    #[cfg(test)]
-    pub fn establish_connection() -> Result<PgConnection, ConnectionError> {
-        let database_url = "postgres://postgres:postgres@localhost:5432/postgres";
-        match PgConnection::establish(&database_url) {
-            Ok(value) => Ok(value),
-            Err(e) => {
-                error!("Could not connect to PostgreSQL.");
-                error!("Error connecting to {}", database_url);
-                Err(e)
-            }
-        }
-    }
+    use diesel::Connection;
 
     #[cfg(test)]
     pub async fn get_test_conn() -> Conn {
@@ -40,6 +26,30 @@ pub mod database_test_utls {
             .await
             .expect("unable to get db connection")
     }
+
+    #[cfg(test)]
+    pub async fn run_migration_get_conn() -> Result<Conn, String> {
+        use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+
+        const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+        let connection = get_test_conn().await;
+        connection
+            .run(move |db| {
+                let _ = db.begin_test_transaction();
+                match db.run_pending_migrations(MIGRATIONS) {
+                    Ok(m_version) => {
+                        println!("Database migrations ran successfully: {:?}", m_version);
+                        Result::Ok(())
+                    }
+                    Err(e) => {
+                        println!("Failed to run database migrations: {:?}", e);
+                        Result::Err("Failed to run database migrations".to_string())
+                    }
+                }
+            })
+            .await
+            .map(|_| connection)
+    }
 }
 
 #[cfg(test)]
@@ -47,7 +57,7 @@ mod test_db_transition {
 
     use diesel::{result::Error, Connection};
 
-    use crate::data::database::tests::database_test_utls::{establish_connection, get_test_conn};
+    use crate::data::database::tests::database_test_utls::get_test_conn;
 
     #[tokio::test]
     async fn test_db_conn() {
@@ -63,13 +73,10 @@ mod test_db_transition {
         assert_eq!(result.unwrap(), "test");
     }
 
-    #[test]
-    fn test_db_transition_error() {
-        let mut connection = establish_connection().unwrap();
-        let result = connection.test_transaction::<Result<String, Error>, Error, _>(|_| {
-            Ok(Err(Error::RollbackTransaction))
-        });
-
-        assert_eq!(result.err().unwrap(), Error::RollbackTransaction);
+    #[tokio::test]
+    async fn test_db_migration() {
+        let result =
+            crate::data::database::tests::database_test_utls::run_migration_get_conn().await;
+        assert!(result.is_ok());
     }
 }

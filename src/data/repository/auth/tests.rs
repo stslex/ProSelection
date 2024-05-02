@@ -2,23 +2,17 @@
 mod tests {
 
     use crate::data::{
-        database::tests::database_test_utls::get_test_conn,
+        database::tests::database_test_utls::run_migration_get_conn,
         repository::auth::{objects::RegistrationData, AuthRepository},
     };
-
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use rocket_sync_db_pools::diesel;
     use std::env;
     use tokio_test::assert_ok;
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
     #[tokio::test]
     async fn test_registration_valid_data() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let expected_username = "test_username";
         let data = RegistrationData {
@@ -26,13 +20,6 @@ mod tests {
             username: expected_username,
             password: "test_password",
         };
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
 
         let outcome = connection.registration(&data).await;
 
@@ -53,7 +40,7 @@ mod tests {
     async fn test_verify_token_valid_token() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let expected_username = "test_username";
         let data = RegistrationData {
@@ -61,13 +48,6 @@ mod tests {
             username: expected_username,
             password: "test_password",
         };
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
 
         let reg_outcome = connection.registration(&data).await.unwrap();
         let outcome = connection
@@ -83,17 +63,10 @@ mod tests {
     async fn test_verify_token_invalid_token() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let username = "test_username";
         let uuid = uuid::Uuid::new_v4().to_string();
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
 
         let outcome = connection.verify_token(&uuid, username).await;
         println!("result: {:?}", outcome);
@@ -105,7 +78,7 @@ mod tests {
     async fn test_login_valid_credentials() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let expected_login = "test_login";
         let expected_password = "test_password";
@@ -114,13 +87,6 @@ mod tests {
             username: "test_username",
             password: expected_password,
         };
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
 
         let res = connection.registration(&data).await;
         assert_ok!(res);
@@ -137,17 +103,10 @@ mod tests {
     async fn test_login_invalid_credentials() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let login = "test_login";
         let password = "invalid_password";
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
 
         let outcome = connection.login(login, password).await;
 

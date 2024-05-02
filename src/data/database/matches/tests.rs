@@ -1,24 +1,17 @@
 #[cfg(test)]
 mod tests {
 
-    use std::env;
-
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use uuid::Uuid;
-
     use crate::data::database::{
         matches::{objects::MatchesEntityCreate, MatchesDatabase},
-        tests::database_test_utls::get_test_conn,
+        tests::database_test_utls::run_migration_get_conn,
     };
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+    use std::env;
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn test_add_matches_success() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
 
         // Create matches
         let mut user_generated_uuid = Vec::new();
@@ -40,20 +33,7 @@ mod tests {
         };
         let match_create_send = match_create.to_owned();
 
-        // Run migrations
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                match db.run_pending_migrations(MIGRATIONS) {
-                    Ok(m_version) => {
-                        println!("Database migrations ran successfully: {:?}", m_version);
-                    }
-                    Err(e) => {
-                        println!("Failed to run database migrations: {:?}", e);
-                    }
-                }
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // Add matches
         let result = connection.add_match(match_create_send).await.unwrap();
