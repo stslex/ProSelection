@@ -2,7 +2,11 @@ use std::ops::Not;
 
 use crate::{
     data::{
-        database::{follow::FollowDatabase, matches::MatchesDatabase, user::UserDatabase},
+        database::{
+            follow::FollowDatabase,
+            matches::{objects::MatchesEntityCreate, MatchesDatabase},
+            user::UserDatabase,
+        },
         repository::objects::{PagingDomainRequest, PagingDomainResponse},
     },
     utils::Mapper,
@@ -10,7 +14,7 @@ use crate::{
 };
 
 use super::{
-    objects::{MatchesData, MatchesDataCreate, MatchesDataError},
+    objects::{MatchStatus, MatchesData, MatchesDataCreate, MatchesDataError},
     MatchesRepository,
 };
 
@@ -20,7 +24,17 @@ impl MatchesRepository for Conn {
         &self,
         request: MatchesDataCreate<'a>,
     ) -> Result<MatchesData, MatchesDataError> {
-        let match_entity = request.map().await?;
+        let match_entity = MatchesEntityCreate {
+            creator_uuid: request.creator_uuid.map().await?,
+            participants_uuid: request.participants_uuid.map().await?,
+            title: request.title.to_owned(),
+            description: request.description.to_owned(),
+            cover_url: request.cover_url.to_owned(),
+            status: MatchStatus::Pending.into(),
+            created_at: request.created_at,
+            updated_at: request.updated_at,
+            expires_at: request.expires_at,
+        };
         self.add_match(match_entity)
             .await
             .map_err(|value| value.into())
@@ -39,7 +53,7 @@ impl MatchesRepository for Conn {
             .get_match(match_uuid.to_string())
             .await
             .map_err(|_| MatchesDataError::MatchesNotFound)?;
-        if match_entity.user_id.contains(&user.id).not() {
+        if match_entity.participants_uuid.contains(&user.id).not() {
             println!("User not found in match");
             Result::Err(MatchesDataError::NoPermission)
         } else {

@@ -19,7 +19,7 @@ impl MatchesDatabase for Conn {
         self.0
             .run(move |db| {
                 matches::table
-                    .filter(matches::id.eq(matches_id))
+                    .filter(matches::uuid.eq(matches_id))
                     .first::<MatchesEntity>(db)
                     .map_err(|err| {
                         println!("{:?}", err);
@@ -73,7 +73,7 @@ impl MatchesDatabase for Conn {
                 let request_uuid = uuid.to_owned();
                 let query_request = matches::table
                     .filter(matches::title.like(format!("%{}%", query)))
-                    .filter(matches::user_uuid.contains(vec![request_uuid]));
+                    .filter(matches::participants_uuid.contains(vec![request_uuid]));
 
                 let data_request = query_request.to_owned();
                 let data = data_request
@@ -107,7 +107,7 @@ impl MatchesDatabase for Conn {
         self.0
             .run(move |db| {
                 matches::table
-                    .filter(matches::user_uuid.contains(vec![uuid]))
+                    .filter(matches::participants_uuid.contains(vec![uuid]))
                     .count()
                     .get_result(db)
             })

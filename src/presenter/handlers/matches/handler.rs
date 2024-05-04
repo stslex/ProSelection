@@ -8,7 +8,7 @@ use crate::{
 };
 
 use super::{
-    objects::{UserCreateMatchRequest, UserMatchError, UserMatchResponse},
+    objects::{UserCreateMatchRequest, UserMatchDetailResponse, UserMatchError},
     MatchesHandler,
 };
 use crate::data::repository::matches::objects::MatchesDataCreate;
@@ -19,16 +19,17 @@ impl MatchesHandler for Conn {
         &self,
         uuid: &'a str,
         params: UserCreateMatchRequest<'a>,
-    ) -> Result<UserMatchResponse, UserMatchError> {
-        if uuid != params.creator_uuid {
-            return Err(UserMatchError::NoPermission);
-        }
+    ) -> Result<UserMatchDetailResponse, UserMatchError> {
+        let current_time_ms = chrono::Utc::now().timestamp_millis();
         let match_data = MatchesDataCreate {
-            creator_uuid: params.creator_uuid,
-            user_uuid: params.user_uuid,
+            creator_uuid: uuid,
+            participants_uuid: params.participants_uuid,
             title: params.title,
             description: params.description,
-            url: params.url,
+            cover_url: params.cover_url,
+            created_at: current_time_ms,
+            expires_at: current_time_ms,
+            updated_at: current_time_ms,
         };
         self.create_matches(match_data)
             .await
@@ -39,7 +40,7 @@ impl MatchesHandler for Conn {
         &self,
         user_uuid: &'a str,
         match_uuid: &'a str,
-    ) -> Result<UserMatchResponse, UserMatchError> {
+    ) -> Result<UserMatchDetailResponse, UserMatchError> {
         self.get_current_match(user_uuid, match_uuid)
             .await
             .map_err(|e| e.into())
@@ -49,7 +50,7 @@ impl MatchesHandler for Conn {
         &self,
         uuid: &'a str,
         params: PagingUuidRequest<'a>,
-    ) -> Result<PagingResponse<UserMatchResponse>, UserMatchError> {
+    ) -> Result<PagingResponse<UserMatchDetailResponse>, UserMatchError> {
         let request = map_paging_uuid(uuid, params).await;
         MatchesRepository::get_matches(self, request)
             .await

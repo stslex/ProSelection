@@ -1,26 +1,13 @@
 #[cfg(test)]
 mod tests {
-
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use uuid::Uuid;
-
     use crate::data::database::{
-        favourite::UserFavouritesDatabase, tests::database_test_utls::get_test_conn,
+        favourite::UserFavouritesDatabase, tests::database_test_utls::run_migration_get_conn,
     };
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn test_add_and_remove_favourite() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // Add a favourite
         let uuid = Uuid::new_v4().to_string();
@@ -38,14 +25,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_favourites_count() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // Add a favourite
         let uuid = Uuid::new_v4().to_string();

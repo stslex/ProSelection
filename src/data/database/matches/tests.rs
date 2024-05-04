@@ -1,24 +1,17 @@
 #[cfg(test)]
 mod tests {
 
-    use std::env;
-
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use uuid::Uuid;
-
     use crate::data::database::{
         matches::{objects::MatchesEntityCreate, MatchesDatabase},
-        tests::database_test_utls::get_test_conn,
+        tests::database_test_utls::run_migration_get_conn,
     };
-
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+    use std::env;
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn test_add_matches_success() {
         env::set_var("JWT_ACCESS_SECRET", "JWT_ACCESS_SECRET");
         env::set_var("JWT_REFRESH_SECRET", "JWT_REFRESH_SECRET");
-        let connection = get_test_conn().await;
 
         // Create matches
         let mut user_generated_uuid = Vec::new();
@@ -26,22 +19,21 @@ mod tests {
             user_generated_uuid.push(Uuid::new_v4());
         }
 
+        let current_time_ms = chrono::Utc::now().timestamp_millis();
         let match_create = MatchesEntityCreate {
             creator_uuid: Uuid::new_v4(),
-            user_uuid: Vec::new(),
+            participants_uuid: Vec::new(),
             title: "title".to_string(),
             description: "description".to_string(),
-            url: "url".to_string(),
+            cover_url: "url".to_string(),
+            status: "status".to_string(),
+            created_at: current_time_ms,
+            updated_at: current_time_ms,
+            expires_at: current_time_ms,
         };
         let match_create_send = match_create.to_owned();
 
-        // Run migrations
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         // Add matches
         let result = connection.add_match(match_create_send).await.unwrap();
@@ -54,7 +46,7 @@ mod tests {
         println!("expected: {:?}", expected);
 
         let is_valid = actual.creator_uuid == expected.creator_uuid
-            && actual.user_id == expected.user_uuid
+            && actual.participants_uuid == expected.participants_uuid
             && actual.title == expected.title
             && actual.description == expected.description;
 

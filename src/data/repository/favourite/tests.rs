@@ -2,28 +2,15 @@
 mod tests {
 
     use crate::data::{
-        database::tests::database_test_utls::get_test_conn,
+        database::tests::database_test_utls::run_migration_get_conn,
         repository::{favourite::FavouriteRepository, objects::PagingDomainRequest},
     };
-
-    use diesel::Connection;
-    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use rocket_sync_db_pools::diesel;
     use tokio_test::assert_ok;
     use uuid::Uuid;
 
-    const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-
     #[tokio::test]
     async fn test_get_favourites_count() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let uuid = Uuid::new_v4().to_string();
         let count_empty_result = connection.get_favourites_count(&uuid).await;
@@ -35,14 +22,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_favourites() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let uuid = Uuid::new_v4().to_string();
         let favourite_uuid = Uuid::new_v4().to_string();
@@ -56,14 +36,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_remove_favourites() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let uuid = Uuid::new_v4().to_string();
         let favourite_uuid = Uuid::new_v4().to_string();
@@ -80,14 +53,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_favourites() {
-        let connection = get_test_conn().await;
-
-        connection
-            .run(move |db| {
-                let _ = db.begin_test_transaction();
-                let _ = db.run_pending_migrations(MIGRATIONS);
-            })
-            .await;
+        let connection = run_migration_get_conn().await.unwrap();
 
         let user_uuid_check = Uuid::new_v4();
         let favourite_uuid_check = Uuid::new_v4();
