@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::data::repository::matches::objects::{MatchesData, MatchesDataError};
 
 #[derive(Deserialize, FromForm)]
+#[allow(dead_code)]
 pub struct UserCreateMatchRequest<'a> {
     pub title: &'a str,
     pub description: &'a str,

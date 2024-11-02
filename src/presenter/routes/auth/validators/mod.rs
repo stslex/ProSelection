@@ -14,16 +14,19 @@ trait ApiKeyParcer {
     fn parce(&self) -> Result<ApiKey, ApiKeyError>;
 }
 
+#[allow(dead_code)]
 pub struct AccessToken {
     pub uuid: String,
     pub username: String,
 }
 
+#[allow(dead_code)]
 pub struct RefreshToken {
     pub uuid: String,
     pub username: String,
 }
 
+#[allow(dead_code)]
 pub struct ApiKey {
     pub key: String,
 }
