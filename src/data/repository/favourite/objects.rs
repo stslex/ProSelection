@@ -25,6 +25,7 @@ impl Into<FavouriteDataError> for FavouriteDbError {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FavouriteDataResponse {
     pub uuid: Uuid,
     pub user_uuid: Uuid,

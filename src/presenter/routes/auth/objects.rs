@@ -9,12 +9,6 @@ pub struct LoginRequest<'a> {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct RefreshRequest<'a> {
-    #[serde(rename = "refresh_token")]
-    pub refresh_token: &'a str,
-}
-
-#[derive(Deserialize, Debug, Clone)]
 pub struct RegistrationRequest<'a> {
     #[serde(rename = "login")]
     pub login: &'a str,
