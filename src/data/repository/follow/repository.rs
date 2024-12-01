@@ -4,7 +4,7 @@ use crate::{
             follow::{objects::FollowEntityCreate, FollowDatabase},
             user::UserDatabase,
         },
-        repository::objects::PagingDomainRequest,
+        repository::objects::{PagingDomainRequest, PagingDomainResponse},
     },
     utils::Mapper,
     Conn,
@@ -71,18 +71,30 @@ impl FollowRepository for Conn {
     async fn get_user_followers<'a>(
         &self,
         request: &'a PagingDomainRequest<'a>,
-    ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
+    ) -> Result<PagingDomainResponse<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_followers(self, request).await {
-            Ok(followers) => Ok(followers.map().await),
+            Ok(result) => Ok(PagingDomainResponse {
+                page: result.page,
+                page_size: result.page_size,
+                total: result.total,
+                has_more: result.has_more,
+                result: result.result.map().await,
+            }),
             Err(err) => Err(err),
         }
     }
     async fn get_user_following<'a>(
         &self,
         request: &'a PagingDomainRequest<'a>,
-    ) -> Result<Vec<FollowerDataResponse>, FollowDataError> {
+    ) -> Result<PagingDomainResponse<FollowerDataResponse>, FollowDataError> {
         match FollowDatabase::get_user_following(self, request).await {
-            Ok(following) => Ok(following.map().await),
+            Ok(result) => Ok(PagingDomainResponse {
+                page: result.page,
+                page_size: result.page_size,
+                total: result.total,
+                has_more: result.has_more,
+                result: result.result.map().await,
+            }),
             Err(err) => Err(err),
         }
     }
