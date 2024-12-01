@@ -2,7 +2,13 @@ use diesel::{ExpressionMethods, PgTextExpressionMethods, QueryDsl, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::{
-    data::repository::{follow::objects::FollowDataError, objects::PagingDomainRequest},
+    data::{
+        database::utils::paging::correct_page_number,
+        repository::{
+            follow::objects::FollowDataError,
+            objects::{PagingDomainRequest, PagingDomainResponse},
+        },
+    },
     schema::follow,
     Conn,
 };
@@ -124,24 +130,24 @@ impl FollowDatabase for Conn {
     async fn get_user_following<'a>(
         &self,
         request: &'a PagingDomainRequest<'a>,
-    ) -> Result<Vec<FollowerEntity>, FollowDataError> {
+    ) -> Result<PagingDomainResponse<FollowerEntity>, FollowDataError> {
         let uuid =
             Uuid::parse_str(request.user_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
 
         let query = request.query.to_owned().to_lowercase();
-        let page = if request.page <= 0 {
-            1
-        } else {
-            request.page - 1
-        };
+        let page_number = correct_page_number(request.page);
         let limit = request.page_size;
-        let offset = page * request.page_size;
+        let offset = page_number * request.page_size;
+        let page_size = request.page_size;
 
         self.0
             .run(move |db| {
-                let users: Vec<FollowerEntity> = follow::table
+                let query_request = follow::table
                     .filter(follow::follower_uuid.eq(uuid))
-                    .filter(follow::follower_username.ilike(format!("%{}%", query)))
+                    .filter(follow::follower_username.ilike(format!("%{}%", query)));
+
+                let results: Vec<FollowerEntity> = query_request
+                    .to_owned()
                     .limit(limit)
                     .offset(offset)
                     .get_results::<FollowerEntity>(db)
@@ -151,7 +157,24 @@ impl FollowDatabase for Conn {
                     })?
                     .into_iter()
                     .collect();
-                Ok(users)
+                let total_request = query_request.to_owned();
+                let total_result = total_request.count().get_result(db).map_err(|err| {
+                    println!("Error getting total count: {}", err);
+                    FollowDataError::InternalError
+                })?;
+
+                let result_count = i64::try_from(results.len()).map_err(|err| {
+                    eprintln!("Error converting result count: {}", err);
+                    FollowDataError::InternalError
+                })?;
+
+                Ok(PagingDomainResponse {
+                    total: total_result,
+                    result: results,
+                    page: page_number + 1,
+                    page_size: page_size,
+                    has_more: offset + result_count < total_result,
+                })
             })
             .await
     }
@@ -159,27 +182,27 @@ impl FollowDatabase for Conn {
     async fn get_user_followers<'a>(
         &self,
         request: &'a PagingDomainRequest<'a>,
-    ) -> Result<Vec<FollowerEntity>, FollowDataError> {
+    ) -> Result<PagingDomainResponse<FollowerEntity>, FollowDataError> {
         let uuid =
             Uuid::parse_str(request.user_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
         let request_uuid =
             Uuid::parse_str(request.request_uuid).map_err(|_| (FollowDataError::UuidInvalid))?;
 
         let query = request.query.to_owned().to_lowercase();
-        let page = if request.page <= 0 {
-            1
-        } else {
-            request.page - 1
-        };
+        let page_number = correct_page_number(request.page);
         let limit = request.page_size;
-        let offset = page * request.page_size;
+        let offset = page_number * request.page_size;
+        let page_size = request.page_size;
 
         self.0
             .run(move |db| {
-                let users: Vec<FollowerEntity> = follow::table
+                let query_request = follow::table
                     .filter(follow::followed_uuid.eq(uuid))
-                    .filter(follow::followed_uuid.ne(request_uuid))
-                    .filter(follow::followed_username.ilike(format!("%{}%", query)))
+                    .filter(follow::follower_uuid.ne(request_uuid))
+                    .filter(follow::follower_username.ilike(format!("%{}%", query)));
+
+                let results: Vec<FollowerEntity> = query_request
+                    .to_owned()
                     .limit(limit)
                     .offset(offset)
                     .get_results::<FollowerEntity>(db)
@@ -189,7 +212,25 @@ impl FollowDatabase for Conn {
                     })?
                     .into_iter()
                     .collect();
-                Ok(users)
+
+                let total_request = query_request.to_owned();
+                let total_result = total_request.count().get_result(db).map_err(|err| {
+                    println!("Error getting total count: {}", err);
+                    FollowDataError::InternalError
+                })?;
+
+                let result_count = i64::try_from(results.len()).map_err(|err| {
+                    eprintln!("Error converting result count: {}", err);
+                    FollowDataError::InternalError
+                })?;
+
+                Ok(PagingDomainResponse {
+                    total: total_result,
+                    result: results,
+                    page: page_number + 1,
+                    page_size: page_size,
+                    has_more: offset + result_count < total_result,
+                })
             })
             .await
     }

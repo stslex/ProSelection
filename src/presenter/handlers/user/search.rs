@@ -94,7 +94,7 @@ pub async fn get_user_favourites<'a>(
 pub async fn get_user_followers<'a>(
     request: &'a UserPagingSearchRequest<'a>,
     db: Conn,
-) -> Result<UserFollowerResponse, UserSearchError> {
+) -> Result<PagingResponse<FollowerResponse>, UserSearchError> {
     let db = Arc::new(db);
 
     let follow_request = PagingDomainRequest {
@@ -105,18 +105,22 @@ pub async fn get_user_followers<'a>(
         page_size: request.page_size,
     };
     match db.get_user_followers(&follow_request).await {
-        Ok(users) => Result::Ok(UserFollowerResponse {
-            result: futures::future::join_all(users.into_iter().map(|user| {
+        Ok(result) => Result::Ok(PagingResponse {
+            page: result.page,
+            page_size: result.page_size,
+            total: result.total,
+            has_more: result.has_more,
+            result: futures::future::join_all(result.result.into_iter().map(|user| {
                 let db: Arc<Conn> = Arc::clone(&db);
                 async move {
-                    let followed_uuid = user.followed_uuid.to_string().to_owned();
-                    let followed_uuid_clone = followed_uuid.clone(); // Clone the followed_uuid value
+                    let follower_uuid = user.follower_uuid.to_string().to_owned();
+                    let follower_uuid_clone = follower_uuid.clone(); // Clone the follower_uuid value
                     FollowerResponse {
-                        uuid: followed_uuid,
-                        username: user.followed_username,
-                        avatar_url: user.followed_avatar_url,
+                        uuid: follower_uuid,
+                        username: user.follower_username,
+                        avatar_url: user.follower_avatar_url,
                         is_following: match db
-                            .is_following(&followed_uuid_clone, request.request_uuid)
+                            .is_following(request.request_uuid, &follower_uuid_clone)
                             .await
                         {
                             // Use the cloned value
@@ -139,7 +143,7 @@ pub async fn get_user_followers<'a>(
 pub async fn get_user_following<'a>(
     request: &'a UserPagingSearchRequest<'a>,
     db: Conn,
-) -> Result<UserFollowerResponse, UserSearchError> {
+) -> Result<PagingResponse<FollowerResponse>, UserSearchError> {
     let db = Arc::new(db);
     let follow_request = PagingDomainRequest {
         request_uuid: request.request_uuid,
@@ -149,8 +153,12 @@ pub async fn get_user_following<'a>(
         page_size: request.page_size,
     };
     match db.get_user_following(&follow_request).await {
-        Ok(users) => Result::Ok(UserFollowerResponse {
-            result: futures::future::join_all(users.into_iter().map(|user| {
+        Ok(result) => Result::Ok(PagingResponse {
+            page: result.page,
+            page_size: result.page_size,
+            total: result.total,
+            has_more: result.has_more,
+            result: futures::future::join_all(result.result.into_iter().map(|user| {
                 let db: Arc<Conn> = Arc::clone(&db);
                 async move {
                     let followed_uuid = user.followed_uuid.to_string().to_owned();
@@ -186,11 +194,6 @@ pub struct UserPagingSearchRequest<'a> {
     pub query: &'a str,
     pub page: i64,
     pub page_size: i64,
-}
-
-#[derive(Serialize)]
-pub struct UserFollowerResponse {
-    pub result: Vec<FollowerResponse>,
 }
 
 #[derive(Serialize)]
